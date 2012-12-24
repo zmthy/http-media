@@ -1,0 +1,36 @@
+name:           accept
+version:        0.0.1
+license:        MIT
+license-file:   LICENSE
+author:         Timothy Jones
+maintainer:     Timothy Jones <git@zimothy.com>
+stability:      experimental
+homepage:       http://github.com/zimothy/accept
+bug-reports:    http://github.com/zimothy/accept/issues
+category:       Web
+copyright:      (c) 2012 Timothy Jones
+build-type:     Simple
+cabal-version:  >= 1.8
+synopsis:       HTTP Accept and related headers
+description:
+    This library is intended to be a comprehensive solution to correctly using
+    the HTTP Accept header, as well as the related headers Accept-Charset and
+    Accept-Encoding. It encodes MIME parameters into the media type data, and
+    allows the matching of the final header value by comparing quality values
+    from both the client and the server.
+
+library
+    hs-source-dirs: src
+
+    exposed-modules:
+        Network.HTTP.Accept
+        Network.HTTP.Accept.MediaType
+        Network.HTTP.Accept.Quality
+    other-modules:
+        Network.HTTP.Accept.Utils
+    build-depends:
+        base >= 4.6 && < 5,
+        bytestring >= 0.9 && < 0.11,
+        containers >= 0.5 && < 0.6,
+        utf8-string >= 0.3.7 && < 0.4
+
