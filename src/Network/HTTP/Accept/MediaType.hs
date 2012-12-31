@@ -11,12 +11,11 @@ module Network.HTTP.Accept.MediaType
     , parse
 
       -- * Querying
+    , mainType
+    , subType
     , (/?)
     , (/.)
-
-      -- * Utility functions
     , matches
-    , isMoreSpecific
     ) where
 
 ------------------------------------------------------------------------------
@@ -24,11 +23,11 @@ import           Control.Monad (guard)
 import           Data.ByteString (ByteString, split)
 import qualified Data.ByteString as BS
 import           Data.ByteString.UTF8 (toString)
-import           Data.Char (ord)
 import           Data.Map (Map, empty, foldrWithKey, insert, isSubmapOf)
 import qualified Data.Map as Map
-import           Data.Word (Word8)
 ------------------------------------------------------------------------------
+import           Network.HTTP.Accept.Match hiding (matches)
+import qualified Network.HTTP.Accept.Match as Match
 import           Network.HTTP.Accept.Utils
 
 
@@ -44,6 +43,14 @@ instance Show MediaType where
       where
         f k v = (++ ';' : toString k ++ '=' : toString v)
 
+instance Match MediaType where
+    matches (MediaType a b p) (MediaType c d q) =
+        (p == q &&) $ c == "*" || a == "*" && c == "*" ||
+        d == "*" && a == c || b == d && a == c
+    isMoreSpecific (MediaType a b p) (MediaType c d q) =
+        a /= "*" && (b /= "*" || c == "*") && (d == "*" || isSubmapOf q p)
+    combine = moreSpecific
+
 
 ------------------------------------------------------------------------------
 -- | Builds a 'MediaType' without parameters.
@@ -55,6 +62,18 @@ a // b = MediaType (trimBS a) (trimBS b) empty
 -- | Adds a parameter to a 'MediaType'.
 (/:) :: MediaType -> (ByteString, ByteString) -> MediaType
 (MediaType a b p) /: (k, v) = MediaType a b $ insert k v p
+
+
+------------------------------------------------------------------------------
+-- | The primary type of the 'MediaType'.
+mainType :: MediaType -> ByteString
+mainType (MediaType p _ _) = p
+
+
+------------------------------------------------------------------------------
+-- | The subtype of the 'MediaType'.
+subType :: MediaType -> ByteString
+subType (MediaType _ s _) = s
 
 
 ------------------------------------------------------------------------------
@@ -73,7 +92,7 @@ a // b = MediaType (trimBS a) (trimBS b) empty
 -- | Parses a MIME string into a 'MediaType'.
 parse :: ByteString -> Maybe MediaType
 parse bs = do
-    guard $ BS.elem slash m
+    guard $ BS.elem slash m && (a /= "*" || b == "*")
     return $ foldr (flip (/:) . breakByte equal) (a // b) ps
   where
     (m : ps) = split semi bs
@@ -81,16 +100,13 @@ parse bs = do
 
 
 ------------------------------------------------------------------------------
--- | Evaluates whether either argument matches the other.
+-- | Evaluates if the left argument matches the right one.
+--
+-- The order of the arguments is important: if the right argument is more
+-- specific than the left, they will not be considered to match. The
+-- following evalutes to 'False'.
+--
+-- > matches ("text" // "*") ("text" // "plain")
 matches :: MediaType -> MediaType -> Bool
-matches (MediaType a b p) (MediaType c d q) =
-    (p == q &&) $ a == "*" || c == "*" ||
-    (b == "*" || d == "*") && a == c || a == c && b == d
-
-
-------------------------------------------------------------------------------
--- | Evaluates whether the left argument is more specific than the right.
-isMoreSpecific :: MediaType -> MediaType -> Bool
-isMoreSpecific (MediaType a b p) (MediaType c d q) =
-    a /= "*" && (b /= "*" || c == "*") && (d == "*" || isSubmapOf q p)
+matches = Match.matches
 

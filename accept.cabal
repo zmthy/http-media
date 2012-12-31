@@ -27,6 +27,7 @@ library
         Network.HTTP.Accept.MediaType
         Network.HTTP.Accept.Quality
     other-modules:
+        Network.HTTP.Accept.Match
         Network.HTTP.Accept.Utils
     build-depends:
         base >= 4.6 && < 5,

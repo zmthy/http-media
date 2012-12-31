@@ -37,7 +37,7 @@ trimBS = BS.reverse . dropSpace . BS.reverse . dropSpace
 ------------------------------------------------------------------------------
 -- 'ByteString' compatible characters.
 
-slash, semi, comma, space :: Word8
+slash, semi, comma, space, equal :: Word8
 slash = word '/'
 semi  = word ';'
 comma = word ','
