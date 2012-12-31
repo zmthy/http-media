@@ -42,7 +42,8 @@ import           Network.HTTP.Accept.Utils
 
 
 ------------------------------------------------------------------------------
--- | Attaches a quality value to another value.
+-- | Attaches a quality value to another value (renamed just to keep
+-- a standard operator starter).
 (/!) :: a -> Float -> Quality a
 (/!) = (:!)
 
@@ -147,7 +148,12 @@ matchMap :: Match a
          => [(a, b)]  -- ^ The map of server-side preferences to values
          -> [a]       -- ^ The client-side preferences
          -> Maybe b
-matchMap = undefined
+matchMap s c = match (map fst s) c >>= lookupMatches s
+  where
+    lookupMatches ((k, v) : r) a
+        | Match.matches k a = Just v
+        | otherwise         = lookupMatches r a
+    lookupMatches [] _ = Nothing
 
 
 ------------------------------------------------------------------------------
