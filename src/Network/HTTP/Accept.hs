@@ -18,15 +18,16 @@ module Network.HTTP.Accept
       -- * Quality values
     , Quality
     , (/!)
+    , quality
 
       -- * Parsing
     , parseAccepts
 
       -- * Matching
     , match
-    , matchSimple
-    , matchMap
-    , matchMapSimple
+    , matchQ1
+    , mapMatch
+    , mapMatchQ1
     ) where
 
 ------------------------------------------------------------------------------
@@ -42,8 +43,8 @@ import           Network.HTTP.Accept.Utils
 
 
 ------------------------------------------------------------------------------
--- | Attaches a quality value to another value (renamed just to keep
--- a standard operator starter).
+-- (Renamed just to keep a standard start character for operators).
+-- | Constructs a Quality.
 (/!) :: a -> Float -> Quality a
 (/!) = (:!)
 
@@ -75,7 +76,7 @@ parseAccept bs = do
 -- 'MediaType', 'ByteString', and a choice of whether or not to mark the
 -- values with quality values. The standard application of this function
 -- will be in conjunction with 'parseAccepts', which means that the type
--- variable will correspond to 'Quality MediaType'.
+-- variable will correspond to Quality MediaType.
 --
 -- > parseAccepts header >>= match resourceTypeOptions
 --
@@ -89,23 +90,23 @@ parseAccept bs = do
 -- specifically requesting `text/plain`, which the server *does not*
 -- provide.
 --
--- > match ["text" // "*"] ["text" // "plain"]
+-- > match ["text" // "*" /! 1] ["text" // "plain" /! 1]
 --
 -- This does not apply in the other direction. In the following case the
 -- result will be `text/plain`, because the client has requested any text
 -- type and the server offers a more specific version of this.
 --
--- > match ["text" // "plain"] ["text" // "*"]
+-- > match ["text" // "plain" /! 1] ["text" // "*" /! 1]
 --
 -- The server need not be more specific, though: in the following case the
 -- result is `text/*`.
 --
--- > match ["text" // "*"] ["text" // "*"]
+-- > match ["text" // "*" /! 1] ["text" // "*" /! 1]
 --
 -- As per the spec, a more specific value will always be chosen, though.
 -- This final example yields `text/plain`.
 --
--- > match ["text" // "*", "text" // "plain"] ["text" // "*"]
+-- > match ["text" // "*" /! 1, "text" // "plain" /! 1] ["text" // "*" /! 1]
 match :: Match a
       => [a]      -- ^ The server-side preferences
       -> [a]      -- ^ The client-side preferences
@@ -118,8 +119,8 @@ match qm = mostSpecific . concatMap filterAndMap
 
 
 ------------------------------------------------------------------------------
--- | As for 'match', but allows the quality values to be left off from the
--- first list. They default to 1.
+-- | As for 'match', but attaches a quality value of 1 to every server-side
+-- preference.
 --
 -- If your resource doesn't prefer one media type to another, but you're
 -- still matching against the result from 'parseAccepts', then this
@@ -130,9 +131,9 @@ match qm = mostSpecific . concatMap filterAndMap
 --
 -- becomes
 --
--- > matchSimple ["text" // "plain", "application" // "json"]
-matchSimple :: Match a => [a] -> [Quality a] -> Maybe a
-matchSimple = (fmap unwrap .) . match . map (:! 1)
+-- > matchQ1 ["text" // "plain", "application" // "json"]
+matchQ1 :: Match a => [a] -> [Quality a] -> Maybe a
+matchQ1 = (fmap unwrap .) . match . map (:! 1)
 
 
 ------------------------------------------------------------------------------
@@ -144,11 +145,11 @@ matchSimple = (fmap unwrap .) . match . map (:! 1)
 -- >     [ ("text"        // "html" /! 1  , asHtml)
 -- >     , ("application" // "json" /! 0.8, asJson)
 -- >     ]
-matchMap :: Match a
+mapMatch :: Match a
          => [(a, b)]  -- ^ The map of server-side preferences to values
          -> [a]       -- ^ The client-side preferences
          -> Maybe b
-matchMap s c = match (map fst s) c >>= lookupMatches s
+mapMatch s c = match (map fst s) c >>= lookupMatches s
   where
     lookupMatches ((k, v) : r) a
         | Match.matches k a = Just v
@@ -157,15 +158,15 @@ matchMap s c = match (map fst s) c >>= lookupMatches s
 
 
 ------------------------------------------------------------------------------
--- | The obvious combination of 'matchMap' and 'matchSimple'. Avoids
--- quality values in the map's keys.
+-- | The obvious combination of 'matchMap' and 'matchQ1'. Avoids quality values
+-- in the map's keys.
 --
--- > maybe render406Error renderResource $ parseAccepts header >>= matchMap
+-- > maybe render406Error renderResource $ parseAccepts header >>= matchMapQ1
 -- >     [ ("text"        // "html", asHtml)
 -- >     , ("application" // "json", asJson)
 -- >     ]
-matchMapSimple :: Match a => [(a, b)] -> [Quality a] -> Maybe b
-matchMapSimple = matchMap . map f
+mapMatchQ1 :: Match a => [(a, b)] -> [Quality a] -> Maybe b
+mapMatchQ1 = mapMatch . map f
   where
     f (a, b) = (a :! 1, b)
 

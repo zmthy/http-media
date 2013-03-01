@@ -1,0 +1,18 @@
+name:          accept-tests
+version:       0.0.1
+build-type:    Simple
+cabal-version: >= 1.8
+
+executable tests
+    hs-source-dirs: ../src .
+    main-is:        Tests.hs
+
+    build-depends:
+        base >= 4.6 && < 5,
+        bytestring >= 0.10 && < 0.11,
+        containers >= 0.5 && < 0.6,
+        QuickCheck >= 2.5 && < 2.6,
+        test-framework >= 0.8 && < 0.9,
+        utf8-string >= 0.3.7 && < 0.4
+
+

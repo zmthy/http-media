@@ -1,0 +1,12 @@
+function OnOpen()
+    if !argc()
+        edit src/Network/HTTP/Accept.hs
+        tabedit accept.cabal
+        execute "set syntax=cabal"
+        tabprevious
+        execute "set syntax=haskell"
+    endif
+endfunction
+
+autocmd vimenter * silent call OnOpen()
+

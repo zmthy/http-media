@@ -3,7 +3,6 @@
 module Network.HTTP.Accept.Quality
     (
       Quality (..)
-    , unwrap
     ) where
 
 ------------------------------------------------------------------------------
@@ -11,9 +10,12 @@ import Network.HTTP.Accept.Match
 
 
 ------------------------------------------------------------------------------
--- | Attaches a quality value to another value.
-data Quality a = a :! Float
-    deriving (Eq)
+-- | Attaches a quality to another value.
+data Quality a = (:!)
+    { unwrap  :: a
+      -- | Retrieves the quality of this value.
+    , quality :: Float
+    } deriving (Eq)
 
 instance Show a => Show (Quality a) where
     show (a :! q) = show a ++ ";q=" ++ show q
@@ -25,8 +27,3 @@ instance Match a => Match (Quality a) where
         | otherwise = q > u
     combine (a :! q) (b :! u) = combine a b :! (q * u)
 
-
-------------------------------------------------------------------------------
--- | Removes the quality value from the underlying expression.
-unwrap :: Quality a -> a
-unwrap (a :! _) = a

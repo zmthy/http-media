@@ -12,6 +12,11 @@ import Data.ByteString
 
 
 ------------------------------------------------------------------------------
+-- | Defines methods for a type whose values can be matched against each
+-- other in terms of an Accept value.
+--
+-- This allows functions to work on both the standard Accept header and
+-- others such as Accept-Language that still may use quality values.
 class Match a where
     -- | Evaluates whether either argument matches the other.
     matches :: a -> a -> Bool
