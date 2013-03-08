@@ -6,6 +6,7 @@ cabal-version: >= 1.8
 executable tests
     hs-source-dirs: ../src .
     main-is:        Tests.hs
+    ghc-options:    -Wall -Werror
 
     build-depends:
         base >= 4.6 && < 5,
@@ -13,6 +14,7 @@ executable tests
         containers >= 0.5 && < 0.6,
         QuickCheck >= 2.5 && < 2.6,
         test-framework >= 0.8 && < 0.9,
+        test-framework-quickcheck2 >= 0.3 && < 0.4,
         utf8-string >= 0.3.7 && < 0.4
 
 

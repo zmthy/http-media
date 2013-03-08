@@ -11,6 +11,7 @@ module Network.HTTP.Accept
     , (/:)
     , mainType
     , subType
+    , parameters
     , (/?)
     , (/.)
     , MediaType.matches
@@ -32,9 +33,11 @@ module Network.HTTP.Accept
 
 ------------------------------------------------------------------------------
 import           Control.Monad (guard)
+
 import           Data.ByteString (ByteString, split)
 import qualified Data.ByteString as BS
 import           Data.ByteString.UTF8 (toString)
+
 ------------------------------------------------------------------------------
 import           Network.HTTP.Accept.Match as Match
 import           Network.HTTP.Accept.MediaType as MediaType

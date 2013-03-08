@@ -9,10 +9,12 @@ module Network.HTTP.Accept.MediaType
     , (//)
     , (/:)
     , parse
+    , anything
 
       -- * Querying
     , mainType
     , subType
+    , parameters
     , (/?)
     , (/.)
     , matches
@@ -20,11 +22,13 @@ module Network.HTTP.Accept.MediaType
 
 ------------------------------------------------------------------------------
 import           Control.Monad (guard)
+
 import           Data.ByteString (ByteString, split)
 import qualified Data.ByteString as BS
 import           Data.ByteString.UTF8 (toString)
 import           Data.Map (Map, empty, foldrWithKey, insert, isSubmapOf)
 import qualified Data.Map as Map
+
 ------------------------------------------------------------------------------
 import           Network.HTTP.Accept.Match hiding (matches)
 import qualified Network.HTTP.Accept.Match as Match
@@ -33,9 +37,14 @@ import           Network.HTTP.Accept.Utils
 
 ------------------------------------------------------------------------------
 -- | An HTTP media type, consisting of the type, subtype, and parameters.
-data MediaType
-    = MediaType ByteString ByteString (Map ByteString ByteString)
-    deriving (Eq)
+data MediaType = MediaType
+    { -- | The main type of the MediaType.
+      mainType   :: ByteString
+      -- | The sub type of the MediaType.
+    , subType    :: ByteString
+      -- | The parameters of the MediaType.
+    , parameters :: Map ByteString ByteString
+    } deriving (Eq)
 
 instance Show MediaType where
     show (MediaType a b p) =
@@ -52,6 +61,8 @@ instance Match MediaType where
     combine = moreSpecific
 
 
+
+
 ------------------------------------------------------------------------------
 -- | Builds a 'MediaType' without parameters.
 (//) :: ByteString -> ByteString -> MediaType
@@ -65,18 +76,6 @@ a // b = MediaType (trimBS a) (trimBS b) empty
 
 
 ------------------------------------------------------------------------------
--- | The primary type of the 'MediaType'.
-mainType :: MediaType -> ByteString
-mainType (MediaType p _ _) = p
-
-
-------------------------------------------------------------------------------
--- | The subtype of the 'MediaType'.
-subType :: MediaType -> ByteString
-subType (MediaType _ s _) = s
-
-
-------------------------------------------------------------------------------
 -- | Evaluates if a 'MediaType' has a parameter of the given name.
 (/?) :: MediaType -> ByteString -> Bool
 (MediaType _ _ p) /? k = Map.member k p
@@ -86,6 +85,12 @@ subType (MediaType _ s _) = s
 -- | Retrieves a parameter from a 'MediaType'.
 (/.) :: MediaType -> ByteString -> Maybe ByteString
 (MediaType _ _ p) /. k = Map.lookup k p
+
+
+------------------------------------------------------------------------------
+-- | A MediaType that matches anything.
+anything :: MediaType
+anything = "*" // "*"
 
 
 ------------------------------------------------------------------------------
