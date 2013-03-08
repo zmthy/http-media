@@ -53,9 +53,8 @@ instance Show MediaType where
         f k v = (++ ';' : toString k ++ '=' : toString v)
 
 instance Match MediaType where
-    matches (MediaType a b p) (MediaType c d q) =
-        (p == q &&) $ c == "*" || a == "*" && c == "*" ||
-        d == "*" && a == c || b == d && a == c
+    matches (MediaType a b p) (MediaType c d q) = c == "*" ||
+        d == "*" && a == c || q `isSubmapOf` p && a == c && b == d
     isMoreSpecific (MediaType a b p) (MediaType c d q) =
         a /= "*" && (b /= "*" || c == "*") && (d == "*" || isSubmapOf q p)
     combine = moreSpecific

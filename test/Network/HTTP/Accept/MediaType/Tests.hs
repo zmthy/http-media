@@ -4,18 +4,16 @@
 module Network.HTTP.Accept.MediaType.Tests (tests) where
 
 ------------------------------------------------------------------------------
-import           Control.Monad (liftM2)
+import Data.Map (empty, foldrWithKey, keys, toList)
+import Data.Maybe (isNothing)
+import Data.Monoid ((<>), mconcat)
 
-import qualified Data.Map as Map
-import           Data.Maybe (isNothing)
-import           Data.Monoid ((<>))
-
-import           Test.Framework
-import           Test.Framework.Providers.QuickCheck2 (testProperty)
+import Test.Framework
+import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 ------------------------------------------------------------------------------
-import           Network.HTTP.Accept.MediaType
-import           Network.HTTP.Accept.MediaType.Gen
+import Network.HTTP.Accept.MediaType
+import Network.HTTP.Accept.MediaType.Gen
 
 
 ------------------------------------------------------------------------------
@@ -33,11 +31,11 @@ testHas :: Test
 testHas = testGroup "(/?)"
     [ testProperty "True for property it has" $ do
         media <- genMediaType
-        return $ all (media /?) (Map.keys $ parameters media)
+        return $ all (media /?) (keys $ parameters media)
     , testProperty "False for property it doesn't have" $ do
         media <- genMediaType
-        return $ all (not . (media { parameters = Map.empty } /?))
-            (Map.keys $ parameters media)
+        return $ all (not . (media { parameters = empty } /?))
+            (keys $ parameters media)
     ]
 
 
@@ -47,11 +45,11 @@ testGet = testGroup "(/.)"
     [ testProperty "Retrieves property it has" $ do
         media  <- genMediaType
         let is n v = (&& media /. n == Just v)
-        return $ Map.foldrWithKey is True $ parameters media
+        return $ foldrWithKey is True $ parameters media
     , testProperty "Nothing for property it doesn't have" $ do
         media <- genMediaType
-        let is n _ = (&& isNothing (media { parameters = Map.empty } /. n))
-        return $ Map.foldrWithKey is True $ parameters media
+        let is n _ = (&& isNothing (media { parameters = empty } /. n))
+        return $ foldrWithKey is True $ parameters media
     ]
 
 
@@ -61,45 +59,37 @@ testMatches = testGroup "matches"
     [ testProperty "Equal values match" $ do
         media <- genMediaType
         return $ matches media media
-    , testProperty "Different types don't match" $ do
-        media1 <- genMediaType
-        media2 <- genDiffMediaType media1
-        return . not $ matches media1 media2
     , testProperty "Same sub but different main don't match" $ do
-        main1 <- genByteString
-        main2 <- genDiffByteString main1
-        sub   <- genByteString
-        return . not $ matches (main1 // sub) (main2 // sub)
+        media <- genMediaTypeWith noStar mayStar
+        main  <- genByteString
+        return $ not (matches media media { mainType = main }) &&
+            not (matches media { mainType = main } media)
     , testProperty "Same main but different sub don't match" $ do
-        main <- genByteString
-        sub1 <- genByteString
-        sub2 <- genDiffByteString sub1
-        return . not $ matches (main // sub1) (main // sub2)
+        media <- genMediaTypeWith noStar noStar
+        sub   <- genByteString
+        return . not $ matches media media { subType = sub } ||
+            matches media { subType = sub } media
     , testGroup "Parameters"
-        [ testProperty "Matches same parameters" $ do
-            pm <- liftM2 addParameters genMediaType genParameters
-            return $ matches pm pm
-        , testProperty "Doesn't match different parameters" $ do
-            media <- genMediaType
-            params@((name, value1) : rest) <- genParameters
-            value2 <- genDiffByteString value1
-            let pm1 = addParameters media params
-                pm2 = addParameters media ((name, value2) : rest)
-            return . not $ matches pm1 pm2
+        [ testProperty "Doesn't match different parameters" $ do
+            media  <- genMediaTypeWith noStar noStar
+            params <- diffParams $ parameters media
+            return . not $ matches media media { parameters = params }
         , testProperty "Matches with less parameters on the right" $ do
-            (params1, params2) <- genMediaTypeAndLessParameters
-            return $ matches params1 params2
+            media  <- genMediaTypeWith noStar noStar
+            params <- moreParams $ parameters media
+            return $ matches media { parameters = params } media
         , testProperty "Doesn't match with less parameters on the left" $ do
-            (params1, params2) <- genMediaTypeAndLessParameters
-            return . not $ matches params2 params1
+            media  <- genMediaTypeWith noStar noStar
+            params <- moreParams $ parameters media
+            return . not $ matches media media { parameters = params }
         ]
     , testGroup "*/*"
         [ testProperty "Matches itself" $ matches anything anything
         , testProperty "Matches anything on the right" $ do
-            media <- genDiffMediaType anything
+            media <- genMediaType
             return $ matches media anything
         , testProperty "Doesn't match more specific on the left" $ do
-            media <- genDiffMediaType anything
+            media <- genMediaTypeWith noStar mayStar
             return . not $ matches anything media
         ]
     , testGroup "Sub *"
@@ -121,9 +111,11 @@ testMatches = testGroup "matches"
 ------------------------------------------------------------------------------
 testParse :: Test
 testParse = testProperty "parse" $ do
-    main <- genByteString
-    sub  <- genByteString
-    let (Just media) = parse $ main <> "/" <> sub
-    return $ mainType media == main && subType media == sub
-
+    main   <- genByteString
+    sub    <- genByteString
+    params <- mayParams
+    let (Just media) = parse $ main <> "/" <> sub <> mconcat
+            (map (uncurry ((<>) . (<> "=") . (";" <>))) $ toList params)
+    return $ mainType media == main && subType media == sub &&
+        parameters media == params
 
