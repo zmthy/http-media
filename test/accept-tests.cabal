@@ -6,7 +6,7 @@ cabal-version: >= 1.8
 executable tests
     hs-source-dirs: ../src .
     main-is:        Tests.hs
-    ghc-options:    -Wall -Werror
+    ghc-options:    -O2 -Wall -Werror -fhpc
 
     build-depends:
         base >= 4.6 && < 5,

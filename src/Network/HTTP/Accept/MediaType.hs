@@ -6,6 +6,7 @@ module Network.HTTP.Accept.MediaType
     (
       -- * Type and creation
       MediaType
+    , Parameters
     , (//)
     , (/:)
     , parse
@@ -43,7 +44,7 @@ data MediaType = MediaType
       -- | The sub type of the MediaType.
     , subType    :: ByteString
       -- | The parameters of the MediaType.
-    , parameters :: Map ByteString ByteString
+    , parameters :: Parameters
     } deriving (Eq)
 
 instance Show MediaType where
@@ -60,6 +61,9 @@ instance Match MediaType where
     combine = moreSpecific
 
 
+------------------------------------------------------------------------------
+-- | 'MediaType' parameters.
+type Parameters = Map ByteString ByteString
 
 
 ------------------------------------------------------------------------------

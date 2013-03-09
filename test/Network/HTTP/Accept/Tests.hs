@@ -2,11 +2,10 @@
 module Network.HTTP.Accept.Tests (tests) where
 
 ------------------------------------------------------------------------------
-import Network.HTTP.Accept
+{-import Network.HTTP.Accept-}
 
 import Test.Framework
 import Test.Framework.Providers.QuickCheck2 (testProperty)
-import Test.QuickCheck
 
 
 ------------------------------------------------------------------------------

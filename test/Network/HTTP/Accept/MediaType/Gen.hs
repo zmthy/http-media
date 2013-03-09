@@ -25,7 +25,7 @@ module Network.HTTP.Accept.MediaType.Gen
 import Control.Monad (liftM, liftM2)
 
 import Data.ByteString (ByteString, pack)
-import Data.Map (Map, fromList, isSubmapOf, union)
+import Data.Map (fromList, isSubmapOf, union)
 
 import Test.QuickCheck.Gen
 
@@ -49,9 +49,8 @@ genDiffByteString bs = do
 
 
 ------------------------------------------------------------------------------
--- Parameters types.
+-- | Parameter entry for testing.
 type ParamEntry = (ByteString, ByteString)
-type Parameters = Map ByteString ByteString
 
 
 ------------------------------------------------------------------------------

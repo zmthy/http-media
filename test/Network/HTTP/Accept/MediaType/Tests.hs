@@ -61,12 +61,12 @@ testMatches = testGroup "matches"
         return $ matches media media
     , testProperty "Same sub but different main don't match" $ do
         media <- genMediaTypeWith noStar mayStar
-        main  <- genByteString
+        main  <- genDiffByteString $ mainType media
         return $ not (matches media media { mainType = main }) &&
             not (matches media { mainType = main } media)
     , testProperty "Same main but different sub don't match" $ do
         media <- genMediaTypeWith noStar noStar
-        sub   <- genByteString
+        sub   <- genDiffByteString $ subType media
         return . not $ matches media media { subType = sub } ||
             matches media { subType = sub } media
     , testGroup "Parameters"
