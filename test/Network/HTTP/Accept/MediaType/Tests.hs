@@ -4,14 +4,18 @@
 module Network.HTTP.Accept.MediaType.Tests (tests) where
 
 ------------------------------------------------------------------------------
+import Control.Monad (replicateM)
+
+import Data.ByteString.UTF8 (fromString)
 import Data.Map (empty, foldrWithKey, keys, toList)
 import Data.Maybe (isNothing)
 import Data.Monoid ((<>), mconcat)
 
-import Test.Framework
+import Test.Framework (Test, testGroup)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 ------------------------------------------------------------------------------
+import Network.HTTP.Accept.Match (moreSpecificThan, mostSpecific)
 import Network.HTTP.Accept.MediaType
 import Network.HTTP.Accept.MediaType.Gen
 
@@ -19,11 +23,36 @@ import Network.HTTP.Accept.MediaType.Gen
 ------------------------------------------------------------------------------
 tests :: [Test]
 tests =
-    [ testHas
+    [ testEq
+    , testShow
+    , testHas
     , testGet
     , testMatches
+    , testMoreSpecificThan
+    , testMostSpecific
     , testParse
     ]
+
+
+------------------------------------------------------------------------------
+-- Equality is derived, but we test it here to get 100% coverage.
+testEq :: Test
+testEq = testGroup "Eq"
+    [ testProperty "==" $ do
+        media <- genMediaType
+        return $ media == media
+    , testProperty "/=" $ do
+        media  <- genMediaType
+        media' <- genDiffMediaType media
+        return $ media /= media'
+    ]
+
+
+------------------------------------------------------------------------------
+testShow :: Test
+testShow = testProperty "show" $ do
+    media <- genMediaType
+    return $ parse (fromString $ show media) == Just media
 
 
 ------------------------------------------------------------------------------
@@ -69,20 +98,10 @@ testMatches = testGroup "matches"
         sub   <- genDiffByteString $ subType media
         return . not $ matches media media { subType = sub } ||
             matches media { subType = sub } media
-    , testGroup "Parameters"
-        [ testProperty "Doesn't match different parameters" $ do
-            media  <- genMediaTypeWith noStar noStar
-            params <- diffParams $ parameters media
-            return . not $ matches media media { parameters = params }
-        , testProperty "Matches with less parameters on the right" $ do
-            media  <- genMediaTypeWith noStar noStar
-            params <- moreParams $ parameters media
-            return $ matches media { parameters = params } media
-        , testProperty "Doesn't match with less parameters on the left" $ do
-            media  <- genMediaTypeWith noStar noStar
-            params <- moreParams $ parameters media
-            return . not $ matches media media { parameters = params }
-        ]
+    , testProperty "Different parameters don't match" $ do
+        media  <- genMediaTypeWith noStar noStar
+        params <- diffParams $ parameters media
+        return . not $ matches media media { parameters = params }
     , testGroup "*/*"
         [ testProperty "Matches itself" $ matches anything anything
         , testProperty "Matches anything on the right" $ do
@@ -92,7 +111,7 @@ testMatches = testGroup "matches"
             media <- genMediaTypeWith noStar mayStar
             return . not $ matches anything media
         ]
-    , testGroup "Sub *"
+    , testGroup "type/*"
         [ testProperty "Matches itself" $ do
             main <- genByteString
             return $ matches (main // "*") (main // "*")
@@ -109,13 +128,75 @@ testMatches = testGroup "matches"
 
 
 ------------------------------------------------------------------------------
+testMoreSpecificThan :: Test
+testMoreSpecificThan = testGroup "isMoreSpecific"
+    [ testProperty "Against */*" $ do
+        media <- genMediaTypeWith noStar mayStar
+        return $ media `moreSpecificThan` ("*" // "*")
+    , testProperty "With */*" $ do
+        media <- genDiffMediaType anything
+        return . not $ ("*" // "*") `moreSpecificThan` media
+    , testProperty "Against type/*" $ do
+        media <- genMediaTypeWith noStar noStar
+        return $ media `moreSpecificThan` (mainType media // "*")
+    , testProperty "With type/*" $ do
+        media <- genMediaTypeWith noStar noStar
+        return . not $ (mainType media // "*") `moreSpecificThan` media
+    , testProperty "With parameters" $ do
+        media  <- genMediaType
+        params <- someParams
+        return $ moreSpecificThan
+            media { parameters = params } media { parameters = empty }
+    , testProperty "Different with parameters" $ do
+        [media, media'] <- replicateM 2 $ genMediaTypeWith noStar noStar
+        params <- someParams
+        return $ moreSpecificThan
+            media { parameters = params } media' { parameters = empty }
+    , testProperty "Different parameters" $ do
+        media   <- genMediaType
+        params  <- someParams
+        params' <- someParams
+        return . not $ moreSpecificThan
+            media { parameters = params } media { parameters = params' }
+    ]
+
+
+------------------------------------------------------------------------------
+testMostSpecific :: Test
+testMostSpecific = testGroup "mostSpecific"
+    [ testProperty "With */*" $ do
+        media <- genMediaTypeWith noStar mayStar
+        return $ mostSpecific media ("*" // "*") == media &&
+            mostSpecific ("*" // "*") media == media
+    , testProperty "With type/*" $ do
+        media <- genMediaTypeWith noStar noStar
+        main  <- genByteString
+        return $ mostSpecific media (main // "*") == media &&
+            mostSpecific (main // "*") media == media
+    , testProperty "With parameters" $ do
+        media  <- genMediaType
+        params <- someParams
+        let media'  = media { parameters = params }
+            media'' = media { parameters = empty }
+        return $ mostSpecific media' media'' == media' &&
+            mostSpecific media'' media' == media'
+    , testProperty "Left biased" $ do
+        media  <- genMediaTypeWith noStar noStar
+        media' <- genMediaTypeWith noStar noStar
+        let media'' = media' { parameters = parameters media }
+        return $ mostSpecific media media'' == media &&
+            mostSpecific media'' media == media''
+    ]
+
+
+------------------------------------------------------------------------------
 testParse :: Test
 testParse = testProperty "parse" $ do
-    main   <- genByteString
-    sub    <- genByteString
-    params <- mayParams
-    let (Just media) = parse $ main <> "/" <> sub <> mconcat
+    media <- genMediaType
+    let main   = mainType media
+        sub    = subType media
+        params = parameters media
+    let (Just parsed) = parse $ main <> "/" <> sub <> mconcat
             (map (uncurry ((<>) . (<> "=") . (";" <>))) $ toList params)
-    return $ mainType media == main && subType media == sub &&
-        parameters media == params
+    return $ parsed == media
 

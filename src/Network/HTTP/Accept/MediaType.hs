@@ -27,7 +27,7 @@ import           Control.Monad (guard)
 import           Data.ByteString (ByteString, split)
 import qualified Data.ByteString as BS
 import           Data.ByteString.UTF8 (toString)
-import           Data.Map (Map, empty, foldrWithKey, insert, isSubmapOf)
+import           Data.Map (Map, empty, foldrWithKey, insert)
 import qualified Data.Map as Map
 
 ------------------------------------------------------------------------------
@@ -54,11 +54,23 @@ instance Show MediaType where
         f k v = (++ ';' : toString k ++ '=' : toString v)
 
 instance Match MediaType where
-    matches (MediaType a b p) (MediaType c d q) = c == "*" ||
-        d == "*" && a == c || q `isSubmapOf` p && a == c && b == d
-    isMoreSpecific (MediaType a b p) (MediaType c d q) =
-        a /= "*" && (b /= "*" || c == "*") && (d == "*" || isSubmapOf q p)
-    combine = moreSpecific
+    matches a b
+        | mainType b == "*" = params
+        | subType b == "*"  = mainType a == mainType b && params
+        | otherwise         = main && sub && params
+      where
+        main = mainType a == mainType b
+        sub = subType a == subType b
+        params = Map.null (parameters b) || parameters a == parameters b
+
+    moreSpecificThan a b
+        | mainType a == "*" = anyB && params
+        | subType a == "*"  = anyB || subB && params
+        | otherwise         = anyB || subB || params
+      where
+        anyB = mainType b == "*"
+        subB = subType b == "*"
+        params = not (Map.null $ parameters a) && Map.null (parameters b)
 
 
 ------------------------------------------------------------------------------

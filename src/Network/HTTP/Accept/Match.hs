@@ -4,7 +4,7 @@
 module Network.HTTP.Accept.Match
     (
       Match (..)
-    , moreSpecific
+    , mostSpecific
     ) where
 
 ------------------------------------------------------------------------------
@@ -18,24 +18,21 @@ import Data.ByteString
 -- This allows functions to work on both the standard Accept header and
 -- others such as Accept-Language that still may use quality values.
 class Match a where
-    -- | Evaluates whether either argument matches the other.
+    -- | Evaluates whether either the left argument matches the right one.
     matches :: a -> a -> Bool
     -- | Evaluates whether the left argument is more specific than the right.
-    isMoreSpecific :: a -> a -> Bool
-    -- | Combines the two arguments into a single value.
-    combine :: a -> a -> a
+    moreSpecificThan :: a -> a -> Bool
 
 instance Match ByteString where
     matches = (==)
-    isMoreSpecific _ _ = False
-    combine a _ = a
+    moreSpecificThan _ _ = False
 
 
 ------------------------------------------------------------------------------
 -- | Evaluates to whichever argument is more specific, choosing the left
 -- argument if neither is more specific than the other.
-moreSpecific :: Match a => a -> a -> a
-moreSpecific a b
-    | isMoreSpecific b a = b
-    | otherwise          = a
+mostSpecific :: Match a => a -> a -> a
+mostSpecific a b
+    | b `moreSpecificThan` a = b
+    | otherwise              = a
 

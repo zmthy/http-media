@@ -22,8 +22,8 @@ instance Show a => Show (Quality a) where
 
 instance Match a => Match (Quality a) where
     matches (a :! _) (b :! _) = matches a b
-    isMoreSpecific (a :! q) (b :! u)
-        | q == u    = isMoreSpecific a b
+    moreSpecificThan (a :! q) (b :! u)
+        | q == u    = a `moreSpecificThan` b
         | otherwise = q > u
-    combine (a :! q) (b :! u) = combine a b :! (q * u)
+    {-combine (a :! q) (b :! u) = combine a b :! (q * u)-}
 

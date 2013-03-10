@@ -32,11 +32,13 @@ module Network.HTTP.Accept
     ) where
 
 ------------------------------------------------------------------------------
-import           Control.Monad (guard)
+import           Control.Applicative ((<*>))
+import           Control.Monad (liftM)
 
 import           Data.ByteString (ByteString, split)
 import qualified Data.ByteString as BS
 import           Data.ByteString.UTF8 (toString)
+import           Data.Maybe (listToMaybe)
 
 ------------------------------------------------------------------------------
 import           Network.HTTP.Accept.Match as Match
@@ -58,14 +60,13 @@ parseAccepts :: ByteString -> Maybe [Quality MediaType]
 parseAccepts = mapM parseAccept . split comma
 
 parseAccept :: ByteString -> Maybe (Quality MediaType)
-parseAccept bs = do
-    guard $ BS.elem slash m && (a /= "*" || b == "*")
-    return $ foldr f (a // b :! 1) ps
+parseAccept bs = flip (<*>) (parse accept) $ if BS.null q
+    then liftM (flip (:!)) $ safeRead
+        (toString $ BS.takeWhile (/= semi) $ BS.drop 3 q)
+    else return (:! 1)
   where
-    (m : ps)     = split semi bs
-    (a, b)       = breakByte slash m
-    f s (t :! q) = let p@(k, v) = breakByte equal s in
-        if trimBS k == "q" then t :! read (toString v) else t /: p :! q
+    (accept, q) = BS.breakSubstring ";q=" $ BS.filter (/= space) bs
+    safeRead = fmap fst . listToMaybe . filter (null . snd) . reads
 
 
 ------------------------------------------------------------------------------
@@ -114,11 +115,11 @@ match :: Match a
       => [a]      -- ^ The server-side preferences
       -> [a]      -- ^ The client-side preferences
       -> Maybe a
-match qm = mostSpecific . concatMap filterAndMap
+match qm = specific . concatMap filterAndMap
   where
-    filterAndMap u = map (combine u) $ filter (Match.matches u) qm
-    mostSpecific (a : ms) = Just $ foldr moreSpecific a ms
-    mostSpecific []       = Nothing
+    filterAndMap u = map (mostSpecific u) $ filter (Match.matches u) qm
+    specific (a : ms) = Just $ foldr mostSpecific a ms
+    specific []       = Nothing
 
 
 ------------------------------------------------------------------------------

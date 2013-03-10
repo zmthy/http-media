@@ -1,23 +1,26 @@
 #!/bin/sh
 
-DIR=dist/hpc
-rm -Rf $DIR
-mkdir -p $DIR
+if cabal configure && cabal build; then
+    DIR=dist/hpc
+    rm -Rf $DIR
+    mkdir -p $DIR
 
-EXCLUDES='Main
-Network.HTTP.Accept.Tests
-Network.HTTP.Accept.MediaType.Tests
-Network.HTTP.Accept.MediaType.Gen'
+    EXCLUDES='Main
+    Network.HTTP.Accept.Gen
+    Network.HTTP.Accept.Tests
+    Network.HTTP.Accept.Match.Tests
+    Network.HTTP.Accept.MediaType.Tests
+    Network.HTTP.Accept.MediaType.Gen'
 
-EXCL=""
+    EXCL=""
 
-for e in $EXCLUDES; do
-    EXCL="$EXCL --exclude=$e"
-done
+    for e in $EXCLUDES; do
+        EXCL="$EXCL --exclude=$e"
+    done
 
-HPC="hpc markup $EXCL --destdir=$DIR tests"
-
-cabal configure && cabal build && dist/build/tests/tests && $HPC
+    dist/build/tests/tests
+    hpc markup $EXCL --destdir=$DIR tests
+fi
 
 rm -f tests.tix
 
