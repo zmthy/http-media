@@ -26,8 +26,13 @@ flag development
 library
     hs-source-dirs: src
 
-    if !flag(development)
-        ghc-options: -Wall -Werror -O2
+    if flag(development)
+        ghc-options: -Wall
+    else
+        ghc-options: -Wall -Werror
+
+    extensions:
+        FlexibleInstances
 
     exposed-modules:
         Network.HTTP.Accept
@@ -47,8 +52,13 @@ test-suite test-accept
     hs-source-dirs: src test
     main-is:        Tests.hs
 
-    if !flag(development)
+    if flag(development)
+        ghc-options: -Wall -threaded
+    else
         ghc-options: -Wall -Werror -threaded
+
+    extensions:
+        FlexibleInstances
 
     build-depends:
         base >= 4.6 && < 5,

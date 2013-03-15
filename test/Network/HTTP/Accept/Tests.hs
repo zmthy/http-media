@@ -4,6 +4,8 @@
 module Network.HTTP.Accept.Tests (tests) where
 
 ------------------------------------------------------------------------------
+import Control.Monad (liftM)
+
 import Data.ByteString.UTF8 (fromString)
 import Data.List (intercalate)
 
@@ -29,10 +31,18 @@ tests =
 
 ------------------------------------------------------------------------------
 testParse :: Test
-testParse = testProperty "parseAccepts" $ do
-    media <- listOf1 genMediaType
-    let string = fromString $ intercalate "," (map show media)
-    return $ parseAccepts string == Just (map (/! 1) media)
+testParse = testGroup "parseAccepts"
+    [ testProperty "Without quality" $ do
+        media <- medias
+        return $ parseAccepts (group media) == Just (map (/! 1) media)
+    , testProperty "With quality" $ do
+        media <- medias >>= mapM (flip liftM genQ . (/!))
+        return $ parseAccepts (group media) == Just media
+    ]
+  where
+    medias = listOf1 genMediaType
+    group media = fromString $ intercalate "," (map show media)
+    genQ = liftM ((/ 1000) . fromIntegral :: Int -> Float) $ choose (0, 1)
 
 
 ------------------------------------------------------------------------------

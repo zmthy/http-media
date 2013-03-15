@@ -3,10 +3,11 @@
 module Network.HTTP.Accept.Quality
     (
       Quality (..)
+    , matches
     ) where
 
 ------------------------------------------------------------------------------
-import Network.HTTP.Accept.Match
+import qualified Network.HTTP.Accept.Match as Match
 
 
 ------------------------------------------------------------------------------
@@ -20,10 +21,7 @@ data Quality a = (:!)
 instance Show a => Show (Quality a) where
     show (a :! q) = show a ++ ";q=" ++ show q
 
-instance Match a => Match (Quality a) where
-    matches (a :! _) (b :! _) = matches a b
-    moreSpecificThan (a :! q) (b :! u)
-        | q == u    = a `moreSpecificThan` b
-        | otherwise = q > u
-    {-combine (a :! q) (b :! u) = combine a b :! (q * u)-}
+
+matches :: Match.Match a => a -> Quality a -> Bool
+matches a (b :! _) = a `Match.matches` b
 

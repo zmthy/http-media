@@ -22,15 +22,14 @@ class Match a where
     matches :: a -> a -> Bool
     -- | Evaluates whether the left argument is more specific than the right.
     moreSpecificThan :: a -> a -> Bool
+    moreSpecificThan _ _ = False
 
 instance Match ByteString where
     matches = (==)
-    moreSpecificThan _ _ = False
 
 
 ------------------------------------------------------------------------------
 -- | Evaluates to whichever argument is more specific, choosing the left
--- argument if neither is more specific than the other.
 mostSpecific :: Match a => a -> a -> a
 mostSpecific a b
     | b `moreSpecificThan` a = b

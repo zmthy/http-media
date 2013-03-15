@@ -29,6 +29,8 @@ import qualified Data.ByteString as BS
 import           Data.ByteString.UTF8 (toString)
 import           Data.Map (Map, empty, foldrWithKey, insert)
 import qualified Data.Map as Map
+import           Data.Maybe (fromMaybe)
+import           Data.String (IsString (..))
 
 ------------------------------------------------------------------------------
 import           Network.HTTP.Accept.Match hiding (matches)
@@ -72,6 +74,17 @@ instance Match MediaType where
         subB = subType b == "*"
         params = not (Map.null $ parameters a) && Map.null (parameters b)
 
+instance IsString MediaType where
+    fromString s = flip fromMaybe (parse $ fromString s) $
+        error ("Invalid MediaType literal: " ++ s)
+
+instance IsString [MediaType] where
+    fromString s = map (fromString . reverse) $ csplit [] s
+      where
+        csplit a  (',' : r) = a : csplit [] r
+        csplit a  (x   : r) = csplit (x : a) r
+        csplit a  _         = [a]
+
 
 ------------------------------------------------------------------------------
 -- | 'MediaType' parameters.
@@ -112,11 +125,12 @@ anything = "*" // "*"
 -- | Parses a MIME string into a 'MediaType'.
 parse :: ByteString -> Maybe MediaType
 parse bs = do
+    let pieces = split semi bs
+    guard $ not (null pieces)
+    let (m : ps) = pieces
+        (a, b)   = breakByte slash m
     guard $ BS.elem slash m && (a /= "*" || b == "*")
     return $ foldr (flip (/:) . breakByte equal) (a // b) ps
-  where
-    (m : ps) = split semi bs
-    (a, b)   = breakByte slash m
 
 
 ------------------------------------------------------------------------------
