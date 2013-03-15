@@ -85,7 +85,8 @@ noStar = genByteString
 ------------------------------------------------------------------------------
 -- | Reuse for 'mayParams' and 'someParams'.
 mkGenParams :: (Gen ParamEntry -> Gen [ParamEntry]) -> Gen Parameters
-mkGenParams = liftM fromList . ($ liftM2 (,) genByteString genByteString)
+mkGenParams = liftM fromList .
+    ($ liftM2 (,) (genDiffByteString "q") genByteString)
 
 
 ------------------------------------------------------------------------------

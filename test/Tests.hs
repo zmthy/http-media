@@ -2,16 +2,19 @@
 module Main (main) where
 
 ------------------------------------------------------------------------------
+import           Test.Framework
+
+------------------------------------------------------------------------------
 import qualified Network.HTTP.Accept.Tests as Accept
 import qualified Network.HTTP.Accept.Match.Tests as Match
 import qualified Network.HTTP.Accept.MediaType.Tests as MediaType
 
-import           Test.Framework (Test, defaultMain, testGroup)
-
 
 ------------------------------------------------------------------------------
 main :: IO ()
-main = defaultMain tests
+main = do
+    args <- interpretArgsOrExit []
+    defaultMainWithOpts tests args { ropt_hide_successes = Just True }
 
 
 ------------------------------------------------------------------------------

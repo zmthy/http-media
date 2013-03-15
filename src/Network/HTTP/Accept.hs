@@ -60,10 +60,10 @@ parseAccepts :: ByteString -> Maybe [Quality MediaType]
 parseAccepts = mapM parseAccept . split comma
 
 parseAccept :: ByteString -> Maybe (Quality MediaType)
-parseAccept bs = flip (<*>) (parse accept) $ if BS.null q
-    then liftM (flip (:!)) $ safeRead
-        (toString $ BS.takeWhile (/= semi) $ BS.drop 3 q)
-    else return (:! 1)
+parseAccept bs = (<*> parse accept) $ if BS.null q
+        then return (:! 1)
+        else liftM (flip (:!)) $ safeRead
+            (toString $ BS.takeWhile (/= semi) $ BS.drop 3 q)
   where
     (accept, q) = BS.breakSubstring ";q=" $ BS.filter (/= space) bs
     safeRead = fmap fst . listToMaybe . filter (null . snd) . reads
