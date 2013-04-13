@@ -14,11 +14,11 @@ module Network.HTTP.Accept
     , parameters
     , (/?)
     , (/.)
-    --, MediaType.matches
+    , matches
 
       -- * Quality values
     , Quality
-    , (/!)
+    , unwrap
     , quality
 
       -- * Parsing
@@ -26,11 +26,11 @@ module Network.HTTP.Accept
 
       -- * Matching
     , match
+    , mapMatch
     ) where
 
 ------------------------------------------------------------------------------
-import           Control.Applicative ((<*>))
-import           Control.Monad (liftM)
+import           Control.Applicative ((<*>), liftA, pure)
 
 import           Data.ByteString (ByteString, split)
 import qualified Data.ByteString as BS
@@ -40,15 +40,8 @@ import           Data.Maybe (listToMaybe)
 ------------------------------------------------------------------------------
 import           Network.HTTP.Accept.Match as Match
 import           Network.HTTP.Accept.MediaType as MediaType
-import           Network.HTTP.Accept.Quality (Quality (..))
+import           Network.HTTP.Accept.Quality
 import           Network.HTTP.Accept.Utils
-
-
-------------------------------------------------------------------------------
--- (Renamed just to keep a standard start character for operators).
--- | Constructs a Quality.
-(/!) :: a -> Float -> Quality a
-(/!) = (:!)
 
 
 ------------------------------------------------------------------------------
@@ -58,8 +51,7 @@ parseAccepts = mapM parseAccept . split comma
 
 parseAccept :: ByteString -> Maybe (Quality MediaType)
 parseAccept bs = (<*> parse accept) $ if BS.null q
-    then return (:! 1)
-    else liftM (flip (:!)) $ safeRead
+    then pure (`Quality` 1) else liftA (flip Quality) $ safeRead
         (toString $ BS.takeWhile (/= semi) $ BS.drop 3 q)
   where
     (accept, q) = BS.breakSubstring ";q=" $ BS.filter (/= space) bs
@@ -70,8 +62,8 @@ parseAccept bs = (<*> parse accept) $ if BS.null q
 -- | Matches a list of server-side resource options against a quality-marked
 -- list of client-side preferences. A result of 'Nothing' means that nothing
 -- matched (which should indicate a 406 error). If two or more results arise
--- with the same level quality level and specificity, then the first one in
--- the server list is chosen.
+-- with the same quality level and specificity, then the first one in the
+-- server list is chosen.
 --
 -- The use of the 'Match' type class allows the application of either
 -- 'MediaType' for the standard Accept header or 'ByteString' for any other
@@ -81,56 +73,32 @@ parseAccept bs = (<*> parse accept) $ if BS.null q
 --
 -- > parseAccepts header >>= match resourceTypeOptions
 --
--- When matching media types, the order of the arguments is important for
--- correctly matching to the client-side preferences, because the client can
--- be less specific than the server but not vice-versa. For instance,
--- arguments of the following should not match, because the client is
--- specifically requesting `text/plain`, which the server *does not* provide.
---
--- > match ["text" // "*"] ["text" // "plain" /! 1]
---
--- This does not apply in the other direction. In the following case the
--- result will be `text/plain`, because the client has requested any text type
--- and the server offers a more specific version of this.
---
--- > match ["text" // "plain"] ["text" // "*" /! 1]
---
--- The server need not be more specific, though: in the following case the
--- result is `text/*`.
---
--- > match ["text" // "*"] ["text" // "*" /! 1]
---
--- As per the spec, a more specific value will always be chosen. This final
--- example yields `text/plain`.
---
--- > match ["text" // "*", "text" // "plain"] ["text" // "*" /! 1]
+-- For more information on the matching process see RFC 2616, section 14.
 match :: Match a
       => [a]          -- ^ The server-side options
       -> [Quality a]  -- ^ The client-side preferences
       -> Maybe a
-match = undefined
-{-
-match server clientq = specific $ concatMap filterAndMap client
+match server clientq = specific $ concatMap filt clientq
   where
-    client = map unwrap clientq
-    filterAndMap u = map (mostSpecific u) $ filter (Quality.matches u)
+    -- TODO The quality values need to be taken into account here.
+    --client = map unwrap clientq
+    filt u = filter (matches $ unwrap u) server
     specific (a : ms) = Just $ foldr mostSpecific a ms
     specific []       = Nothing
--}
 
-{-
+
 ------------------------------------------------------------------------------
 -- | The equivalent of 'match' above, except the resulting choice is mapped
 -- to another value. Convenient for specifying how to translate the
 -- resource into each of its available formats.
 --
--- > maybe render406Error renderResource $ parseAccepts header >>= matchMap
--- >     [ ("text"        // "html" /! 1  , asHtml)
--- >     , ("application" // "json" /! 0.8, asJson)
+-- > maybe render406Error renderResource $ parseAccepts header >>= mapMatch
+-- >     [ ("text"        // "html", asHtml)
+-- >     , ("application" // "json", asJson)
 -- >     ]
 mapMatch :: Match a
-         => [(a, b)]  -- ^ The map of server-side preferences to values
-         -> [a]       -- ^ The client-side preferences
+         => [(a, b)]     -- ^ The map of server-side preferences to values
+         -> [Quality a]  -- ^ The client-side preferences
          -> Maybe b
 mapMatch s c = match (map fst s) c >>= lookupMatches s
   where
@@ -139,17 +107,3 @@ mapMatch s c = match (map fst s) c >>= lookupMatches s
         | otherwise         = lookupMatches r a
     lookupMatches [] _ = Nothing
 
-
-------------------------------------------------------------------------------
--- | The obvious combination of 'matchMap' and 'matchQ1'. Avoids quality values
--- in the map's keys.
---
--- > maybe render406Error renderResource $ parseAccepts header >>= matchMapQ1
--- >     [ ("text"        // "html", asHtml)
--- >     , ("application" // "json", asJson)
--- >     ]
-mapMatchQ1 :: Match a => [(a, b)] -> [Quality a] -> Maybe b
-mapMatchQ1 = mapMatch . map f
-  where
-    f (a, b) = (a :! 1, b)
--}

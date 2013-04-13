@@ -3,25 +3,37 @@
 module Network.HTTP.Accept.Quality
     (
       Quality (..)
-    , matches
+    , unwrap
+    , quality
+    {-, matches-}
     ) where
 
 ------------------------------------------------------------------------------
-import qualified Network.HTTP.Accept.Match as Match
+{-import qualified Network.HTTP.Accept.Match as Match-}
 
 
 ------------------------------------------------------------------------------
 -- | Attaches a quality to another value.
-data Quality a = (:!)
-    { unwrap  :: a
-      -- | Retrieves the quality of this value.
-    , quality :: Float
-    } deriving (Eq)
+data Quality a = Quality a Float
+    deriving (Eq)
 
 instance Show a => Show (Quality a) where
-    show (a :! q) = show a ++ ";q=" ++ show q
+    show (Quality a q) = show a ++ ";q=" ++ show q
 
 
-matches :: Match.Match a => a -> Quality a -> Bool
-matches a (b :! _) = a `Match.matches` b
+------------------------------------------------------------------------------
+-- | Retrieves the underlying value.
+unwrap :: Quality a -> a
+unwrap (Quality a _) = a
+
+
+------------------------------------------------------------------------------
+-- | Retrieves the quality number.
+quality :: Quality a -> Float
+quality (Quality _ q) = q
+
+
+------------------------------------------------------------------------------
+{-matches :: Match.Match a => a -> Quality a -> Bool-}
+{-matches a (Quality b _) = a `Match.matches` b-}
 

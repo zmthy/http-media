@@ -1,75 +1,77 @@
-name:           accept
-version:        0.0.1
-license:        MIT
-license-file:   LICENSE
-author:         Timothy Jones
-maintainer:     Timothy Jones <git@zimothy.com>
-stability:      experimental
-homepage:       http://github.com/zimothy/accept
-bug-reports:    http://github.com/zimothy/accept/issues
-category:       Web
-copyright:      (c) 2012 Timothy Jones
-build-type:     Simple
-cabal-version:  >= 1.8
-synopsis:       HTTP Accept and related headers
+name:          http-quality
+version:       0.0.1
+license:       MIT
+license-file:  LICENSE
+author:        Timothy Jones
+maintainer:    Timothy Jones <git@zimothy.com>
+stability:     experimental
+homepage:      http://github.com/zimothy/accept
+bug-reports:   http://github.com/zimothy/accept/issues
+category:      Web
+copyright:     (c) 2012 Timothy Jones
+build-type:    Simple
+cabal-version: >= 1.8
+synopsis:      Processing HTTP 'q' parameters in Accept and related headers
 description:
-    This library is intended to be a comprehensive solution to correctly using
-    the HTTP Accept header, as well as the related headers Accept-Charset and
-    Accept-Encoding. It encodes MIME parameters into the media type data, and
-    allows the matching of the final header value by comparing quality values
-    from both the client and the server.
+  This library is intended to be a comprehensive solution to correctly using
+  quality parameters in HTTP headers. It addresses parsing of the Accept header,
+  an includes general data types for matching against the Accept-* as well.  It
+  encodes MIME parameters into a 'MediaType' data, and allows the matching of
+  the final header value by comparing quality values from both the client and
+  the server.
 
 flag development
-    description: Whether to check warnings while building
-    default:     False
+  description: Whether to check warnings while building
+  default:     False
 
 library
-    hs-source-dirs: src
+  hs-source-dirs: src
 
-    if flag(development)
-        ghc-options: -Wall
-    else
-        ghc-options: -Wall -Werror
+  if flag(development)
+    ghc-options: -Wall
+  else
+    ghc-options: -Wall -Werror
 
-    extensions:
-        FlexibleInstances
+  extensions:
+    FlexibleInstances
 
-    exposed-modules:
-        Network.HTTP.Accept
-        Network.HTTP.Accept.MediaType
-        Network.HTTP.Accept.Quality
-    other-modules:
-        Network.HTTP.Accept.Match
-        Network.HTTP.Accept.Utils
-    build-depends:
-        base >= 4.6 && < 5,
-        bytestring >= 0.10 && < 0.11,
-        containers >= 0.5 && < 0.6,
-        utf8-string >= 0.3.7 && < 0.4
+  exposed-modules:
+    Network.HTTP.Accept
+    Network.HTTP.Accept.MediaType
+    Network.HTTP.Accept.Quality
+  other-modules:
+    Network.HTTP.Accept.Match
+    Network.HTTP.Accept.MediaType.Internal
+    Network.HTTP.Accept.Utils
+  build-depends:
+    base >= 4.6 && < 5,
+    bytestring >= 0.10 && < 0.11,
+    containers >= 0.5 && < 0.6,
+    utf8-string >= 0.3.7 && < 0.4
 
-test-suite test-accept
-    type:           exitcode-stdio-1.0
-    hs-source-dirs: src test
-    main-is:        Tests.hs
+test-suite test-http-quality
+  type:           exitcode-stdio-1.0
+  hs-source-dirs: src test
+  main-is:        Tests.hs
 
-    if flag(development)
-        ghc-options: -Wall -threaded
-    else
-        ghc-options: -Wall -Werror -threaded
+  if flag(development)
+    ghc-options: -Wall -threaded
+  else
+    ghc-options: -Wall -Werror -threaded
 
-    extensions:
-        FlexibleInstances
+  extensions:
+    FlexibleInstances
 
-    build-depends:
-        base >= 4.6 && < 5,
-        bytestring >= 0.10 && < 0.11,
-        containers >= 0.5 && < 0.6,
-        QuickCheck >= 2.5 && < 2.6,
-        test-framework >= 0.8 && < 0.9,
-        test-framework-quickcheck2 >= 0.3 && < 0.4,
-        utf8-string >= 0.3.7 && < 0.4
+  build-depends:
+    base >= 4.6 && < 5,
+    bytestring >= 0.10 && < 0.11,
+    containers >= 0.5 && < 0.6,
+    QuickCheck >= 2.5 && < 2.6,
+    test-framework >= 0.8 && < 0.9,
+    test-framework-quickcheck2 >= 0.3 && < 0.4,
+    utf8-string >= 0.3.7 && < 0.4
 
 source-repository head
-    type:     git
-    location: git://github.com/zimothy/accept.git
+  type:     git
+  location: git://github.com/zimothy/http-quality.git
 

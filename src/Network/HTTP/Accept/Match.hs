@@ -18,18 +18,19 @@ import Data.ByteString
 -- This allows functions to work on both the standard Accept header and
 -- others such as Accept-Language that still may use quality values.
 class Match a where
-    -- | Evaluates whether either the left argument matches the right one.
+    -- | Evaluates whether either the left argument matches the right one
+    -- (order may be important).
     matches :: a -> a -> Bool
     -- | Evaluates whether the left argument is more specific than the right.
     moreSpecificThan :: a -> a -> Bool
-    moreSpecificThan _ _ = False
 
 instance Match ByteString where
     matches = (==)
+    moreSpecificThan _ _ = False
 
 
 ------------------------------------------------------------------------------
--- | Evaluates to whichever argument is more specific, choosing the left
+-- | Evaluates to whichever argument is more specific. Left biased.
 mostSpecific :: Match a => a -> a -> a
 mostSpecific a b
     | b `moreSpecificThan` a = b

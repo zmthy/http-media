@@ -10,6 +10,7 @@ module Network.HTTP.Accept.MediaType.Gen
 
       -- * Generating MediaTypes
     , genMediaType
+    , genDiffMediaTypes
     , genDiffMediaType
     , genMediaTypeWith
     , noStar
@@ -32,7 +33,7 @@ import Test.QuickCheck.Gen
 
 ------------------------------------------------------------------------------
 import Network.HTTP.Accept.Gen
-import Network.HTTP.Accept.MediaType
+import Network.HTTP.Accept.MediaType.Internal
 
 
 ------------------------------------------------------------------------------
@@ -49,7 +50,7 @@ genMediaTypeWith genMain genSub = do
     main   <- genMain
     sub    <- if main == "*" then return "*" else genSub
     params <- mayParams
-    return (main // sub) { parameters = params }
+    return $ MediaType main sub params
 
 
 ------------------------------------------------------------------------------
@@ -59,19 +60,22 @@ genMediaType = genMediaTypeWith mayStar mayStar
 
 
 ------------------------------------------------------------------------------
--- | Generates a different MediaType.
-genDiffMediaType :: MediaType -> Gen MediaType
-genDiffMediaType media = do
+-- | Generates a different MediaType to the ones in the given list.
+genDiffMediaTypes :: [MediaType] -> Gen MediaType
+genDiffMediaTypes media = do
     media' <- genMediaType
-    if mainType media' == mainType media && subType media' == subType media &&
-            parameters media' == parameters media
-        then genDiffMediaType media
+    if media' `elem` media
+        then genDiffMediaTypes media
         else return media'
 
 
 ------------------------------------------------------------------------------
+genDiffMediaType :: MediaType -> Gen MediaType
+genDiffMediaType = genDiffMediaTypes . (: [])
+
+
+------------------------------------------------------------------------------
 -- | An alt generator producing either an alpha ByteString or a star.
---
 mayStar :: Gen ByteString
 mayStar = oneof [genByteString, return "*"]
 

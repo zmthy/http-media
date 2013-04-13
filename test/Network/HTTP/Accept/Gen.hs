@@ -10,14 +10,16 @@ import Control.Monad (liftM)
 
 import Data.ByteString (ByteString, pack)
 
-import Test.QuickCheck.Gen (Gen, choose, listOf1, oneof)
+import Test.QuickCheck.Gen (Gen, listOf1, oneof)
+
+------------------------------------------------------------------------------
+import Network.HTTP.Accept.Utils
 
 
 ------------------------------------------------------------------------------
 -- | Produces a ByteString of random alpha characters.
 genByteString :: Gen ByteString
-genByteString = liftM pack $
-    listOf1 (oneof [choose (65, 90), choose (97, 122)])
+genByteString = liftM pack $ listOf1 (oneof $ map return validChars)
 
 
 ------------------------------------------------------------------------------

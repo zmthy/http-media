@@ -20,8 +20,8 @@ main = do
 ------------------------------------------------------------------------------
 tests :: [Test]
 tests =
-    [ testGroup "Accept"    Accept.tests
+    [ testGroup "MediaType" MediaType.tests
     , testGroup "Match"     Match.tests
-    , testGroup "MediaType" MediaType.tests
+    , testGroup "Accept"    Accept.tests
     ]
 

@@ -10,7 +10,6 @@ module Network.HTTP.Accept.MediaType
     , (//)
     , (/:)
     , parse
-    , anything
 
       -- * Querying
     , mainType
@@ -18,89 +17,56 @@ module Network.HTTP.Accept.MediaType
     , parameters
     , (/?)
     , (/.)
-    , matches
+    {-, matches-}
     ) where
 
 ------------------------------------------------------------------------------
 import           Control.Monad (guard)
 
-import           Data.ByteString (ByteString, split)
+import           Data.ByteString (ByteString, find, split)
 import qualified Data.ByteString as BS
-import           Data.ByteString.UTF8 (toString)
-import           Data.Map (Map, empty, foldrWithKey, insert)
+import           Data.Map (empty, insert)
 import qualified Data.Map as Map
-import           Data.Maybe (fromMaybe)
-import           Data.String (IsString (..))
+import           Data.Word (Word8)
 
 ------------------------------------------------------------------------------
-import           Network.HTTP.Accept.Match hiding (matches)
-import qualified Network.HTTP.Accept.Match as Match
+{-import qualified Network.HTTP.Accept.Match as Match-}
+import           Network.HTTP.Accept.MediaType.Internal
+    (MediaType (MediaType), Parameters)
+import qualified Network.HTTP.Accept.MediaType.Internal as Internal
 import           Network.HTTP.Accept.Utils
 
 
 ------------------------------------------------------------------------------
--- | An HTTP media type, consisting of the type, subtype, and parameters.
-data MediaType = MediaType
-    { -- | The main type of the MediaType.
-      mainType   :: ByteString
-      -- | The sub type of the MediaType.
-    , subType    :: ByteString
-      -- | The parameters of the MediaType.
-    , parameters :: Parameters
-    } deriving (Eq)
-
-instance Show MediaType where
-    show (MediaType a b p) =
-        foldrWithKey f (toString a ++ '/' : toString b) p
-      where
-        f k v = (++ ';' : toString k ++ '=' : toString v)
-
-instance Match MediaType where
-    matches a b
-        | mainType b == "*" = params
-        | subType b == "*"  = mainType a == mainType b && params
-        | otherwise         = main && sub && params
-      where
-        main = mainType a == mainType b
-        sub = subType a == subType b
-        params = Map.null (parameters b) || parameters a == parameters b
-
-    moreSpecificThan a b
-        | mainType a == "*" = anyB && params
-        | subType a == "*"  = anyB || subB && params
-        | otherwise         = anyB || subB || params
-      where
-        anyB = mainType b == "*"
-        subB = subType b == "*"
-        params = not (Map.null $ parameters a) && Map.null (parameters b)
-
-instance IsString MediaType where
-    fromString s = flip fromMaybe (parse $ fromString s) $
-        error ("Invalid MediaType literal: " ++ s)
-
-instance IsString [MediaType] where
-    fromString s = map (fromString . reverse) $ csplit [] s
-      where
-        csplit a  (',' : r) = a : csplit [] r
-        csplit a  (x   : r) = csplit (x : a) r
-        csplit a  _         = [a]
+-- | Retrieves the main type of a 'MediaType'.
+mainType :: MediaType -> ByteString
+mainType = Internal.mainType
 
 
 ------------------------------------------------------------------------------
--- | 'MediaType' parameters.
-type Parameters = Map ByteString ByteString
+-- | Retrieves the sub type of a 'MediaType'.
+subType :: MediaType -> ByteString
+subType = Internal.subType
 
 
 ------------------------------------------------------------------------------
--- | Builds a 'MediaType' without parameters.
+-- | Retrieves the parameters of a 'MediaType'.
+parameters :: MediaType -> Parameters
+parameters = Internal.parameters
+
+
+------------------------------------------------------------------------------
+-- | Builds a 'MediaType' without parameters. Can produce an error if
+-- either type is invalid.
 (//) :: ByteString -> ByteString -> MediaType
-a // b = MediaType (trimBS a) (trimBS b) empty
+a // b = MediaType (ensureR a) (ensureR b) empty
 
 
 ------------------------------------------------------------------------------
--- | Adds a parameter to a 'MediaType'.
+-- | Adds a parameter to a 'MediaType'. Can produce an error if either
+-- string is invalid.
 (/:) :: MediaType -> (ByteString, ByteString) -> MediaType
-(MediaType a b p) /: (k, v) = MediaType a b $ insert k v p
+(MediaType a b p) /: (k, v) = MediaType a b $ insert (ensureR k) (ensureV v) p
 
 
 ------------------------------------------------------------------------------
@@ -116,13 +82,31 @@ a // b = MediaType (trimBS a) (trimBS b) empty
 
 
 ------------------------------------------------------------------------------
--- | A MediaType that matches anything.
-anything :: MediaType
-anything = "*" // "*"
+-- | Ensures that the 'ByteString' matches the ABNF for `reg-name` in RFC
+-- 4288.
+ensureR :: ByteString -> ByteString
+ensureR bs = if l == 0 || l > 127
+    then error $ "Invalid length for " ++ show bs else ensure isValidChar bs
+  where l = BS.length bs
 
 
 ------------------------------------------------------------------------------
--- | Parses a MIME string into a 'MediaType'.
+-- | Ensures that the 'ByteString' does not contain invalid characters for
+-- a parameter value. RFC 4288 does not specify what characters are valid, so
+-- here we just disallow parameter and media type breakers, ',' and ';'.
+ensureV :: ByteString -> ByteString
+ensureV = ensure (`notElem` [44, 59])
+
+
+------------------------------------------------------------------------------
+-- | Ensures the predicate matches for every character in the given string.
+ensure :: (Word8 -> Bool) -> ByteString -> ByteString
+ensure f bs = maybe
+    (error $ "Invalid character in " ++ show bs) (const bs) (find f bs)
+
+
+------------------------------------------------------------------------------
+-- | Parses a media type header into a 'MediaType'.
 parse :: ByteString -> Maybe MediaType
 parse bs = do
     let pieces = split semi bs
@@ -130,7 +114,7 @@ parse bs = do
     let (m : ps) = pieces
         (a, b)   = breakByte slash m
     guard $ BS.elem slash m && (a /= "*" || b == "*")
-    return $ foldr (flip (/:) . breakByte equal) (a // b) ps
+    return $ MediaType a b $ foldr (uncurry insert . breakByte equal) empty ps
 
 
 ------------------------------------------------------------------------------
@@ -141,6 +125,6 @@ parse bs = do
 -- following evalutes to 'False'.
 --
 -- > matches ("text" // "*") ("text" // "plain")
-matches :: MediaType -> MediaType -> Bool
-matches = Match.matches
+{-matches :: MediaType -> MediaType -> Bool-}
+{-matches = Match.matches-}
 
