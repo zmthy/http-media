@@ -1,6 +1,0 @@
-This library is intended to be a comprehensive solution to correctly using the
-HTTP Accept header, as well as the related headers Accept-Charset,
-Accept-Encoding, and Accept-Language. It encodes MIME parameters into the media
-type data, and allows the matching of the final header value by comparing
-quality values from both the client and the server.
-

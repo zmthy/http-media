@@ -15,10 +15,10 @@ synopsis:      Processing HTTP 'q' parameters in Accept and related headers
 description:
   This library is intended to be a comprehensive solution to correctly using
   quality parameters in HTTP headers. It addresses parsing of the Accept header,
-  an includes general data types for matching against the Accept-* as well.  It
-  encodes MIME parameters into a 'MediaType' data, and allows the matching of
-  the final header value by comparing quality values from both the client and
-  the server.
+  and includes general data types for matching against the other accept headers
+  as well. It encodes MIME parameters into a 'MediaType' data, and allows the
+  matching of the final header value by comparing quality values from both the
+  client and the server.
 
 flag development
   description: Whether to check warnings while building
