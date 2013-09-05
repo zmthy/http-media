@@ -5,6 +5,7 @@
 module Network.HTTP.Accept.MediaType.Internal
     ( MediaType (..)
     , Parameters
+    , toByteString
     ) where
 
 ------------------------------------------------------------------------------
@@ -12,7 +13,7 @@ import           Data.ByteString (ByteString)
 import           Data.ByteString.UTF8 (toString)
 import           Data.Map (Map, foldrWithKey)
 import qualified Data.Map as Map
-
+import           Data.Monoid ((<>))
 ------------------------------------------------------------------------------
 import           Network.HTTP.Accept.Match (Match (..))
 
@@ -44,10 +45,10 @@ instance Match MediaType where
         sub = subType a == subType b
         params = Map.null (parameters b) || parameters a == parameters b
 
-    moreSpecificThan a b
-        | mainType a == "*" = anyB && params
-        | subType a == "*"  = anyB || subB && params
-        | otherwise         = anyB || subB || params
+    moreSpecificThan a b = (a `matches` b &&) $
+        mainType a == "*" && anyB && params ||
+        subType a == "*" && (anyB || subB && params) ||
+        anyB || subB || params
       where
         anyB = mainType b == "*"
         subB = subType b == "*"
@@ -57,4 +58,12 @@ instance Match MediaType where
 ------------------------------------------------------------------------------
 -- | 'MediaType' parameters.
 type Parameters = Map ByteString ByteString
+
+
+------------------------------------------------------------------------------
+-- | Converts 'MediaType' to 'ByteString'.
+toByteString :: MediaType -> ByteString
+toByteString (MediaType a b p) = foldrWithKey f (a <> "/" <> b) p
+  where
+    f k v = (<> ";" <> k <> "=" <> v)
 

@@ -33,6 +33,7 @@ import Test.QuickCheck.Gen
 
 ------------------------------------------------------------------------------
 import Network.HTTP.Accept.Gen
+import Network.HTTP.Accept.Match (matches)
 import Network.HTTP.Accept.MediaType.Internal
 
 
@@ -60,13 +61,16 @@ genMediaType = genMediaTypeWith mayStar mayStar
 
 
 ------------------------------------------------------------------------------
--- | Generates a different MediaType to the ones in the given list.
+-- | Generates a (conservatively) different MediaType to the ones in the given
+-- list.
 genDiffMediaTypes :: [MediaType] -> Gen MediaType
 genDiffMediaTypes media = do
     media' <- genMediaType
-    if media' `elem` media
+    if any (eitherMatches media') media
         then genDiffMediaTypes media
         else return media'
+  where
+    eitherMatches a b = a `matches` b || b `matches` a
 
 
 ------------------------------------------------------------------------------

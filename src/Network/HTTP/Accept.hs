@@ -31,6 +31,7 @@ module Network.HTTP.Accept
 
 ------------------------------------------------------------------------------
 import           Control.Applicative ((<*>), liftA, pure)
+import           Control.Monad (guard)
 
 import           Data.ByteString (ByteString, split)
 import qualified Data.ByteString as BS
@@ -78,12 +79,16 @@ match :: Match a
       => [a]          -- ^ The server-side options
       -> [Quality a]  -- ^ The client-side preferences
       -> Maybe a
-match server clientq = specific $ concatMap filt clientq
+match server clientq = guard (hq /= 0) >> specific qs
   where
-    -- TODO The quality values need to be taken into account here.
-    --client = map unwrap clientq
-    filt u = filter (matches $ unwrap u) server
-    specific (a : ms) = Just $ foldr mostSpecific a ms
+    merge s = filter (matches s . unwrap) clientq
+    matched = concatMap merge server
+    (hq, qs) = foldr qfold (0, []) matched
+    qfold v (q, vs) = case compare (quality v) q of
+        GT -> (quality v, [unwrap v])
+        EQ -> (q, unwrap v : vs)
+        LT -> (q, vs)
+    specific (a : ms) = Just $ foldl mostSpecific a ms
     specific []       = Nothing
 
 

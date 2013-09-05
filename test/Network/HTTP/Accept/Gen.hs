@@ -13,13 +13,15 @@ import Data.ByteString (ByteString, pack)
 import Test.QuickCheck.Gen (Gen, listOf1, oneof)
 
 ------------------------------------------------------------------------------
-import Network.HTTP.Accept.Utils
+{-import Network.HTTP.Accept.Utils-}
 
 
 ------------------------------------------------------------------------------
 -- | Produces a ByteString of random alpha characters.
 genByteString :: Gen ByteString
 genByteString = liftM pack $ listOf1 (oneof $ map return validChars)
+  where
+    validChars = [48..57] ++ [65..90] ++ [97..122]
 
 
 ------------------------------------------------------------------------------

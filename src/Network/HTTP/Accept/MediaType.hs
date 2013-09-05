@@ -10,6 +10,7 @@ module Network.HTTP.Accept.MediaType
     , (//)
     , (/:)
     , parse
+    , toByteString
 
       -- * Querying
     , mainType
@@ -22,7 +23,6 @@ module Network.HTTP.Accept.MediaType
 
 ------------------------------------------------------------------------------
 import           Control.Monad (guard)
-
 import           Data.ByteString (ByteString, find, split)
 import qualified Data.ByteString as BS
 import           Data.Map (empty, insert)
@@ -32,7 +32,7 @@ import           Data.Word (Word8)
 ------------------------------------------------------------------------------
 {-import qualified Network.HTTP.Accept.Match as Match-}
 import           Network.HTTP.Accept.MediaType.Internal
-    (MediaType (MediaType), Parameters)
+    (MediaType (MediaType), Parameters, toByteString)
 import qualified Network.HTTP.Accept.MediaType.Internal as Internal
 import           Network.HTTP.Accept.Utils
 
@@ -122,7 +122,7 @@ parse bs = do
 --
 -- The order of the arguments is important: if the right argument is more
 -- specific than the left, they will not be considered to match. The
--- following evalutes to 'False'.
+-- following evaluates to 'False'.
 --
 -- > matches ("text" // "*") ("text" // "plain")
 {-matches :: MediaType -> MediaType -> Bool-}

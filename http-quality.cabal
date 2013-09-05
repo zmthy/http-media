@@ -5,8 +5,8 @@ license-file:  LICENSE
 author:        Timothy Jones
 maintainer:    Timothy Jones <git@zimothy.com>
 stability:     experimental
-homepage:      http://github.com/zimothy/accept
-bug-reports:   http://github.com/zimothy/accept/issues
+homepage:      http://github.com/zimothy/http-quality
+bug-reports:   http://github.com/zimothy/http-quality/issues
 category:      Web
 copyright:     (c) 2012 Timothy Jones
 build-type:    Simple

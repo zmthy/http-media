@@ -11,12 +11,14 @@ import Data.List (intercalate)
 import Data.Map (empty)
 import Data.Maybe (isNothing)
 
+import Debug.Trace
+
 import Test.Framework
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 import Test.QuickCheck.Gen
 
 ------------------------------------------------------------------------------
-import Network.HTTP.Accept hiding (subType)
+import Network.HTTP.Accept hiding (parameters, subType)
 import Network.HTTP.Accept.MediaType.Gen
 import Network.HTTP.Accept.MediaType.Internal
 import Network.HTTP.Accept.Quality
@@ -53,14 +55,20 @@ testMatch :: Test
 testMatch = testGroup "match"
     [ testProperty "Highest quality" $ do
         server <- genServer
-        qs     <- replicateM (length server) $ choose (0, 10 :: Int)
+        qs     <- replicateM (length server) $ choose (1, 10 :: Int)
         let client = zipWith Quality server $ map ((/ 10) . fromIntegral) qs
-            qmax q v = if quality q > quality v then q else v
+            qmax v q = if quality q > quality v then q else v
+        {-return $ match server client == Just (unwrap $ foldr1 qmax client) ||-}
+            {-traceShow (match server client) (traceShow client $ traceShow server False)-}
         return $ match server client == Just (unwrap $ foldr1 qmax client)
     , testProperty "Most specific" $ do
         media <- genMediaTypeWith noStar noStar
         let client = map (`Quality` 1)
-                [media { subType = "*" }, media, MediaType "*" "*" empty]
+                [ MediaType "*" "*" empty
+                , media { subType = "*" }
+                , media { parameters = empty }
+                , media
+                ]
         return $ match [media] client == Just media
     , testProperty "Nothing" $ do
         server <- genServer
@@ -72,7 +80,8 @@ testMatch = testGroup "match"
     , testProperty "Left biased" $ do
         server <- genServer
         let client = map (`Quality` 1) server
-        return $ match server client == Just (head server)
+        return $ match server client == Just (head server) ||
+            traceShow server (traceShow (match server client) False)
     ]
 
 ------------------------------------------------------------------------------

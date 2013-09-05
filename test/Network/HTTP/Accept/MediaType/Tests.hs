@@ -4,12 +4,12 @@
 module Network.HTTP.Accept.MediaType.Tests (tests) where
 
 ------------------------------------------------------------------------------
-import           Control.Monad (replicateM)
-
 import           Data.ByteString.UTF8 (fromString)
 import           Data.Map (empty, foldrWithKey, keys, toList)
 import           Data.Maybe (isNothing)
 import           Data.Monoid ((<>), mconcat)
+
+import Debug.Trace (traceShow)
 
 import           Test.Framework (Test, testGroup)
 import           Test.Framework.Providers.QuickCheck2 (testProperty)
@@ -149,11 +149,13 @@ testMoreSpecificThan = testGroup "isMoreSpecific"
         params <- someParams
         return $ moreSpecificThan
             media { parameters = params } media { parameters = empty }
-    , testProperty "Different with parameters" $ do
-        [media, media'] <- replicateM 2 $ genMediaTypeWith noStar noStar
-        params <- someParams
-        return $ moreSpecificThan
-            media { parameters = params } media' { parameters = empty }
+    , testProperty "Different types" $ do
+        media  <- genMediaType
+        media' <- genDiffMediaType media
+        return . not $
+            moreSpecificThan media media' || moreSpecificThan media' media &&
+            traceShow (moreSpecificThan media media') (traceShow (moreSpecificThan media' media)
+            (traceShow media' (traceShow media True)))
     , testProperty "Different parameters" $ do
         media   <- genMediaType
         params  <- someParams
@@ -182,6 +184,10 @@ testMostSpecific = testGroup "mostSpecific"
             media'' = media { parameters = empty }
         return $ mostSpecific media' media'' == media' &&
             mostSpecific media'' media' == media'
+    , testProperty "Different types" $ do
+        media  <- genMediaType
+        media' <- genDiffMediaType media
+        return $ mostSpecific media media' == media
     , testProperty "Left biased" $ do
         media  <- genMediaTypeWith noStar noStar
         media' <- genMediaTypeWith noStar noStar

@@ -5,7 +5,6 @@ module Network.HTTP.Accept.Quality
       Quality (..)
     , unwrap
     , quality
-    {-, matches-}
     ) where
 
 ------------------------------------------------------------------------------
@@ -31,9 +30,4 @@ unwrap (Quality a _) = a
 -- | Retrieves the quality number.
 quality :: Quality a -> Float
 quality (Quality _ q) = q
-
-
-------------------------------------------------------------------------------
-{-matches :: Match.Match a => a -> Quality a -> Bool-}
-{-matches a (Quality b _) = a `Match.matches` b-}
 
