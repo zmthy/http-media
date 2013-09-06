@@ -31,12 +31,9 @@ import Network.HTTP.Accept.Utils
 ------------------------------------------------------------------------------
 -- | An HTTP media type, consisting of the type, subtype, and parameters.
 data MediaType = MediaType
-    { -- | The main type of the MediaType.
-      mainType   :: !ByteString
-      -- | The sub type of the MediaType.
-    , subType    :: !ByteString
-      -- | The parameters of the MediaType.
-    , parameters :: Parameters
+    { mainType   :: ByteString  -- ^ The main type of the MediaType
+    , subType    :: ByteString  -- ^ The sub type of the MediaType
+    , parameters :: Parameters  -- ^ The parameters of the MediaType
     } deriving (Eq)
 
 instance Show MediaType where
