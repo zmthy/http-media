@@ -67,9 +67,9 @@ test-suite test-http-quality
     Network.HTTP.Accept.Utils
 
   if flag(development)
-    ghc-options: -Wall -threaded
+    ghc-options: -Wall -fhpc
   else
-    ghc-options: -Wall -Werror -threaded
+    ghc-options: -Wall -Werror -fhpc
 
   build-depends:
     base                  >= 4.6.0  && < 5.0,

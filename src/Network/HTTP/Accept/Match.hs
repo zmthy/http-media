@@ -18,9 +18,11 @@ import Data.ByteString
 -- This allows functions to work on both the standard Accept header and
 -- others such as Accept-Language that still may use quality values.
 class Match a where
+
     -- | Evaluates whether either the left argument matches the right one
     -- (order may be important).
     matches :: a -> a -> Bool
+
     -- | Evaluates whether the left argument is more specific than the right.
     moreSpecificThan :: a -> a -> Bool
 

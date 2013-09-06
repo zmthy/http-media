@@ -9,8 +9,10 @@ import Data.ByteString.UTF8 (fromString)
 import Data.List (intercalate)
 import Data.Map (empty)
 import Data.Maybe (isNothing)
-import Distribution.TestSuite (Test)
 import Distribution.TestSuite.QuickCheck
+import Test.QuickCheck
+
+------------------------------------------------------------------------------
 import Network.HTTP.Accept hiding (parameters, subType)
 import Network.HTTP.Accept.MediaType.Gen
 import Network.HTTP.Accept.MediaType.Internal
@@ -75,6 +77,7 @@ testMatch = testGroup "match"
         let client = map (`Quality` 1) server
         return $ match server client == Just (head server)
     ]
+
 
 ------------------------------------------------------------------------------
 testMapMatch :: Test

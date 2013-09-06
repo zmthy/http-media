@@ -2,8 +2,10 @@
 module Network.HTTP.Accept.Match.Tests (tests) where
 
 ------------------------------------------------------------------------------
-import Control.Monad (liftM, liftM2)
+import Control.Monad (join, liftM, liftM2)
 import Distribution.TestSuite.QuickCheck
+
+------------------------------------------------------------------------------
 import Network.HTTP.Accept.Gen
 import Network.HTTP.Accept.Match
 
@@ -31,9 +33,11 @@ testMatches = testGroup "matches"
 
 
 ------------------------------------------------------------------------------
+-- | Note that this test never actually generates any strings, as they are not
+-- required for the 'moreSpecificThan' test.
 testMoreSpecificThan :: Test
 testMoreSpecificThan = testProperty "moreSpecificThan" $
-    liftM2 ((not .) . moreSpecificThan) genByteString genByteString
+    join (liftM2 ((not .) . moreSpecificThan)) genByteString
 
 
 ------------------------------------------------------------------------------
