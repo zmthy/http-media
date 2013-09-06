@@ -22,19 +22,22 @@ module Network.HTTP.Accept.MediaType
     ) where
 
 ------------------------------------------------------------------------------
-import           Control.Monad (guard)
-import           Data.ByteString (ByteString, find, split)
 import qualified Data.ByteString as BS
-import           Data.Map (empty, insert)
 import qualified Data.Map as Map
-import           Data.Word (Word8)
+
+------------------------------------------------------------------------------
+import Data.ByteString (ByteString)
+import Data.Map (empty, insert)
+import Data.Word (Word8)
+
+------------------------------------------------------------------------------
+import qualified Network.HTTP.Accept.MediaType.Internal as Internal
 
 ------------------------------------------------------------------------------
 {-import qualified Network.HTTP.Accept.Match as Match-}
-import           Network.HTTP.Accept.MediaType.Internal
-    (MediaType (MediaType), Parameters, toByteString)
-import qualified Network.HTTP.Accept.MediaType.Internal as Internal
-import           Network.HTTP.Accept.Utils
+import Network.HTTP.Accept.MediaType.Internal
+    hiding (mainType, subType, parameters)
+import Network.HTTP.Accept.Utils
 
 
 ------------------------------------------------------------------------------
@@ -102,19 +105,7 @@ ensureV = ensure (`notElem` [44, 59])
 -- | Ensures the predicate matches for every character in the given string.
 ensure :: (Word8 -> Bool) -> ByteString -> ByteString
 ensure f bs = maybe
-    (error $ "Invalid character in " ++ show bs) (const bs) (find f bs)
-
-
-------------------------------------------------------------------------------
--- | Parses a media type header into a 'MediaType'.
-parse :: ByteString -> Maybe MediaType
-parse bs = do
-    let pieces = split semi bs
-    guard $ not (null pieces)
-    let (m : ps) = pieces
-        (a, b)   = breakByte slash m
-    guard $ BS.elem slash m && (a /= "*" || b == "*")
-    return $ MediaType a b $ foldr (uncurry insert . breakByte equal) empty ps
+    (error $ "Invalid character in " ++ show bs) (const bs) (BS.find f bs)
 
 
 ------------------------------------------------------------------------------

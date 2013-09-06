@@ -6,16 +6,26 @@ module Network.HTTP.Accept.MediaType.Internal
     ( MediaType (..)
     , Parameters
     , toByteString
+    , parse
     ) where
 
 ------------------------------------------------------------------------------
-import           Data.ByteString (ByteString)
-import           Data.ByteString.UTF8 (toString)
-import           Data.Map (Map, foldrWithKey)
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.UTF8 as BS
 import qualified Data.Map as Map
-import           Data.Monoid ((<>))
+
 ------------------------------------------------------------------------------
-import           Network.HTTP.Accept.Match (Match (..))
+import Control.Monad (guard)
+import Data.ByteString (ByteString)
+import Data.ByteString.UTF8 (toString)
+import Data.String (IsString (..))
+import Data.Map (Map)
+import Data.Maybe (fromMaybe)
+import Data.Monoid ((<>))
+
+------------------------------------------------------------------------------
+import Network.HTTP.Accept.Match (Match (..))
+import Network.HTTP.Accept.Utils
 
 
 ------------------------------------------------------------------------------
@@ -31,9 +41,13 @@ data MediaType = MediaType
 
 instance Show MediaType where
     show (MediaType a b p) =
-        foldrWithKey f (toString a ++ '/' : toString b) p
+        Map.foldrWithKey f (toString a ++ '/' : toString b) p
       where
         f k v = (++ ';' : toString k ++ '=' : toString v)
+
+instance IsString MediaType where
+    fromString str = flip fromMaybe (parse $ BS.fromString str) $
+        error $ "Invalid media type literal " ++ str
 
 instance Match MediaType where
     matches a b
@@ -61,9 +75,22 @@ type Parameters = Map ByteString ByteString
 
 
 ------------------------------------------------------------------------------
+-- | Parses a media type header into a 'MediaType'.
+parse :: ByteString -> Maybe MediaType
+parse bs = do
+    let pieces = BS.split semi bs
+    guard $ not (null pieces)
+    let (m : ps) = pieces
+        (a, b)   = breakByte slash m
+    guard $ BS.elem slash m && (a /= "*" || b == "*")
+    return $ MediaType a b $
+        foldr (uncurry Map.insert . breakByte equal) Map.empty ps
+
+
+------------------------------------------------------------------------------
 -- | Converts 'MediaType' to 'ByteString'.
 toByteString :: MediaType -> ByteString
-toByteString (MediaType a b p) = foldrWithKey f (a <> "/" <> b) p
+toByteString (MediaType a b p) = Map.foldrWithKey f (a <> "/" <> b) p
   where
     f k v = (<> ";" <> k <> "=" <> v)
 
