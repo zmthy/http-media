@@ -3,12 +3,9 @@ module Network.HTTP.Accept.Match.Tests (tests) where
 
 ------------------------------------------------------------------------------
 import Control.Monad (liftM, liftM2)
-
+import Distribution.TestSuite.QuickCheck
 import Network.HTTP.Accept.Gen
 import Network.HTTP.Accept.Match
-
-import Test.Framework (Test, testGroup)
-import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 
 ------------------------------------------------------------------------------

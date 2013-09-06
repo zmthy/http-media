@@ -4,24 +4,18 @@
 module Network.HTTP.Accept.MediaType.Tests (tests) where
 
 ------------------------------------------------------------------------------
-import           Data.ByteString.UTF8 (fromString)
-import           Data.Map (empty, foldrWithKey, keys, toList)
-import           Data.Maybe (isNothing)
-import           Data.Monoid ((<>), mconcat)
-
-import Debug.Trace (traceShow)
-
-import           Test.Framework (Test, testGroup)
-import           Test.Framework.Providers.QuickCheck2 (testProperty)
-
-------------------------------------------------------------------------------
-import           Network.HTTP.Accept.Match
+import Data.ByteString.UTF8 (fromString)
+import Data.Map (empty, foldrWithKey, keys, toList)
+import Data.Maybe (isNothing)
+import Data.Monoid ((<>), mconcat)
+import Distribution.TestSuite.QuickCheck
+import Network.HTTP.Accept.Match
     (matches, moreSpecificThan, mostSpecific)
-import           Network.HTTP.Accept.MediaType
+import Network.HTTP.Accept.MediaType
     hiding (mainType, subType, parameters)
 {-import qualified Network.HTTP.Accept.MediaType as MediaType-}
-import           Network.HTTP.Accept.MediaType.Internal
-import           Network.HTTP.Accept.MediaType.Gen
+import Network.HTTP.Accept.MediaType.Internal
+import Network.HTTP.Accept.MediaType.Gen
 
 
 ------------------------------------------------------------------------------
@@ -153,9 +147,7 @@ testMoreSpecificThan = testGroup "isMoreSpecific"
         media  <- genMediaType
         media' <- genDiffMediaType media
         return . not $
-            moreSpecificThan media media' || moreSpecificThan media' media &&
-            traceShow (moreSpecificThan media media') (traceShow (moreSpecificThan media' media)
-            (traceShow media' (traceShow media True)))
+            moreSpecificThan media media' || moreSpecificThan media' media
     , testProperty "Different parameters" $ do
         media   <- genMediaType
         params  <- someParams

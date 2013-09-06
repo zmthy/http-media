@@ -7,13 +7,8 @@ module Network.HTTP.Accept.Gen
 
 ------------------------------------------------------------------------------
 import Control.Monad (liftM)
-
 import Data.ByteString (ByteString, pack)
-
 import Test.QuickCheck.Gen (Gen, listOf1, oneof)
-
-------------------------------------------------------------------------------
-{-import Network.HTTP.Accept.Utils-}
 
 
 ------------------------------------------------------------------------------

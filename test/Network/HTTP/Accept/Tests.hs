@@ -5,19 +5,12 @@ module Network.HTTP.Accept.Tests (tests) where
 
 ------------------------------------------------------------------------------
 import Control.Monad (liftM, replicateM)
-
 import Data.ByteString.UTF8 (fromString)
 import Data.List (intercalate)
 import Data.Map (empty)
 import Data.Maybe (isNothing)
-
-import Debug.Trace
-
-import Test.Framework
-import Test.Framework.Providers.QuickCheck2 (testProperty)
-import Test.QuickCheck.Gen
-
-------------------------------------------------------------------------------
+import Distribution.TestSuite (Test)
+import Distribution.TestSuite.QuickCheck
 import Network.HTTP.Accept hiding (parameters, subType)
 import Network.HTTP.Accept.MediaType.Gen
 import Network.HTTP.Accept.MediaType.Internal
@@ -80,8 +73,7 @@ testMatch = testGroup "match"
     , testProperty "Left biased" $ do
         server <- genServer
         let client = map (`Quality` 1) server
-        return $ match server client == Just (head server) ||
-            traceShow server (traceShow (match server client) False)
+        return $ match server client == Just (head server)
     ]
 
 ------------------------------------------------------------------------------
