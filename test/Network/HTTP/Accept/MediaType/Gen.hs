@@ -70,7 +70,8 @@ genDiffMediaTypes media = do
         then genDiffMediaTypes media
         else return media'
   where
-    eitherMatches a b = a `matches` b || b `matches` a
+    {-eitherMatches a b = a `matches` b || b `matches` a-}
+    eitherMatches = (==)
 
 
 ------------------------------------------------------------------------------
