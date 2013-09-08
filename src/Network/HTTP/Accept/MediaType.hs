@@ -4,7 +4,7 @@
 -- | Defines the media type types and functions.
 module Network.HTTP.Accept.MediaType
     (
-      -- * Type and creation
+    -- * Type and creation
       MediaType
     , Parameters
     , (//)
@@ -12,7 +12,7 @@ module Network.HTTP.Accept.MediaType
     , parse
     , toByteString
 
-      -- * Querying
+    -- * Querying
     , mainType
     , subType
     , parameters

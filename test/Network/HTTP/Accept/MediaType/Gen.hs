@@ -4,31 +4,36 @@
 -- | Contains definitions for generating 'MediaType's.
 module Network.HTTP.Accept.MediaType.Gen
     (
-      -- * Generating ByteStrings
-      genByteString
+    -- * Anything
+      anything
+
+    -- * Generating ByteStrings
+    , genByteString
     , genDiffByteString
 
-      -- * Generating MediaTypes
+    -- * Generating MediaTypes
     , genMediaType
+    , genConcreteMediaType
     , genDiffMediaTypes
     , genDiffMediaType
+    , genDiffConcreteMediaType
     , genMediaTypeWith
     , noStar
     , mayStar
 
-      -- * Generating Parameters
+    -- * Generating Parameters
     , mayParams
     , someParams
     , diffParams
-
     ) where
 
 ------------------------------------------------------------------------------
-import Control.Monad (liftM, liftM2)
+import qualified Data.Map as Map
 
+------------------------------------------------------------------------------
+import Control.Monad (join, liftM, liftM2)
 import Data.ByteString (ByteString)
 import Data.Map (fromList)
-
 import Test.QuickCheck.Gen
 
 ------------------------------------------------------------------------------
@@ -43,15 +48,21 @@ type ParamEntry = (ByteString, ByteString)
 
 
 ------------------------------------------------------------------------------
+anything :: MediaType
+anything = MediaType "*" "*" Map.empty
+
+
+------------------------------------------------------------------------------
 -- | Uses generators to build a new MediaType generator.
 genMediaTypeWith :: Gen ByteString
                  -> Gen ByteString
                  -> Gen MediaType
 genMediaTypeWith genMain genSub = do
-    main   <- genMain
-    sub    <- if main == "*" then return "*" else genSub
-    params <- mayParams
-    return $ MediaType main sub params
+    main <- genMain
+    if main == "*" then return anything else do
+        sub <- genSub
+        if sub == "*" then return $ MediaType main sub Map.empty else
+            liftM (MediaType main sub) mayParams
 
 
 ------------------------------------------------------------------------------
@@ -61,11 +72,18 @@ genMediaType = genMediaTypeWith mayStar mayStar
 
 
 ------------------------------------------------------------------------------
+-- | Generates a random MediaType with no wildcards.
+genConcreteMediaType :: Gen MediaType
+genConcreteMediaType = join genMediaTypeWith genByteString
+
+
+------------------------------------------------------------------------------
 -- | Generates a (conservatively) different MediaType to the ones in the given
--- list.
-genDiffMediaTypes :: [MediaType] -> Gen MediaType
-genDiffMediaTypes media = do
-    media' <- genMediaType
+-- list, using the given generators.
+genDiffMediaTypesWith :: Gen ByteString -> Gen ByteString -> [MediaType]
+                  -> Gen MediaType
+genDiffMediaTypesWith main sub media = do
+    media' <- genMediaTypeWith main sub
     if any (eitherMatches media') media
         then genDiffMediaTypes media
         else return media'
@@ -75,8 +93,23 @@ genDiffMediaTypes media = do
 
 
 ------------------------------------------------------------------------------
+-- | Generates a (conservatively) different MediaType to the ones in the given
+-- list.
+genDiffMediaTypes :: [MediaType] -> Gen MediaType
+genDiffMediaTypes = join genDiffMediaTypesWith mayStar
+
+
+------------------------------------------------------------------------------
+-- | Generates a (conservatively) different MediaType to the given one.
 genDiffMediaType :: MediaType -> Gen MediaType
 genDiffMediaType = genDiffMediaTypes . (: [])
+
+
+------------------------------------------------------------------------------
+-- | Generates a concrete (conservatively) different MediaType to the given
+-- one.
+genDiffConcreteMediaType :: MediaType -> Gen MediaType
+genDiffConcreteMediaType = join genDiffMediaTypesWith genByteString . (: [])
 
 
 ------------------------------------------------------------------------------
