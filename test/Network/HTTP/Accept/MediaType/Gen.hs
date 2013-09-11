@@ -4,41 +4,41 @@
 -- | Contains definitions for generating 'MediaType's.
 module Network.HTTP.Accept.MediaType.Gen
     (
-    -- * Anything
-      anything
-
     -- * Generating ByteStrings
-    , genByteString
+      genByteString
     , genDiffByteString
 
     -- * Generating MediaTypes
+    , anything
     , genMediaType
+    , genSubStar
+    , genMaybeSubStar
+    , subStarOf
     , genConcreteMediaType
+    , genWithoutParams
+    , genWithParams
+    , stripParams
+    , genDiffMediaTypeWith
     , genDiffMediaTypes
     , genDiffMediaType
-    , genDiffConcreteMediaType
-    , genMediaTypeWith
-    , noStar
-    , mayStar
 
     -- * Generating Parameters
-    , mayParams
-    , someParams
-    , diffParams
+    , genParameters
+    , genMaybeParameters
+    , genDiffParameters
     ) where
 
 ------------------------------------------------------------------------------
 import qualified Data.Map as Map
 
 ------------------------------------------------------------------------------
-import Control.Monad (join, liftM, liftM2)
+import Control.Monad (liftM, liftM2)
 import Data.ByteString (ByteString)
 import Data.Map (fromList)
 import Test.QuickCheck.Gen
 
 ------------------------------------------------------------------------------
 import Network.HTTP.Accept.Gen
-import Network.HTTP.Accept.Match (matches)
 import Network.HTTP.Accept.MediaType.Internal
 
 
@@ -48,80 +48,100 @@ type ParamEntry = (ByteString, ByteString)
 
 
 ------------------------------------------------------------------------------
+-- | The MediaType that matches anything.
 anything :: MediaType
 anything = MediaType "*" "*" Map.empty
 
 
 ------------------------------------------------------------------------------
--- | Uses generators to build a new MediaType generator.
-genMediaTypeWith :: Gen ByteString
-                 -> Gen ByteString
-                 -> Gen MediaType
-genMediaTypeWith genMain genSub = do
-    main <- genMain
-    if main == "*" then return anything else do
-        sub <- genSub
-        if sub == "*" then return $ MediaType main sub Map.empty else
-            liftM (MediaType main sub) mayParams
-
-
-------------------------------------------------------------------------------
--- | Generates a random MediaType.
+-- | Generates any kind of MediaType.
 genMediaType :: Gen MediaType
-genMediaType = genMediaTypeWith mayStar mayStar
+genMediaType = oneof [return anything, genSubStar, genConcreteMediaType]
 
 
 ------------------------------------------------------------------------------
--- | Generates a random MediaType with no wildcards.
+-- | Generates a MediaType with just a concrete main type.
+genSubStar :: Gen MediaType
+genSubStar = do
+    main <- genByteString
+    return $ MediaType main "*" Map.empty
+
+
+------------------------------------------------------------------------------
+-- | Generates a MediaType whose sub type might be *.
+genMaybeSubStar :: Gen MediaType
+genMaybeSubStar = oneof [genSubStar, genConcreteMediaType]
+
+
+------------------------------------------------------------------------------
+-- | Strips the sub type and parameters from a MediaType.
+subStarOf :: MediaType -> MediaType
+subStarOf media = media { subType = "*", parameters = Map.empty }
+
+
+------------------------------------------------------------------------------
+-- | Generates a concrete MediaType which may have parameters.
 genConcreteMediaType :: Gen MediaType
-genConcreteMediaType = join genMediaTypeWith genByteString
+genConcreteMediaType = do
+    main <- genByteString
+    sub  <- genByteString
+    params <- oneof [return Map.empty, genParameters]
+    return $ MediaType main sub params
 
 
 ------------------------------------------------------------------------------
--- | Generates a (conservatively) different MediaType to the ones in the given
--- list, using the given generators.
-genDiffMediaTypesWith :: Gen ByteString -> Gen ByteString -> [MediaType]
-                  -> Gen MediaType
-genDiffMediaTypesWith main sub media = do
-    media' <- genMediaTypeWith main sub
-    if any (eitherMatches media') media
-        then genDiffMediaTypes media
+-- | Generates a concrete MediaType with no parameters.
+genWithoutParams :: Gen MediaType
+genWithoutParams = do
+    main <- genByteString
+    sub  <- genByteString
+    return $ MediaType main sub Map.empty
+
+
+------------------------------------------------------------------------------
+-- | Generates a MediaType with at least one parameter.
+genWithParams :: Gen MediaType
+genWithParams = do
+    main   <- genByteString
+    sub    <- genByteString
+    params <- genParameters
+    return $ MediaType main sub params
+
+
+------------------------------------------------------------------------------
+-- | Strips the parameters from the given MediaType.
+stripParams :: MediaType -> MediaType
+stripParams media = media { parameters = Map.empty }
+
+
+------------------------------------------------------------------------------
+-- | Generates a different MediaType to the ones in the given list, using the
+-- given generator.
+genDiffMediaTypesWith :: Gen MediaType -> [MediaType] -> Gen MediaType
+genDiffMediaTypesWith gen media = do
+    media' <- gen
+    if media' `elem` media
+        then genDiffMediaTypesWith gen media
         else return media'
-  where
-    {-eitherMatches a b = a `matches` b || b `matches` a-}
-    eitherMatches = (==)
 
 
 ------------------------------------------------------------------------------
--- | Generates a (conservatively) different MediaType to the ones in the given
--- list.
+-- | Generates a different MediaType to the given one, using the given
+-- generator.
+genDiffMediaTypeWith :: Gen MediaType -> MediaType -> Gen MediaType
+genDiffMediaTypeWith gen = genDiffMediaTypesWith gen . (: [])
+
+
+------------------------------------------------------------------------------
+-- | Generates a  different MediaType to the ones in the given list.
 genDiffMediaTypes :: [MediaType] -> Gen MediaType
-genDiffMediaTypes = join genDiffMediaTypesWith mayStar
+genDiffMediaTypes = genDiffMediaTypesWith genMediaType
 
 
 ------------------------------------------------------------------------------
--- | Generates a (conservatively) different MediaType to the given one.
+-- | Generates a different MediaType to the given one.
 genDiffMediaType :: MediaType -> Gen MediaType
 genDiffMediaType = genDiffMediaTypes . (: [])
-
-
-------------------------------------------------------------------------------
--- | Generates a concrete (conservatively) different MediaType to the given
--- one.
-genDiffConcreteMediaType :: MediaType -> Gen MediaType
-genDiffConcreteMediaType = join genDiffMediaTypesWith genByteString . (: [])
-
-
-------------------------------------------------------------------------------
--- | An alt generator producing either an alpha ByteString or a star.
-mayStar :: Gen ByteString
-mayStar = oneof [genByteString, return "*"]
-
-
-------------------------------------------------------------------------------
--- | An alt generator producing an alpha ByteString.
-noStar :: Gen ByteString
-noStar = genByteString
 
 
 ------------------------------------------------------------------------------
@@ -133,21 +153,21 @@ mkGenParams = liftM fromList .
 
 ------------------------------------------------------------------------------
 -- | Generates some sort of parameters.
-mayParams :: Gen Parameters
-mayParams = mkGenParams listOf
+genMaybeParameters :: Gen Parameters
+genMaybeParameters = mkGenParams listOf
 
 
 ------------------------------------------------------------------------------
 -- | Generates at least one parameter.
-someParams :: Gen Parameters
-someParams = mkGenParams listOf1
+genParameters :: Gen Parameters
+genParameters = mkGenParams listOf1
 
 
 ------------------------------------------------------------------------------
 -- | Generates a set of parameters that is not a submap of the given
 -- parameters (but not necessarily vice versa).
-diffParams :: Parameters -> Gen Parameters
-diffParams params = do
-    params' <- someParams
-    if params' == params then diffParams params else return params'
+genDiffParameters :: Parameters -> Gen Parameters
+genDiffParameters params = do
+    params' <- genParameters
+    if params' == params then genDiffParameters params else return params'
 

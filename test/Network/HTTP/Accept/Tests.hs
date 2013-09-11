@@ -57,7 +57,7 @@ testMatch = testGroup "match"
             {-traceShow (match server client) (traceShow client $ traceShow server False)-}
         return $ match server client == Just (unwrap $ foldr1 qmax client)
     , testProperty "Most specific" $ do
-        media <- genMediaTypeWith noStar noStar
+        media <- genConcreteMediaType
         let client = map (`Quality` 1)
                 [ MediaType "*" "*" empty
                 , media { subType = "*" }
@@ -99,5 +99,5 @@ testMapMatch = testGroup "mapMatch"
 
 ------------------------------------------------------------------------------
 genServer :: Gen [MediaType]
-genServer = listOf1 $ genMediaTypeWith noStar noStar
+genServer = listOf1 $ genConcreteMediaType
 
