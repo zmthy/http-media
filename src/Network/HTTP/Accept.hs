@@ -80,8 +80,8 @@ matchAccept
     -> Maybe a
 matchAccept server clientq = guard (hq /= 0) >> specific qs
   where
-    merge s = filter (matches s . unwrap) clientq
-    matched = concatMap merge server
+    merge (Quality c q) = map (`Quality` q) $ filter (`matches` c) server
+    matched = concatMap merge clientq
     (hq, qs) = foldr qfold (0, []) matched
     qfold v (q, vs) = case compare (quality v) q of
         GT -> (quality v, [unwrap v])

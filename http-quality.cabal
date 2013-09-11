@@ -1,5 +1,5 @@
 name:          http-quality
-version:       0.0.1
+version:       0.1.0
 license:       MIT
 license-file:  LICENSE
 author:        Timothy Jones
@@ -73,7 +73,7 @@ test-suite test-http-quality
     Network.HTTP.Accept.Utils
 
   if flag(development)
-    ghc-options: -Wall
+    ghc-options: -Wall -fhpc
   else
     ghc-options: -Wall -Werror -fhpc
 

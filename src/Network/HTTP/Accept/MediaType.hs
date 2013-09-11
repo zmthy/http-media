@@ -16,7 +16,6 @@ module Network.HTTP.Accept.MediaType
     , parameters
     , (/?)
     , (/.)
-    {-, matches-}
     ) where
 
 ------------------------------------------------------------------------------
@@ -104,16 +103,4 @@ ensureV = ensure (`notElem` [44, 59])
 ensure :: (Word8 -> Bool) -> ByteString -> ByteString
 ensure f bs = maybe
     (error $ "Invalid character in " ++ show bs) (const bs) (BS.find f bs)
-
-
-------------------------------------------------------------------------------
--- | Evaluates if the left argument matches the right one.
---
--- The order of the arguments is important: if the right argument is more
--- specific than the left, they will not be considered to match. The
--- following evaluates to 'False'.
---
--- > matches ("text" // "*") ("text" // "plain")
-{-matches :: MediaType -> MediaType -> Bool-}
-{-matches = Match.matches-}
 

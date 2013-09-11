@@ -16,6 +16,7 @@ module Network.HTTP.Accept.MediaType.Gen
     , genWithoutParams
     , genWithParams
     , stripParams
+    , genDiffMediaTypesWith
     , genDiffMediaTypeWith
     , genDiffMediaTypes
     , genDiffMediaType
@@ -167,5 +168,7 @@ genParameters = mkGenParams listOf1
 genDiffParameters :: Parameters -> Gen Parameters
 genDiffParameters params = do
     params' <- genParameters
-    if params' == params then genDiffParameters params else return params'
+    if params' `Map.isSubmapOf` params
+        then genDiffParameters params
+        else return params'
 

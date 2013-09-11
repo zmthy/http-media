@@ -65,14 +65,22 @@ testMatch = testGroup "match"
         return $ matchAccept [media] client == Just media
     , testProperty "Nothing" $ do
         server <- genServer
-        client <- listOf1 $ genDiffMediaTypes server
-        return . isNothing $ matchAccept server (map (`Quality` 1) client)
+        client <- listOf1 $ genDiffMediaTypesWith genConcreteMediaType server
+        let client' = filter (not . flip any server . matches) client
+        return . isNothing $ matchAccept server (map (`Quality` 1) client')
     , testProperty "Never chooses q=0" $ do
         server <- genServer
         return . isNothing $ matchAccept server (map (`Quality` 0) server)
     , testProperty "Left biased" $ do
         server <- genServer
         let client = map (`Quality` 1) server
+        return $ matchAccept server client == Just (head server)
+    , testProperty "Against */*" $ do
+        server <- genServer
+        return $ matchAccept server [Quality "*/*" 1] == Just (head server)
+    , testProperty "Against type/*" $ do
+        server <- genServer
+        let client = [Quality (subStarOf $ head server) 1]
         return $ matchAccept server client == Just (head server)
     ]
 
@@ -82,14 +90,14 @@ testMap :: Test
 testMap = testGroup "map"
     [ testProperty "Matches" $ do
         server <- genServer
-        qs     <- replicateM (length server) $ choose (0, 10 :: Int)
+        qs     <- replicateM (length server) $ choose (1, 10 :: Int)
         let client = zipWith Quality server $ map ((/ 10) . fromIntegral) qs
-            qmax q v = if quality q > quality v then q else v
+            qmax q v = if quality q >= quality v then q else v
             zipped = zip server server
         return $ mapAccept zipped client == Just (unwrap $ foldr1 qmax client)
     , testProperty "Nothing" $ do
         server <- genServer
-        client <- listOf1 $ genDiffMediaTypes server
+        client <- listOf1 $ genDiffMediaTypesWith genConcreteMediaType server
         let zipped = zip server $ repeat ()
         return . isNothing $ mapAccept zipped (map (`Quality` 1) client)
     ]
