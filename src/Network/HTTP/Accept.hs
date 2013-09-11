@@ -20,11 +20,11 @@ module Network.HTTP.Accept
     , quality
 
       -- * Parsing
-    , parseAccepts
+    , parseAccept
 
       -- * Matching
-    , match
-    , mapMatch
+    , matchAccept
+    , mapAccept
     ) where
 
 ------------------------------------------------------------------------------
@@ -46,15 +46,14 @@ import Network.HTTP.Accept.Utils
 
 ------------------------------------------------------------------------------
 -- | Parses a full Accept header into a list of quality-valued media types.
-parseAccepts :: ByteString -> Maybe [Quality MediaType]
-parseAccepts = mapM parseAccept . split comma
-
-parseAccept :: ByteString -> Maybe (Quality MediaType)
-parseAccept bs = (<*> parse accept) $ if BS.null q
-    then pure (`Quality` 1) else liftA (flip Quality) $ safeRead
-        (toString $ BS.takeWhile (/= semi) $ BS.drop 3 q)
+parseAccept :: ByteString -> Maybe [Quality MediaType]
+parseAccept = mapM parseAccept' . split comma
   where
-    (accept, q) = BS.breakSubstring ";q=" $ BS.filter (/= space) bs
+    parseAccept' bs =
+        let (accept, q) = BS.breakSubstring ";q=" $ BS.filter (/= space) bs
+        in (<*> parse accept) $ if BS.null q
+            then pure (`Quality` 1) else liftA (flip Quality) $ safeRead
+                (toString $ BS.takeWhile (/= semi) $ BS.drop 3 q)
     safeRead = fmap fst . listToMaybe . filter (null . snd) . reads
 
 
@@ -71,14 +70,15 @@ parseAccept bs = (<*> parse accept) $ if BS.null q
 -- application of this function for 'MediaType' should be in conjunction with
 -- 'parseAccepts'.
 --
--- > parseAccepts header >>= match resourceTypeOptions
+-- > parseAccepts header >>= matchQuality resourceTypeOptions
 --
 -- For more information on the matching process see RFC 2616, section 14.
-match :: Match a
-      => [a]          -- ^ The server-side options
-      -> [Quality a]  -- ^ The client-side preferences
-      -> Maybe a
-match server clientq = guard (hq /= 0) >> specific qs
+matchAccept
+    :: Match a
+    => [a]          -- ^ The server-side options
+    -> [Quality a]  -- ^ The client-side preferences
+    -> Maybe a
+matchAccept server clientq = guard (hq /= 0) >> specific qs
   where
     merge s = filter (matches s . unwrap) clientq
     matched = concatMap merge server
@@ -96,15 +96,16 @@ match server clientq = guard (hq /= 0) >> specific qs
 -- to another value. Convenient for specifying how to translate the
 -- resource into each of its available formats.
 --
--- > maybe render406Error renderResource $ parseAccepts header >>= mapMatch
--- >     [ ("text"        // "html", asHtml)
--- >     , ("application" // "json", asJson)
+-- > maybe render406Error renderResource $ parseAccepts header >>= mapQuality
+-- >     [ ("text/html",        asHtml)
+-- >     , ("application/json", asJson)
 -- >     ]
-mapMatch :: Match a
-         => [(a, b)]     -- ^ The map of server-side preferences to values
-         -> [Quality a]  -- ^ The client-side preferences
-         -> Maybe b
-mapMatch s c = match (map fst s) c >>= lookupMatches s
+mapAccept
+    :: Match a
+    => [(a, b)]     -- ^ The map of server-side preferences to values
+    -> [Quality a]  -- ^ The client-side preferences
+    -> Maybe b
+mapAccept s c = matchAccept (map fst s) c >>= lookupMatches s
   where
     lookupMatches ((k, v) : r) a
         | Match.matches k a = Just v

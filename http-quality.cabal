@@ -73,7 +73,7 @@ test-suite test-http-quality
     Network.HTTP.Accept.Utils
 
   if flag(development)
-    ghc-options: -Wall -fhpc
+    ghc-options: -Wall
   else
     ghc-options: -Wall -Werror -fhpc
 

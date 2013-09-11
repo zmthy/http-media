@@ -8,9 +8,9 @@ client and the server.
 The most common use of it is expected to resemble this little example:
 
 ```haskell
-maybe send406Error sendResource $ parseAccepts header >>= mapMatch
-    [ ("text" // "html",        asHtml)
-    , ("application" // "json", asJson)
+maybe send406Error sendResource $ parseAccept header >>= mapAccept
+    [ ("text/html",        asHtml)
+    , ("application/json", asJson)
     ]
 ```
 
