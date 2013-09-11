@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 ------------------------------------------------------------------------------
 -- | Defined to allow the constructor of 'MediaType' to be exposed to tests.
 module Network.HTTP.Accept.MediaType.Internal
@@ -10,18 +8,18 @@ module Network.HTTP.Accept.MediaType.Internal
     ) where
 
 ------------------------------------------------------------------------------
-import qualified Data.ByteString as BS
+import qualified Data.ByteString      as BS
 import qualified Data.ByteString.UTF8 as BS
-import qualified Data.Map as Map
+import qualified Data.Map             as Map
 
 ------------------------------------------------------------------------------
-import Control.Monad (guard)
-import Data.ByteString (ByteString)
+import Control.Monad        (guard)
+import Data.ByteString      (ByteString)
 import Data.ByteString.UTF8 (toString)
-import Data.String (IsString (..))
-import Data.Map (Map)
-import Data.Maybe (fromMaybe)
-import Data.Monoid ((<>))
+import Data.String          (IsString (..))
+import Data.Map             (Map)
+import Data.Maybe           (fromMaybe)
+import Data.Monoid          ((<>))
 
 ------------------------------------------------------------------------------
 import Network.HTTP.Accept.Match (Match (..))

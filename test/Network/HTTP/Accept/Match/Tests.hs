@@ -2,7 +2,7 @@
 module Network.HTTP.Accept.Match.Tests (tests) where
 
 ------------------------------------------------------------------------------
-import Control.Monad (join, liftM, liftM2)
+import Control.Monad                     (join, liftM, liftM2)
 import Distribution.TestSuite.QuickCheck
 
 ------------------------------------------------------------------------------

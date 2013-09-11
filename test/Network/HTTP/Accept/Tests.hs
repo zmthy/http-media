@@ -1,19 +1,17 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 ------------------------------------------------------------------------------
 module Network.HTTP.Accept.Tests (tests) where
 
 ------------------------------------------------------------------------------
-import Control.Monad (liftM, replicateM)
-import Data.ByteString.UTF8 (fromString)
-import Data.List (intercalate)
-import Data.Map (empty)
-import Data.Maybe (isNothing)
+import Control.Monad                     (liftM, replicateM)
+import Data.ByteString.UTF8              (fromString)
+import Data.List                         (intercalate)
+import Data.Map                          (empty)
+import Data.Maybe                        (isNothing)
 import Distribution.TestSuite.QuickCheck
 import Test.QuickCheck
 
 ------------------------------------------------------------------------------
-import Network.HTTP.Accept hiding (parameters, subType)
+import Network.HTTP.Accept                    hiding (parameters, subType)
 import Network.HTTP.Accept.MediaType.Gen
 import Network.HTTP.Accept.MediaType.Internal
 import Network.HTTP.Accept.Quality
@@ -99,5 +97,5 @@ testMapMatch = testGroup "mapMatch"
 
 ------------------------------------------------------------------------------
 genServer :: Gen [MediaType]
-genServer = listOf1 $ genConcreteMediaType
+genServer = listOf1 genConcreteMediaType
 

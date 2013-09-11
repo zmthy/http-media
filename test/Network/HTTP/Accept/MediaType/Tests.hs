@@ -1,22 +1,20 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 ------------------------------------------------------------------------------
 module Network.HTTP.Accept.MediaType.Tests (tests) where
 
 ------------------------------------------------------------------------------
 import qualified Data.ByteString.UTF8 as BS
-import qualified Data.Map as Map
+import qualified Data.Map             as Map
 
 ------------------------------------------------------------------------------
-import Control.Monad (join, liftM)
-import Data.String (fromString)
-import Data.Maybe (isNothing)
-import Data.Monoid ((<>), mconcat)
+import Control.Monad                     (join, liftM)
+import Data.String                       (fromString)
+import Data.Maybe                        (isNothing)
+import Data.Monoid                       ((<>), mconcat)
 import Distribution.TestSuite.QuickCheck
 
 ------------------------------------------------------------------------------
-import Network.HTTP.Accept.Match (matches, moreSpecificThan, mostSpecific)
-import Network.HTTP.Accept.MediaType hiding (mainType, subType, parameters)
+import Network.HTTP.Accept.Match
+import Network.HTTP.Accept.MediaType          ((/?), (/.))
 import Network.HTTP.Accept.MediaType.Internal
 import Network.HTTP.Accept.MediaType.Gen
 

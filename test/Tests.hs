@@ -5,8 +5,8 @@ module Tests (tests) where
 import Distribution.TestSuite
 
 ------------------------------------------------------------------------------
-import qualified Network.HTTP.Accept.Tests as Accept
-import qualified Network.HTTP.Accept.Match.Tests as Match
+import qualified Network.HTTP.Accept.Tests           as Accept
+import qualified Network.HTTP.Accept.Match.Tests     as Match
 import qualified Network.HTTP.Accept.MediaType.Tests as MediaType
 
 

@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 ------------------------------------------------------------------------------
 -- | Defines the media type types and functions.
 module Network.HTTP.Accept.MediaType
@@ -23,20 +21,20 @@ module Network.HTTP.Accept.MediaType
 
 ------------------------------------------------------------------------------
 import qualified Data.ByteString as BS
-import qualified Data.Map as Map
+import qualified Data.Map        as Map
 
 ------------------------------------------------------------------------------
 import Data.ByteString (ByteString)
-import Data.Map (empty, insert)
-import Data.Word (Word8)
+import Data.Map        (empty, insert)
+import Data.Word       (Word8)
 
 ------------------------------------------------------------------------------
 import qualified Network.HTTP.Accept.MediaType.Internal as Internal
 
 ------------------------------------------------------------------------------
 {-import qualified Network.HTTP.Accept.Match as Match-}
-import Network.HTTP.Accept.MediaType.Internal
-    hiding (mainType, subType, parameters)
+import Network.HTTP.Accept.MediaType.Internal (MediaType (MediaType))
+import Network.HTTP.Accept.MediaType.Internal hiding (MediaType (..))
 import Network.HTTP.Accept.Utils
 
 

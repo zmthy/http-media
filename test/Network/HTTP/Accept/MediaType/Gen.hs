@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 ------------------------------------------------------------------------------
 -- | Contains definitions for generating 'MediaType's.
 module Network.HTTP.Accept.MediaType.Gen
@@ -32,9 +30,9 @@ module Network.HTTP.Accept.MediaType.Gen
 import qualified Data.Map as Map
 
 ------------------------------------------------------------------------------
-import Control.Monad (liftM, liftM2)
-import Data.ByteString (ByteString)
-import Data.Map (fromList)
+import Control.Monad       (liftM, liftM2)
+import Data.ByteString     (ByteString)
+import Data.Map            (fromList)
 import Test.QuickCheck.Gen
 
 ------------------------------------------------------------------------------

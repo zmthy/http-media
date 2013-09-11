@@ -6,8 +6,8 @@ module Network.HTTP.Accept.Gen
     ) where
 
 ------------------------------------------------------------------------------
-import Control.Monad (liftM)
-import Data.ByteString (ByteString, pack)
+import Control.Monad       (liftM)
+import Data.ByteString     (ByteString, pack)
 import Test.QuickCheck.Gen (Gen, listOf1, oneof)
 
 

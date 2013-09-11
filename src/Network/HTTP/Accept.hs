@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 ------------------------------------------------------------------------------
 -- | A framework for parsing Accept headers and choosing the correct media
 -- type.
@@ -30,19 +28,20 @@ module Network.HTTP.Accept
     ) where
 
 ------------------------------------------------------------------------------
-import           Control.Applicative ((<*>), liftA, pure)
-import           Control.Monad (guard)
-
-import           Data.ByteString (ByteString, split)
 import qualified Data.ByteString as BS
-import           Data.ByteString.UTF8 (toString)
-import           Data.Maybe (listToMaybe)
 
 ------------------------------------------------------------------------------
-import           Network.HTTP.Accept.Match as Match
-import           Network.HTTP.Accept.MediaType as MediaType
-import           Network.HTTP.Accept.Quality
-import           Network.HTTP.Accept.Utils
+import Control.Applicative  ((<*>), liftA, pure)
+import Control.Monad        (guard)
+import Data.ByteString      (ByteString, split)
+import Data.ByteString.UTF8 (toString)
+import Data.Maybe           (listToMaybe)
+
+------------------------------------------------------------------------------
+import Network.HTTP.Accept.Match     as Match
+import Network.HTTP.Accept.MediaType as MediaType
+import Network.HTTP.Accept.Quality
+import Network.HTTP.Accept.Utils
 
 
 ------------------------------------------------------------------------------

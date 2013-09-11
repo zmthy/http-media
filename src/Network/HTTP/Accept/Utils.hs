@@ -16,9 +16,11 @@ module Network.HTTP.Accept.Utils
     ) where
 
 ------------------------------------------------------------------------------
-import           Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
-import           Data.Word (Word8)
+
+------------------------------------------------------------------------------
+import Data.ByteString (ByteString)
+import Data.Word       (Word8)
 
 
 ------------------------------------------------------------------------------
