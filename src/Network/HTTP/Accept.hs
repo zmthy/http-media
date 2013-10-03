@@ -102,9 +102,40 @@ mapAccept
     -> [Quality a]  -- ^ The client-side preferences
     -> Maybe b
 mapAccept s c = matchAccept (map fst s) c >>= lookupMatches s
-  where
-    lookupMatches ((k, v) : r) a
-        | Match.matches k a = Just v
-        | otherwise         = lookupMatches r a
-    lookupMatches [] _ = Nothing
+
+
+------------------------------------------------------------------------------
+-- | Matches a list of server-side parsing options against a the client-side
+-- content value. A result of 'Nothing' means that nothing matched (which
+-- should indicate a 415 error).
+--
+-- As with the Accept parsing, he use of the 'Match' type class allows the
+-- application of either 'MediaType' or 'ByteString'.
+matchContent
+    :: Match a
+    => a         -- ^ The client's request value
+    -> [a]       -- ^ The server-side response options
+    -> Maybe a
+matchContent client = foldl choose Nothing
+  where choose m server = m <|> (guard (matches client server) >> Just server)
+
+
+------------------------------------------------------------------------------
+-- | The equivalent of 'matchContent' above, except the resulting choice is
+-- mapped to another value.
+mapContent
+    :: Match a
+    => a         -- ^ The client request's header value
+    -> [(a, b)]  -- ^ The map of server-side responses
+    -> Maybe b
+mapContent c s = matchContent c (map fst s) >>= lookupMatches s
+
+
+------------------------------------------------------------------------------
+-- | The equivalent of 'lookupBy matches'.
+lookupMatches :: Match a => [(a, b)] -> a -> Maybe b
+lookupMatches ((k, v) : r) a
+    | Match.matches k a = Just v
+    | otherwise         = lookupMatches r a
+lookupMatches [] _ = Nothing
 
