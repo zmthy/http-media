@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 -- | Defines the 'Match' type class, designed to unify types on the
--- matching functions in the Accept module.
-module Network.HTTP.Accept.Match
+-- matching functions in the Media module.
+module Network.HTTP.Media.Match
     (
       Match (..)
     , mostSpecific
@@ -13,7 +13,7 @@ import Data.ByteString
 
 ------------------------------------------------------------------------------
 -- | Defines methods for a type whose values can be matched against each
--- other in terms of an Accept value.
+-- other in terms of a HTTP media header.
 --
 -- This allows functions to work on both the standard Accept header and
 -- others such as Accept-Language that still may use quality values.

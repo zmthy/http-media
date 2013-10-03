@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 -- | Contains definitions for generating 'ByteString's.
-module Network.HTTP.Accept.Gen
+module Network.HTTP.Media.Gen
     ( genByteString
     , genDiffByteString
     ) where

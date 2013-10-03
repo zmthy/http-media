@@ -1,13 +1,13 @@
 ------------------------------------------------------------------------------
-module Network.HTTP.Accept.Match.Tests (tests) where
+module Network.HTTP.Media.Match.Tests (tests) where
 
 ------------------------------------------------------------------------------
 import Control.Monad                     (join, liftM, liftM2)
 import Distribution.TestSuite.QuickCheck
 
 ------------------------------------------------------------------------------
-import Network.HTTP.Accept.Gen
-import Network.HTTP.Accept.Match
+import Network.HTTP.Media.Gen
+import Network.HTTP.Media.Match
 
 
 ------------------------------------------------------------------------------

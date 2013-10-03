@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 -- | Defined to allow the constructor of 'MediaType' to be exposed to tests.
-module Network.HTTP.Accept.MediaType.Internal
+module Network.HTTP.Media.MediaType.Internal
     ( MediaType (..)
     , Parameters
     , toByteString
@@ -22,8 +22,8 @@ import Data.Maybe           (fromMaybe)
 import Data.Monoid          ((<>))
 
 ------------------------------------------------------------------------------
-import Network.HTTP.Accept.Match (Match (..))
-import Network.HTTP.Accept.Utils
+import Network.HTTP.Media.Match (Match (..))
+import Network.HTTP.Media.Utils
 
 
 ------------------------------------------------------------------------------

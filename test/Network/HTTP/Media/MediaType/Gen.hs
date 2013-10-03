@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 -- | Contains definitions for generating 'MediaType's.
-module Network.HTTP.Accept.MediaType.Gen
+module Network.HTTP.Media.MediaType.Gen
     (
     -- * Generating ByteStrings
       genByteString
@@ -37,8 +37,8 @@ import Data.Map            (fromList)
 import Test.QuickCheck.Gen
 
 ------------------------------------------------------------------------------
-import Network.HTTP.Accept.Gen
-import Network.HTTP.Accept.MediaType.Internal
+import Network.HTTP.Media.Gen
+import Network.HTTP.Media.MediaType.Internal
 
 
 ------------------------------------------------------------------------------

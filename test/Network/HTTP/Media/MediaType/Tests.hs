@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------
-module Network.HTTP.Accept.MediaType.Tests (tests) where
+module Network.HTTP.Media.MediaType.Tests (tests) where
 
 ------------------------------------------------------------------------------
 import qualified Data.ByteString.UTF8 as BS
@@ -13,10 +13,10 @@ import Data.Monoid                       ((<>), mconcat)
 import Distribution.TestSuite.QuickCheck
 
 ------------------------------------------------------------------------------
-import Network.HTTP.Accept.Match
-import Network.HTTP.Accept.MediaType          ((/?), (/.))
-import Network.HTTP.Accept.MediaType.Internal
-import Network.HTTP.Accept.MediaType.Gen
+import Network.HTTP.Media.Match
+import Network.HTTP.Media.MediaType          ((/?), (/.))
+import Network.HTTP.Media.MediaType.Internal
+import Network.HTTP.Media.MediaType.Gen
 
 
 ------------------------------------------------------------------------------

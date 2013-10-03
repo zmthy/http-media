@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------
--- | Common utilities for the Accept library.
-module Network.HTTP.Accept.Utils
+-- | Common utilities.
+module Network.HTTP.Media.Utils
     (
       breakByte
     , trimBS

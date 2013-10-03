@@ -1,0 +1,81 @@
+name:          http-media
+version:       0.1.0
+license:       MIT
+license-file:  LICENSE
+author:        Timothy Jones
+maintainer:    Timothy Jones <git@zimothy.com>
+homepage:      http://github.com/zimothy/http-media
+bug-reports:   http://github.com/zimothy/http-media/issues
+category:      Web
+copyright:     (c) 2013 Timothy Jones
+build-type:    Simple
+cabal-version: >= 1.10
+synopsis:      Processing HTTP Content-Type and Accept headers
+description:
+  This library is intended to be a comprehensive solution to parsing media
+  types, including quality parameters, in HTTP headers. It addresses parsing of
+  the Content-Type and Accept headers, and includes general data types for
+  matching against the other accept headers as well. It encodes MIME parameters
+  into a 'MediaType' data, and allows the matching of the final value by
+  comparing quality values from the client.
+
+library
+  hs-source-dirs: src
+
+  ghc-options: -Wall
+
+  default-language: Haskell2010
+  default-extensions:
+    OverloadedStrings
+
+  exposed-modules:
+    Network.HTTP.Media
+    Network.HTTP.Media.MediaType
+  other-modules:
+    Network.HTTP.Media.Match
+    Network.HTTP.Media.MediaType.Internal
+    Network.HTTP.Media.Quality
+    Network.HTTP.Media.Utils
+  build-depends:
+    base        >= 4.6.0  && < 5.0,
+    bytestring  >= 0.10.0 && < 0.11,
+    containers  >= 0.5.0  && < 0.6,
+    utf8-string >= 0.3.7  && < 0.4
+
+test-suite test-http-media
+  type:           detailed-0.9
+  hs-source-dirs: src test
+
+  default-language: Haskell2010
+  default-extensions:
+    OverloadedStrings
+
+  test-module: Tests
+  other-modules:
+    Network.HTTP.Media
+    Network.HTTP.Media.Gen
+    Network.HTTP.Media.Match
+    Network.HTTP.Media.Match.Tests
+    Network.HTTP.Media.MediaType
+    Network.HTTP.Media.MediaType.Gen
+    Network.HTTP.Media.MediaType.Internal
+    Network.HTTP.Media.MediaType.Tests
+    Network.HTTP.Media.Quality
+    Network.HTTP.Media.Tests
+    Network.HTTP.Media.Utils
+
+  ghc-options: -Wall -fhpc
+
+  build-depends:
+    base                  >= 4.6.0  && < 5.0,
+    bytestring            >= 0.10.0 && < 0.11,
+    Cabal                 >= 1.18.0 && < 1.19,
+    cabal-test-quickcheck >= 0.1.0  && < 0.2,
+    containers            >= 0.5.0  && < 0.6,
+    QuickCheck            >= 2.6    && < 2.7,
+    utf8-string           >= 0.3.7  && < 0.4
+
+source-repository head
+  type:     git
+  location: git://github.com/zimothy/http-media.git
+

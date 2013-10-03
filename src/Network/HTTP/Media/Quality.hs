@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 -- | Defines the quality value data type.
-module Network.HTTP.Accept.Quality
+module Network.HTTP.Media.Quality
     ( Quality (..)
     , maxQuality
     , minQuality

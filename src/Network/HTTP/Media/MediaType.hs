@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 -- | Defines the media type types and functions.
-module Network.HTTP.Accept.MediaType
+module Network.HTTP.Media.MediaType
     (
     -- * Type and creation
       MediaType
@@ -28,13 +28,12 @@ import Data.Map        (empty, insert)
 import Data.Word       (Word8)
 
 ------------------------------------------------------------------------------
-import qualified Network.HTTP.Accept.MediaType.Internal as Internal
+import qualified Network.HTTP.Media.MediaType.Internal as Internal
 
 ------------------------------------------------------------------------------
-{-import qualified Network.HTTP.Accept.Match as Match-}
-import Network.HTTP.Accept.MediaType.Internal (MediaType (MediaType))
-import Network.HTTP.Accept.MediaType.Internal hiding (MediaType (..))
-import Network.HTTP.Accept.Utils
+import Network.HTTP.Media.MediaType.Internal (MediaType (MediaType))
+import Network.HTTP.Media.MediaType.Internal hiding (MediaType (..))
+import Network.HTTP.Media.Utils
 
 
 ------------------------------------------------------------------------------

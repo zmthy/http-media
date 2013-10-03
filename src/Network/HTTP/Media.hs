@@ -1,7 +1,6 @@
 ------------------------------------------------------------------------------
--- | A framework for parsing Accept headers and choosing the correct media
--- type.
-module Network.HTTP.Accept
+-- | A framework for parsing HTTP media type headers.
+module Network.HTTP.Media
     (
       -- * Media types
       MediaType
@@ -37,10 +36,10 @@ import Data.ByteString      (ByteString, split)
 import Data.ByteString.UTF8 (toString)
 
 ------------------------------------------------------------------------------
-import Network.HTTP.Accept.Match     as Match
-import Network.HTTP.Accept.MediaType as MediaType
-import Network.HTTP.Accept.Quality
-import Network.HTTP.Accept.Utils
+import Network.HTTP.Media.Match     as Match
+import Network.HTTP.Media.MediaType as MediaType
+import Network.HTTP.Media.Quality
+import Network.HTTP.Media.Utils
 
 
 ------------------------------------------------------------------------------

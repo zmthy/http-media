@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------
-module Network.HTTP.Accept.Tests (tests) where
+module Network.HTTP.Media.Tests (tests) where
 
 ------------------------------------------------------------------------------
 import Control.Monad                     (replicateM)
@@ -12,10 +12,10 @@ import Distribution.TestSuite.QuickCheck
 import Test.QuickCheck
 
 ------------------------------------------------------------------------------
-import Network.HTTP.Accept                    hiding (parameters, subType)
-import Network.HTTP.Accept.MediaType.Gen
-import Network.HTTP.Accept.MediaType.Internal
-import Network.HTTP.Accept.Quality
+import Network.HTTP.Media                    hiding (parameters, subType)
+import Network.HTTP.Media.MediaType.Gen
+import Network.HTTP.Media.MediaType.Internal
+import Network.HTTP.Media.Quality
 
 
 ------------------------------------------------------------------------------
