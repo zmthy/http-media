@@ -31,10 +31,10 @@ library
   exposed-modules:
     Network.HTTP.Accept
     Network.HTTP.Accept.MediaType
-    Network.HTTP.Accept.Quality
   other-modules:
     Network.HTTP.Accept.Match
     Network.HTTP.Accept.MediaType.Internal
+    Network.HTTP.Accept.Quality
     Network.HTTP.Accept.Utils
   build-depends:
     base        >= 4.6.0  && < 5.0,

@@ -13,29 +13,28 @@ module Network.HTTP.Accept
     , (/?)
     , (/.)
     , matches
-
-      -- * Quality values
     , Quality
-    , unwrap
-    , quality
 
       -- * Parsing
     , parseAccept
 
-      -- * Matching
+      -- * Accept matching
     , matchAccept
     , mapAccept
+
+      -- * Content matching
+    , matchContent
+    , mapContent
     ) where
 
 ------------------------------------------------------------------------------
 import qualified Data.ByteString as BS
 
 ------------------------------------------------------------------------------
-import Control.Applicative  ((<*>), liftA, pure)
+import Control.Applicative  (pure, (<*>), (<|>))
 import Control.Monad        (guard)
 import Data.ByteString      (ByteString, split)
 import Data.ByteString.UTF8 (toString)
-import Data.Maybe           (listToMaybe)
 
 ------------------------------------------------------------------------------
 import Network.HTTP.Accept.Match     as Match
@@ -47,14 +46,11 @@ import Network.HTTP.Accept.Utils
 ------------------------------------------------------------------------------
 -- | Parses a full Accept header into a list of quality-valued media types.
 parseAccept :: ByteString -> Maybe [Quality MediaType]
-parseAccept = mapM parseAccept' . split comma
-  where
-    parseAccept' bs =
+parseAccept = (. split comma) . mapM $ \bs ->
         let (accept, q) = BS.breakSubstring ";q=" $ BS.filter (/= space) bs
         in (<*> parse accept) $ if BS.null q
-            then pure (`Quality` 1) else liftA (flip Quality) $ safeRead
+            then pure maxQuality else fmap (flip Quality) $ readQ
                 (toString $ BS.takeWhile (/= semi) $ BS.drop 3 q)
-    safeRead = fmap fst . listToMaybe . filter (null . snd) . reads
 
 
 ------------------------------------------------------------------------------
@@ -83,17 +79,17 @@ matchAccept server clientq = guard (hq /= 0) >> specific qs
     merge (Quality c q) = map (`Quality` q) $ filter (`matches` c) server
     matched = concatMap merge clientq
     (hq, qs) = foldr qfold (0, []) matched
-    qfold v (q, vs) = case compare (quality v) q of
-        GT -> (quality v, [unwrap v])
-        EQ -> (q, unwrap v : vs)
-        LT -> (q, vs)
+    qfold (Quality v q) (mq, vs) = case compare q mq of
+        GT -> (q, [v])
+        EQ -> (mq, v : vs)
+        LT -> (mq, vs)
     specific (a : ms) = Just $ foldl mostSpecific a ms
     specific []       = Nothing
 
 
 ------------------------------------------------------------------------------
--- | The equivalent of 'match' above, except the resulting choice is mapped
--- to another value. Convenient for specifying how to translate the
+-- | The equivalent of 'matchAccept' above, except the resulting choice is
+-- mapped to another value. Convenient for specifying how to translate the
 -- resource into each of its available formats.
 --
 -- > maybe render406Error renderResource $ parseAccepts header >>= mapQuality
