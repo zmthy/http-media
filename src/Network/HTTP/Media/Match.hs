@@ -2,8 +2,7 @@
 -- | Defines the 'Match' type class, designed to unify types on the
 -- matching functions in the Media module.
 module Network.HTTP.Media.Match
-    (
-      Match (..)
+    ( Match (..)
     , mostSpecific
     ) where
 

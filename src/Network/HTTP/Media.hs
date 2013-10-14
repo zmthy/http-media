@@ -2,7 +2,7 @@
 -- | A framework for parsing HTTP media type headers.
 module Network.HTTP.Media
     (
-      -- * Media types
+    -- * Media types
       MediaType
     , (//)
     , (/:)
@@ -11,19 +11,21 @@ module Network.HTTP.Media
     , parameters
     , (/?)
     , (/.)
-    , matches
     , Quality
 
-      -- * Parsing
+    -- * Parsing
     , parseAccept
 
-      -- * Accept matching
+    -- * Accept matching
     , matchAccept
     , mapAccept
 
-      -- * Content matching
+    -- * Content matching
     , matchContent
     , mapContent
+
+    -- * Match
+    , Match (..)
     ) where
 
 ------------------------------------------------------------------------------

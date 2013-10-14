@@ -1,8 +1,7 @@
 -----------------------------------------------------------------------------
 -- | Common utilities.
 module Network.HTTP.Media.Utils
-    (
-      breakByte
+    ( breakByte
     , trimBS
 
     , validChars
