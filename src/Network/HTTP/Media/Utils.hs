@@ -4,6 +4,7 @@ module Network.HTTP.Media.Utils
     ( breakByte
     , trimBS
 
+    , isAlpha
     , validChars
     , isValidChar
 
@@ -12,6 +13,7 @@ module Network.HTTP.Media.Utils
     , comma
     , space
     , equal
+    , hyphen
     ) where
 
 ------------------------------------------------------------------------------
@@ -38,6 +40,12 @@ trimBS = BS.reverse . dropSpace . BS.reverse . dropSpace
 
 
 ------------------------------------------------------------------------------
+-- | Evaluates whether the given character is in the standard ASCII alphabet.
+isAlpha :: Word8 -> Bool
+isAlpha c = c >= 65 && c <= 90 || c >= 97 && c <= 122
+
+
+------------------------------------------------------------------------------
 -- | List of the valid characters for a media-type `reg-name` as per RFC 4288.
 validChars :: [Word8]
 validChars =
@@ -54,6 +62,6 @@ isValidChar c = c >= 97 && c <= 122 || c >= 48 && c <= 57 ||
 
 ------------------------------------------------------------------------------
 -- | 'ByteString' compatible characters.
-slash, semi, comma, space, equal :: Word8
-[slash, semi, comma, space, equal] = [47, 59, 44, 32, 61]
+slash, semi, comma, space, equal, hyphen :: Word8
+[slash, semi, comma, space, equal, hyphen] = [47, 59, 44, 32, 61, 45]
 

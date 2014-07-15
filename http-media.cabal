@@ -51,6 +51,7 @@ library
     Network.HTTP.Media
     Network.HTTP.Media.Accept
     Network.HTTP.Media.MediaType
+    Network.HTTP.Media.Language
   other-modules:
     Network.HTTP.Media.MediaType.Internal
     Network.HTTP.Media.Quality

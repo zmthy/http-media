@@ -1,5 +1,6 @@
 ------------------------------------------------------------------------------
--- | Defines the media type types and functions.
+-- | Defines the 'MediaType' accept header with an 'Accept' instance for use
+-- in content-type negotiation.
 module Network.HTTP.Media.MediaType
     (
     -- * Type and creation

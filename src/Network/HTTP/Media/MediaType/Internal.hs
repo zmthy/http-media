@@ -14,7 +14,6 @@ import qualified Data.Map             as Map
 ------------------------------------------------------------------------------
 import Control.Monad        (guard)
 import Data.ByteString      (ByteString)
-import Data.ByteString.UTF8 (toString)
 import Data.String          (IsString (..))
 import Data.Map             (Map)
 import Data.Maybe           (fromMaybe)
@@ -35,9 +34,9 @@ data MediaType = MediaType
 
 instance Show MediaType where
     show (MediaType a b p) =
-        Map.foldrWithKey f (toString a ++ '/' : toString b) p
+        Map.foldrWithKey f (BS.toString a ++ '/' : BS.toString b) p
       where
-        f k v = (++ ';' : toString k ++ '=' : toString v)
+        f k v = (++ ';' : BS.toString k ++ '=' : BS.toString v)
 
 instance IsString MediaType where
     fromString str = flip fromMaybe (parseAccept $ BS.fromString str) $
