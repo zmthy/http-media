@@ -31,11 +31,25 @@ class Show a => Accept a where
     showAccept :: a -> String
     showAccept = show
 
-    -- | Evaluates whether either the left argument matches the right one
-    -- (order may be important).
+    -- | Evaluates whether either the left argument matches the right one.
+    --
+    -- This relation must be a total order, where more specific terms on the
+    -- left can produce a match, but a less specific term on the left can
+    -- never produce a match. For instance, when matching against media types
+    -- it is important that if the client asks for a general type then we can
+    -- choose a more specific offering from the server, but if a client asks
+    -- for a specific type and the server only offers a more general form,
+    -- then we cannot generalise. In this case, the server types will be the
+    -- left argument, and the client types the right.
+    --
+    -- For types with no concept of specificity, this operation is just
+    -- equality.
     matches :: a -> a -> Bool
 
     -- | Evaluates whether the left argument is more specific than the right.
+    --
+    -- This relation must be irreflexive and transitive. For types with no
+    -- concept of specificity, this is the empty relation (always false).
     moreSpecificThan :: a -> a -> Bool
 
 instance Accept ByteString where
