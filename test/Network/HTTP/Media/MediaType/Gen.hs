@@ -2,12 +2,8 @@
 -- | Contains definitions for generating 'MediaType's.
 module Network.HTTP.Media.MediaType.Gen
     (
-    -- * Generating ByteStrings
-      genByteString
-    , genDiffByteString
-
     -- * Generating MediaTypes
-    , anything
+      anything
     , genMediaType
     , genSubStar
     , genMaybeSubStar

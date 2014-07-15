@@ -14,6 +14,7 @@ import Distribution.TestSuite.QuickCheck
 
 ------------------------------------------------------------------------------
 import Network.HTTP.Media.Accept
+import Network.HTTP.Media.Gen
 import Network.HTTP.Media.MediaType          ((/?), (/.))
 import Network.HTTP.Media.MediaType.Internal
 import Network.HTTP.Media.MediaType.Gen
@@ -130,7 +131,7 @@ testMatches = testGroup "matches"
 
 ------------------------------------------------------------------------------
 testMoreSpecificThan :: Test
-testMoreSpecificThan = testGroup "isMoreSpecific"
+testMoreSpecificThan = testGroup "moreSpecificThan"
     [ testProperty "Against */*" $
         liftM (`moreSpecificThan` anything) genMaybeSubStar
     , testProperty "With */*" $
@@ -192,9 +193,9 @@ testParseAccept = testProperty "parseAccept" $ do
     let main   = mainType media
         sub    = subType media
         params = parameters media
-    let (Just parsed) = parseAccept $ main <> "/" <> sub <> mconcat
+        parsed = parseAccept $ main <> "/" <> sub <> mconcat
             (map (uncurry ((<>) . (<> "=") . (";" <>))) $ Map.toList params)
-    return $ parsed == media
+    return $ parsed == Just media
 
 
 ------------------------------------------------------------------------------
