@@ -32,7 +32,9 @@ class Show a => Accept a where
     showAccept = show
 
     -- | Evaluates whether either the left argument matches the right one
-    -- (order may be important).
+    -- (order may be important). In particular, when using 'matchAccept',
+    -- the server option is the first argument and the client option is
+    -- the second.
     matches :: a -> a -> Bool
 
     -- | Evaluates whether the left argument is more specific than the right.
