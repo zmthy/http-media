@@ -1,5 +1,5 @@
 name:          http-media
-version:       0.1.1
+version:       0.2.0
 license:       MIT
 license-file:  LICENSE
 author:        Timothy Jones
@@ -18,6 +18,25 @@ description:
   matching against the other accept headers as well. It encodes MIME parameters
   into a 'MediaType' data, and allows the matching of the final value by
   comparing quality values from the client.
+  .
+  In the following example, the Accept header is parsed, and then matched
+  against a list of server options to serve the appropriate media:
+  .
+  > getHeader >>= maybe send406Error sendResourceWith . mapAcceptMedia
+  >     [ ("text/html",        asHtml)
+  >     , ("application/json", asJson)
+  >     ]
+  .
+  Similarly, the Content-Type header can be used to produce a parser for request
+  bodies based on the given content type:
+  .
+  > getContentType >>= maybe send415Error readRequestBodyWith . mapContentMedia
+  >     [ ("application/json", parseJson)
+  >     , ("text/plain",       parseText)
+  >     ]
+  .
+  The API is agnostic to your choice of server.
+
 
 library
   hs-source-dirs: src
@@ -30,7 +49,7 @@ library
 
   exposed-modules:
     Network.HTTP.Media
-    Network.HTTP.Media.Match
+    Network.HTTP.Media.Accept
     Network.HTTP.Media.MediaType
   other-modules:
     Network.HTTP.Media.MediaType.Internal
@@ -53,9 +72,9 @@ test-suite test-http-media
   test-module: Tests
   other-modules:
     Network.HTTP.Media
+    Network.HTTP.Media.Accept
+    Network.HTTP.Media.Accept.Tests
     Network.HTTP.Media.Gen
-    Network.HTTP.Media.Match
-    Network.HTTP.Media.Match.Tests
     Network.HTTP.Media.MediaType
     Network.HTTP.Media.MediaType.Gen
     Network.HTTP.Media.MediaType.Internal
@@ -69,10 +88,10 @@ test-suite test-http-media
   build-depends:
     base                  >= 4.6.0  && < 5.0,
     bytestring            >= 0.10.0 && < 0.11,
-    Cabal                 >= 1.18.0 && < 1.19,
+    Cabal                 >= 1.18.0 && < 1.21,
     cabal-test-quickcheck >= 0.1.0  && < 0.2,
     containers            >= 0.5.0  && < 0.6,
-    QuickCheck            >= 2.6    && < 2.7,
+    QuickCheck            >= 2.6    && < 2.9,
     utf8-string           >= 0.3.7  && < 0.4
 
 source-repository head

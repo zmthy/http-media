@@ -11,6 +11,8 @@ module Network.HTTP.Media.Quality
 import Data.Maybe (listToMaybe)
 import Data.Word  (Word16)
 
+------------------------------------------------------------------------------
+import Network.HTTP.Media.Accept
 
 ------------------------------------------------------------------------------
 -- | Attaches a quality value to data.
@@ -19,8 +21,8 @@ data Quality a = Quality
     , qualityValue :: Word16
     } deriving (Eq)
 
-instance Show a => Show (Quality a) where
-    show (Quality a q) = show a ++ ";q=" ++ showQ q
+instance Accept a => Show (Quality a) where
+    show (Quality a q) = showAccept a ++ ";q=" ++ showQ q
 
 
 ------------------------------------------------------------------------------

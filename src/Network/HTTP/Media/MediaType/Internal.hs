@@ -4,7 +4,6 @@ module Network.HTTP.Media.MediaType.Internal
     ( MediaType (..)
     , Parameters
     , toByteString
-    , parse
     ) where
 
 ------------------------------------------------------------------------------
@@ -22,7 +21,7 @@ import Data.Maybe           (fromMaybe)
 import Data.Monoid          ((<>))
 
 ------------------------------------------------------------------------------
-import Network.HTTP.Media.Match (Match (..))
+import Network.HTTP.Media.Accept (Accept (..))
 import Network.HTTP.Media.Utils
 
 
@@ -41,10 +40,19 @@ instance Show MediaType where
         f k v = (++ ';' : toString k ++ '=' : toString v)
 
 instance IsString MediaType where
-    fromString str = flip fromMaybe (parse $ BS.fromString str) $
+    fromString str = flip fromMaybe (parseAccept $ BS.fromString str) $
         error $ "Invalid media type literal " ++ str
 
-instance Match MediaType where
+instance Accept MediaType where
+    parseAccept bs = do
+        let pieces = BS.split semi bs
+        guard $ not (null pieces)
+        let (m : ps) = pieces
+            (a, b)   = breakByte slash m
+        guard $ BS.elem slash m && (a /= "*" || b == "*")
+        return $ MediaType a b $
+            foldr (uncurry Map.insert . breakByte equal) Map.empty ps
+
     matches a b
         | mainType b == "*" = params
         | subType b == "*"  = mainType a == mainType b && params
@@ -67,19 +75,6 @@ instance Match MediaType where
 ------------------------------------------------------------------------------
 -- | 'MediaType' parameters.
 type Parameters = Map ByteString ByteString
-
-
-------------------------------------------------------------------------------
--- | Parses a media type header into a 'MediaType'.
-parse :: ByteString -> Maybe MediaType
-parse bs = do
-    let pieces = BS.split semi bs
-    guard $ not (null pieces)
-    let (m : ps) = pieces
-        (a, b)   = breakByte slash m
-    guard $ BS.elem slash m && (a /= "*" || b == "*")
-    return $ MediaType a b $
-        foldr (uncurry Map.insert . breakByte equal) Map.empty ps
 
 
 ------------------------------------------------------------------------------

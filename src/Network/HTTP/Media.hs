@@ -13,45 +13,35 @@ module Network.HTTP.Media
     , (/.)
     , Quality
 
-    -- * Parsing
-    , parseAccept
-
     -- * Accept matching
     , matchAccept
     , mapAccept
+    , mapAcceptMedia
+    , mapAcceptBytes
 
     -- * Content matching
     , matchContent
     , mapContent
+    , mapContentMedia
 
-    -- * Match
-    , Match (..)
+    -- * Accept
+    , Accept (..)
     ) where
 
 ------------------------------------------------------------------------------
 import qualified Data.ByteString as BS
 
 ------------------------------------------------------------------------------
-import Control.Applicative  (pure, (<*>), (<|>))
+import Control.Applicative  (pure, (<$>), (<*>), (<|>))
 import Control.Monad        (guard)
 import Data.ByteString      (ByteString, split)
 import Data.ByteString.UTF8 (toString)
 
 ------------------------------------------------------------------------------
-import Network.HTTP.Media.Match     as Match
+import Network.HTTP.Media.Accept    as Accept
 import Network.HTTP.Media.MediaType as MediaType
 import Network.HTTP.Media.Quality
 import Network.HTTP.Media.Utils
-
-
-------------------------------------------------------------------------------
--- | Parses a full Accept header into a list of quality-valued media types.
-parseAccept :: ByteString -> Maybe [Quality MediaType]
-parseAccept = (. split comma) . mapM $ \bs ->
-        let (accept, q) = BS.breakSubstring ";q=" $ BS.filter (/= space) bs
-        in (<*> parse accept) $ if BS.null q
-            then pure maxQuality else fmap (flip Quality) $ readQ
-                (toString $ BS.takeWhile (/= semi) $ BS.drop 3 q)
 
 
 ------------------------------------------------------------------------------
@@ -61,31 +51,31 @@ parseAccept = (. split comma) . mapM $ \bs ->
 -- with the same quality level and specificity, then the first one in the
 -- server list is chosen.
 --
--- The use of the 'Match' type class allows the application of either
+-- The use of the 'Accept' type class allows the application of either
 -- 'MediaType' for the standard Accept header or 'ByteString' for any other
--- Accept header which can be marked with a quality value. The standard
--- application of this function for 'MediaType' should be in conjunction with
--- 'parseAccepts'.
+-- Accept header which can be marked with a quality value.
 --
--- > parseAccepts header >>= matchQuality resourceTypeOptions
+-- > matchAccept ["text/html", "application/json"] <$> getHeader
 --
--- For more information on the matching process see RFC 2616, section 14.
+-- For more information on the matching process see RFC 2616, section 14.1-4.
 matchAccept
-    :: Match a
-    => [a]          -- ^ The server-side options
-    -> [Quality a]  -- ^ The client-side preferences
+    :: Accept a
+    => [a]         -- ^ The server-side options
+    -> ByteString  -- ^ The client-side header value
     -> Maybe a
-matchAccept server clientq = guard (hq /= 0) >> specific qs
-  where
-    merge (Quality c q) = map (`Quality` q) $ filter (`matches` c) server
-    matched = concatMap merge clientq
-    (hq, qs) = foldr qfold (0, []) matched
-    qfold (Quality v q) (mq, vs) = case compare q mq of
-        GT -> (q, [v])
-        EQ -> (mq, v : vs)
-        LT -> (mq, vs)
-    specific (a : ms) = Just $ foldl mostSpecific a ms
-    specific []       = Nothing
+matchAccept options accept = do
+    acceptq <- parseQuality accept
+    let merge (Quality c q) = map (`Quality` q) $ filter (`matches` c) options
+        matched = concatMap merge acceptq
+        (hq, qs) = foldr qfold (0, []) matched
+        qfold (Quality v q) (mq, vs) = case compare q mq of
+            GT -> (q, [v])
+            EQ -> (mq, v : vs)
+            LT -> (mq, vs)
+        specific (a : ms) = Just $ foldl mostSpecific a ms
+        specific []       = Nothing
+    guard (hq /= 0)
+    specific qs
 
 
 ------------------------------------------------------------------------------
@@ -93,16 +83,47 @@ matchAccept server clientq = guard (hq /= 0) >> specific qs
 -- mapped to another value. Convenient for specifying how to translate the
 -- resource into each of its available formats.
 --
--- > maybe render406Error renderResource $ parseAccepts header >>= mapQuality
+-- > getHeader >>= maybe render406Error renderResource . mapAccept
+-- >     [ ("text" // "html",        asHtml)
+-- >     , ("application" // "json", asJson)
+-- >     ]
+mapAccept
+    :: Accept a
+    => [(a, b)]    -- ^ The map of server-side preferences to values
+    -> ByteString  -- ^ The client-side header value
+    -> Maybe b
+mapAccept options accept =
+    matchAccept (map fst options) accept >>= lookupMatches options
+
+
+------------------------------------------------------------------------------
+-- | A specialisation of 'mapAccept' that only takes MediaType as its input,
+-- to avoid ambiguous-type errors when using string literal overloading.
+--
+-- > getHeader >>= maybe render406Error renderResource . mapAcceptMedia
 -- >     [ ("text/html",        asHtml)
 -- >     , ("application/json", asJson)
 -- >     ]
-mapAccept
-    :: Match a
-    => [(a, b)]     -- ^ The map of server-side preferences to values
-    -> [Quality a]  -- ^ The client-side preferences
+mapAcceptMedia ::
+    [(MediaType, b)]  -- ^ The map of server-side preferences to values
+    -> ByteString     -- ^ The client-side header value
     -> Maybe b
-mapAccept s c = matchAccept (map fst s) c >>= lookupMatches s
+mapAcceptMedia = mapAccept
+
+
+------------------------------------------------------------------------------
+-- | A specialisation of 'mapAccept' that only takes ByteString as its input,
+-- to avoid ambiguous-type errors when using string literal overloading.
+--
+-- > getHeader >>= maybe render406Error encodeResourceWith . mapAcceptBytes
+-- >     [ ("compress", compress)
+-- >     , ("gzip",     gzip)
+-- >     ]
+mapAcceptBytes ::
+    [(ByteString, b)]  -- ^ The map of server-side preferences to values
+    -> ByteString      -- ^ The client-side header value
+    -> Maybe b
+mapAcceptBytes = mapAccept
 
 
 ------------------------------------------------------------------------------
@@ -110,33 +131,69 @@ mapAccept s c = matchAccept (map fst s) c >>= lookupMatches s
 -- content value. A result of 'Nothing' means that nothing matched (which
 -- should indicate a 415 error).
 --
--- As with the Accept parsing, he use of the 'Match' type class allows the
--- application of either 'MediaType' or 'ByteString'.
+-- > matchContent ["application/json", "text/plain"] <$> getContentType
+--
+-- For more information on the matching process see RFC 2616, section 14.17.
 matchContent
-    :: Match a
-    => a         -- ^ The client's request value
-    -> [a]       -- ^ The server-side response options
+    :: Accept a
+    => [a]         -- ^ The server-side response options
+    -> ByteString  -- ^ The client's request value
     -> Maybe a
-matchContent client = foldl choose Nothing
-  where choose m server = m <|> (guard (matches client server) >> Just server)
+matchContent options ctype = foldl choose Nothing options
+  where
+    choose m server = m <|> do
+        parseAccept ctype >>= guard . (`matches` server)
+        Just server
 
 
 ------------------------------------------------------------------------------
 -- | The equivalent of 'matchContent' above, except the resulting choice is
 -- mapped to another value.
+--
+-- > getContentType >>= maybe send415Error readRequestBodyWith . mapContent
+-- >     [ ("application" // "json", parseJson)
+-- >     , ("text" // "plain",       parseText)
+-- >     ]
 mapContent
-    :: Match a
-    => a         -- ^ The client request's header value
-    -> [(a, b)]  -- ^ The map of server-side responses
+    :: Accept a
+    => [(a, b)]    -- ^ The map of server-side responses
+    -> ByteString  -- ^ The client request's header value
     -> Maybe b
-mapContent c s = matchContent c (map fst s) >>= lookupMatches s
+mapContent options ctype =
+    matchContent (map fst options) ctype >>= lookupMatches options
+
+
+------------------------------------------------------------------------------
+-- | A specialisation of 'mapContent' that only takes MediaType as its input,
+-- to avoid ambiguous-type errors when using string literal overloading.
+--
+-- > getContentType >>=
+-- >     maybe send415Error readRequestBodyWith . mapContentMedia
+-- >         [ ("application/json", parseJson)
+-- >         , ("text/plain",       parseText)
+-- >         ]
+mapContentMedia
+    :: [(MediaType, b)]  -- ^ The map of server-side responses
+    -> ByteString        -- ^ The client request's header value
+    -> Maybe b
+mapContentMedia = mapContent
+
+
+------------------------------------------------------------------------------
+-- | Parses a full Accept header into a list of quality-valued media types.
+parseQuality :: Accept a => ByteString -> Maybe [Quality a]
+parseQuality = (. split comma) . mapM $ \bs ->
+    let (accept, q) = BS.breakSubstring ";q=" $ BS.filter (/= space) bs
+    in (<*> parseAccept accept) $ if BS.null q
+        then pure maxQuality else flip Quality <$> readQ
+            (toString $ BS.takeWhile (/= semi) $ BS.drop 3 q)
 
 
 ------------------------------------------------------------------------------
 -- | The equivalent of 'lookupBy matches'.
-lookupMatches :: Match a => [(a, b)] -> a -> Maybe b
+lookupMatches :: Accept a => [(a, b)] -> a -> Maybe b
 lookupMatches ((k, v) : r) a
-    | Match.matches k a = Just v
+    | Accept.matches k a = Just v
     | otherwise         = lookupMatches r a
 lookupMatches [] _ = Nothing
 

@@ -13,7 +13,7 @@ import Data.Monoid                       ((<>), mconcat)
 import Distribution.TestSuite.QuickCheck
 
 ------------------------------------------------------------------------------
-import Network.HTTP.Media.Match
+import Network.HTTP.Media.Accept
 import Network.HTTP.Media.MediaType          ((/?), (/.))
 import Network.HTTP.Media.MediaType.Internal
 import Network.HTTP.Media.MediaType.Gen
@@ -30,7 +30,7 @@ tests =
     , testMatches
     , testMoreSpecificThan
     , testMostSpecific
-    , testParse
+    , testParseAccept
     ]
 
 
@@ -52,7 +52,7 @@ testEq = testGroup "Eq"
 testShow :: Test
 testShow = testProperty "show" $ do
     media <- genMediaType
-    return $ parse (BS.fromString $ show media) == Just media
+    return $ parseAccept (BS.fromString $ show media) == Just media
 
 
 ------------------------------------------------------------------------------
@@ -186,13 +186,13 @@ testMostSpecific = testGroup "mostSpecific"
 
 
 ------------------------------------------------------------------------------
-testParse :: Test
-testParse = testProperty "parse" $ do
+testParseAccept :: Test
+testParseAccept = testProperty "parseAccept" $ do
     media <- genMediaType
     let main   = mainType media
         sub    = subType media
         params = parameters media
-    let (Just parsed) = parse $ main <> "/" <> sub <> mconcat
+    let (Just parsed) = parseAccept $ main <> "/" <> sub <> mconcat
             (map (uncurry ((<>) . (<> "=") . (";" <>))) $ Map.toList params)
     return $ parsed == media
 

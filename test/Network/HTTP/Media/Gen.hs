@@ -26,4 +26,3 @@ genDiffByteString bs = do
     bs' <- genByteString
     if bs == bs' then genDiffByteString bs else return bs'
 
-

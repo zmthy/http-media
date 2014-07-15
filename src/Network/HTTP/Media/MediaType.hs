@@ -7,7 +7,6 @@ module Network.HTTP.Media.MediaType
     , Parameters
     , (//)
     , (/:)
-    , parse
     , toByteString
 
     -- * Querying
