@@ -51,8 +51,10 @@ library
     Network.HTTP.Media
     Network.HTTP.Media.Accept
     Network.HTTP.Media.MediaType
+    Network.HTTP.Media.Language
   other-modules:
     Network.HTTP.Media.MediaType.Internal
+    Network.HTTP.Media.Language.Internal
     Network.HTTP.Media.Quality
     Network.HTTP.Media.Utils
   build-depends:
@@ -79,6 +81,10 @@ test-suite test-http-media
     Network.HTTP.Media.MediaType.Gen
     Network.HTTP.Media.MediaType.Internal
     Network.HTTP.Media.MediaType.Tests
+    Network.HTTP.Media.Language
+    Network.HTTP.Media.Language.Gen
+    Network.HTTP.Media.Language.Internal
+    Network.HTTP.Media.Language.Tests
     Network.HTTP.Media.Quality
     Network.HTTP.Media.Tests
     Network.HTTP.Media.Utils
