@@ -22,74 +22,40 @@ import Network.HTTP.Media.Quality
 ------------------------------------------------------------------------------
 tests :: [Test]
 tests =
-    [ testMatchAccept
+    [ testParse
+    , testMatchAccept
     , testMapAccept
     , testMatchContent
     , testMapContent
+    , testMatchQuality
+    , testMapQuality
     ]
+
+
+------------------------------------------------------------------------------
+testParse :: Test
+testParse = testGroup "parseQuality"
+    [ testProperty "Without quality" $ do
+        media <- medias
+        return $
+            parseQuality (group media) == Just (map maxQuality media)
+    , testProperty "With quality" $ do
+        media <- medias >>= mapM (flip fmap (choose (0, 1000)) . Quality)
+        return $ parseQuality (group media) == Just media
+    ]
+  where
+    medias = listOf1 genMediaType
+    group media = fromString $ intercalate "," (map show media)
 
 
 ------------------------------------------------------------------------------
 testMatchAccept :: Test
-testMatchAccept = testGroup "matchAccept"
-    [ testProperty "Highest quality" $ do
-        server <- genServer
-        qs     <- replicateM (length server) $ choose (1, 1000)
-        let client = zipWith Quality server qs
-            qmax v q = if qualityValue q > qualityValue v then q else v
-        return $ matchAccept server (qToBS client) ==
-            Just (qualityData $ foldr1 qmax client)
-    , testProperty "Most specific" $ do
-        media <- genConcreteMediaType
-        let client = qToBS $ map maxQuality
-                [ MediaType "*" "*" empty
-                , media { subType = "*" }
-                , media { parameters = empty }
-                , media
-                ]
-        return $ matchAccept [media] client == Just media
-    , testProperty "Nothing" $ do
-        server <- genServer
-        client <- listOf1 $ genDiffMediaTypesWith genConcreteMediaType server
-        let client' = filter (not . flip any server . matches) client
-        return . isNothing $ matchAccept server
-            (qToBS $ map maxQuality client')
-    , testProperty "Never chooses q=0" $ do
-        server <- genServer
-        return . isNothing $
-            matchAccept server (qToBS $ map minQuality server)
-    , testProperty "Left biased" $ do
-        server <- genServer
-        let client = qToBS $ map maxQuality server
-        return $ matchAccept server client == Just (head server)
-    , testProperty "Against */*" $ do
-        server <- genServer
-        let stars = "*/*" :: ByteString
-        return $ matchAccept server (qToBS [maxQuality stars]) ==
-            Just (head server)
-    , testProperty "Against type/*" $ do
-        server <- genServer
-        let client = qToBS [maxQuality (subStarOf $ head server)]
-        return $ matchAccept server client == Just (head server)
-    ]
+testMatchAccept = testMatch "Accept" matchAccept qToBS
 
 
 ------------------------------------------------------------------------------
 testMapAccept :: Test
-testMapAccept = testGroup "mapAccept"
-    [ testProperty "Matches" $ do
-        server <- genServer
-        qs     <- replicateM (length server) $ choose (1, 1000 :: Word16)
-        let client = zipWith Quality server qs
-            qmax q v = if qualityValue q >= qualityValue v then q else v
-            zipped = zip server server
-        return $ mapAccept zipped (qToBS client) ==
-            Just (qualityData $ foldr1 qmax client)
-    , testProperty "Nothing" $ do
-        (server, client) <- genServerAndClient
-        let zipped = zip server $ repeat ()
-        return . isNothing $ mapAccept zipped (qToBS $ map maxQuality client)
-    ]
+testMapAccept = testMap "Accept" mapAccept qToBS
 
 
 ------------------------------------------------------------------------------
@@ -134,6 +100,87 @@ testMapContent = testGroup "mapContent"
         client <- listOf1 $ genDiffMediaTypesWith genConcreteMediaType server
         let zipped = zip server $ repeat ()
         return . isNothing $ mapAccept zipped (toBS client)
+    ]
+
+
+------------------------------------------------------------------------------
+testMatchQuality :: Test
+testMatchQuality = testMatch "Quality" matchQuality id
+
+
+------------------------------------------------------------------------------
+testMapQuality :: Test
+testMapQuality = testMap "Quality" mapQuality id
+
+
+------------------------------------------------------------------------------
+testMatch
+    :: String
+    -> ([MediaType] -> a -> Maybe MediaType)
+    -> ([Quality MediaType] -> a)
+    -> Test
+testMatch name match qToI = testGroup ("match" ++ name)
+    [ testProperty "Highest quality" $ do
+        server <- genServer
+        qs     <- replicateM (length server) $ choose (1, 1000)
+        let client = zipWith Quality server qs
+            qmax v q = if qualityValue q > qualityValue v then q else v
+        return $ match server (qToI client) ==
+            Just (qualityData $ foldr1 qmax client)
+    , testProperty "Most specific" $ do
+        media <- genConcreteMediaType
+        let client = qToI $ map maxQuality
+                [ MediaType "*" "*" empty
+                , media { subType = "*" }
+                , media { parameters = empty }
+                , media
+                ]
+        return $ match [media] client == Just media
+    , testProperty "Nothing" $ do
+        server <- genServer
+        client <- listOf1 $ genDiffMediaTypesWith genConcreteMediaType server
+        let client' = filter (not . flip any server . matches) client
+        return . isNothing $ match server
+            (qToI $ map maxQuality client')
+    , testProperty "Never chooses q=0" $ do
+        server <- genServer
+        return . isNothing $
+            match server (qToI $ map minQuality server)
+    , testProperty "Left biased" $ do
+        server <- genServer
+        let client = qToI $ map maxQuality server
+        return $ match server client == Just (head server)
+    , testProperty "Against */*" $ do
+        server <- genServer
+        let stars = "*/*" :: MediaType
+        return $ match server (qToI [maxQuality stars]) ==
+            Just (head server)
+    , testProperty "Against type/*" $ do
+        server <- genServer
+        let client = qToI [maxQuality (subStarOf $ head server)]
+        return $ match server client == Just (head server)
+    ]
+
+
+------------------------------------------------------------------------------
+testMap
+    :: String
+    -> ([(MediaType, MediaType)] -> a -> Maybe MediaType)
+    -> ([Quality MediaType] -> a)
+    -> Test
+testMap name mapf qToI = testGroup ("map" ++ name)
+    [ testProperty "Matches" $ do
+        server <- genServer
+        qs     <- replicateM (length server) $ choose (1, 1000 :: Word16)
+        let client = zipWith Quality server qs
+            qmax q v = if qualityValue q >= qualityValue v then q else v
+            zipped = zip server server
+        return $ mapf zipped (qToI client) ==
+            Just (qualityData $ foldr1 qmax client)
+    , testProperty "Nothing" $ do
+        (server, client) <- genServerAndClient
+        let zipped = zip server $ repeat "*/*"
+        return . isNothing $ mapf zipped (qToI $ map maxQuality client)
     ]
 
 

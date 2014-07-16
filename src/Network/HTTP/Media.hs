@@ -11,7 +11,6 @@ module Network.HTTP.Media
     , parameters
     , (/?)
     , (/.)
-    , Quality
 
     -- * Accept matching
     , matchAccept
@@ -24,6 +23,12 @@ module Network.HTTP.Media
     , mapContent
     , mapContentMedia
 
+    -- * Quality values
+    , Quality
+    , parseQuality
+    , matchQuality
+    , mapQuality
+
     -- * Accept
     , Accept (..)
     ) where
@@ -33,7 +38,7 @@ import qualified Data.ByteString as BS
 
 ------------------------------------------------------------------------------
 import Control.Applicative  (pure, (<$>), (<*>), (<|>))
-import Control.Monad        (guard)
+import Control.Monad        (guard, (>=>))
 import Data.ByteString      (ByteString, split)
 import Data.ByteString.UTF8 (toString)
 
@@ -63,19 +68,7 @@ matchAccept
     => [a]         -- ^ The server-side options
     -> ByteString  -- ^ The client-side header value
     -> Maybe a
-matchAccept options accept = do
-    acceptq <- parseQuality accept
-    let merge (Quality c q) = map (`Quality` q) $ filter (`matches` c) options
-        matched = concatMap merge acceptq
-        (hq, qs) = foldr qfold (0, []) matched
-        qfold (Quality v q) (mq, vs) = case compare q mq of
-            GT -> (q, [v])
-            EQ -> (mq, v : vs)
-            LT -> (mq, vs)
-        specific (a : ms) = Just $ foldl mostSpecific a ms
-        specific []       = Nothing
-    guard (hq /= 0)
-    specific qs
+matchAccept = (parseQuality >=>) . matchQuality
 
 
 ------------------------------------------------------------------------------
@@ -92,8 +85,7 @@ mapAccept
     => [(a, b)]    -- ^ The map of server-side preferences to values
     -> ByteString  -- ^ The client-side header value
     -> Maybe b
-mapAccept options accept =
-    matchAccept (map fst options) accept >>= lookupMatches options
+mapAccept = (parseQuality >=>) . mapQuality
 
 
 ------------------------------------------------------------------------------
@@ -187,6 +179,57 @@ parseQuality = (. split comma) . mapM $ \bs ->
     in (<*> parseAccept accept) $ if BS.null q
         then pure maxQuality else flip Quality <$> readQ
             (toString $ BS.takeWhile (/= semi) $ BS.drop 3 q)
+
+
+------------------------------------------------------------------------------
+-- | Matches a list of server-side resource options against a pre-parsed
+-- quality-marked list of client-side preferences. A result of 'Nothing' means
+-- that nothing matched (which should indicate a 406 error). If two or more
+-- results arise with the same quality level and specificity, then the first
+-- one in the server list is chosen.
+--
+-- The use of the 'Accept' type class allows the application of either
+-- 'MediaType' for the standard Accept header or 'ByteString' for any other
+-- Accept header which can be marked with a quality value.
+--
+-- > matchQuality ["text/html", "application/json"] <$> parseQuality header
+--
+-- For more information on the matching process see RFC 2616, section 14.1-4.
+matchQuality
+    :: Accept a
+    => [a]          -- ^ The server-side options
+    -> [Quality a]  -- ^ The pre-parsed client-side header value
+    -> Maybe a
+matchQuality options acceptq = do
+    let merge (Quality c q) = map (`Quality` q) $ filter (`matches` c) options
+        matched = concatMap merge acceptq
+        (hq, qs) = foldr qfold (0, []) matched
+        qfold (Quality v q) (mq, vs) = case compare q mq of
+            GT -> (q, [v])
+            EQ -> (mq, v : vs)
+            LT -> (mq, vs)
+        specific (a : ms) = Just $ foldl mostSpecific a ms
+        specific []       = Nothing
+    guard (hq /= 0)
+    specific qs
+
+
+------------------------------------------------------------------------------
+-- | The equivalent of 'matchQuality' above, except the resulting choice is
+-- mapped to another value. Convenient for specifying how to translate the
+-- resource into each of its available formats.
+--
+-- > parseQuality header >>= maybe render406Error renderResource . mapQuality
+-- >     [ ("text" // "html",        asHtml)
+-- >     , ("application" // "json", asJson)
+-- >     ]
+mapQuality
+    :: Accept a
+    => [(a, b)]     -- ^ The map of server-side preferences to values
+    -> [Quality a]  -- ^ The client-side header value
+    -> Maybe b
+mapQuality options accept =
+    matchQuality (map fst options) accept >>= lookupMatches options
 
 
 ------------------------------------------------------------------------------
