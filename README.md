@@ -1,3 +1,8 @@
+http-media
+==========
+
+[![Build Status](https://secure.travis-ci.org/zmthy/http-media.svg)](http://travis-ci.org/zmthy/http-media)
+
 This library is intended to be a comprehensive solution to parsing media
 types, including quality parameters, in HTTP headers. It addresses parsing of
 the Content-Type and Accept headers, and includes general data types for
