@@ -1,5 +1,5 @@
 name:          http-media
-version:       0.2.0
+version:       0.3.0
 license:       MIT
 license-file:  LICENSE
 author:        Timothy Jones
@@ -12,15 +12,16 @@ build-type:    Simple
 cabal-version: >= 1.10
 synopsis:      Processing HTTP Content-Type and Accept headers
 description:
-  This library is intended to be a comprehensive solution to parsing media
-  types, including quality parameters, in HTTP headers. It addresses parsing of
-  the Content-Type and Accept headers, and includes general data types for
-  matching against the other accept headers as well. It encodes MIME parameters
-  into a 'MediaType' data, and allows the matching of the final value by
-  comparing quality values from the client.
+  This library is intended to be a comprehensive solution to parsing and
+  selecting quality-indexed values in HTTP headers. It is capable of parsing
+  both media types and language parameters from the Accept and Content header
+  families, and can be extended to match against other accept headers as well.
+  Selecting the appropriate header value is achieved by comparing a list of
+  server options against the quality-indexed values supplied by the client.
   .
-  In the following example, the Accept header is parsed, and then matched
-  against a list of server options to serve the appropriate media:
+  In the following example, the Accept header is parsed and then matched against
+  a list of server options to serve the appropriate media using
+  'mapAcceptMedia':
   .
   > getHeader >>= maybe send406Error sendResourceWith . mapAcceptMedia
   >     [ ("text/html",        asHtml)
@@ -28,7 +29,7 @@ description:
   >     ]
   .
   Similarly, the Content-Type header can be used to produce a parser for request
-  bodies based on the given content type:
+  bodies based on the given content type with 'mapContentMedia':
   .
   > getContentType >>= maybe send415Error readRequestBodyWith . mapContentMedia
   >     [ ("application/json", parseJson)
