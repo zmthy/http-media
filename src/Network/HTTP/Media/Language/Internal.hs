@@ -3,6 +3,7 @@
 -- language negotiation.
 module Network.HTTP.Media.Language.Internal
     ( Language (..)
+    , toList
     , toByteString
     ) where
 
@@ -62,6 +63,13 @@ instance Accept Language where
     -- arguments is a strict prefix of the left.
     moreSpecificThan (Language a) (Language b) =
         b `isPrefixOf` a && length a > length b
+
+
+------------------------------------------------------------------------------
+-- | Converts 'Language' to a list of its language parts. The wildcard
+-- produces an empty list.
+toList :: Language -> [ByteString]
+toList (Language l) = l
 
 
 ------------------------------------------------------------------------------

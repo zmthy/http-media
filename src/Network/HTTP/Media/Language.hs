@@ -3,6 +3,7 @@
 -- language negotiation.
 module Network.HTTP.Media.Language
     ( Language
+    , toList
     , toByteString
     ) where
 
