@@ -12,16 +12,21 @@ module Network.HTTP.Media
     , (/?)
     , (/.)
 
+    -- * Languages
+    , Language
+
     -- * Accept matching
     , matchAccept
     , mapAccept
     , mapAcceptMedia
+    , mapAcceptLanguage
     , mapAcceptBytes
 
     -- * Content matching
     , matchContent
     , mapContent
     , mapContentMedia
+    , mapContentLanguage
 
     -- * Quality values
     , Quality
@@ -44,6 +49,7 @@ import Data.ByteString.UTF8 (toString)
 
 ------------------------------------------------------------------------------
 import Network.HTTP.Media.Accept    as Accept
+import Network.HTTP.Media.Language  as Language
 import Network.HTTP.Media.MediaType as MediaType
 import Network.HTTP.Media.Quality
 import Network.HTTP.Media.Utils
@@ -89,7 +95,7 @@ mapAccept = (parseQuality >=>) . mapQuality
 
 
 ------------------------------------------------------------------------------
--- | A specialisation of 'mapAccept' that only takes MediaType as its input,
+-- | A specialisation of 'mapAccept' that only takes 'MediaType' as its input,
 -- to avoid ambiguous-type errors when using string literal overloading.
 --
 -- > getHeader >>= maybe render406Error renderResource . mapAcceptMedia
@@ -104,8 +110,24 @@ mapAcceptMedia = mapAccept
 
 
 ------------------------------------------------------------------------------
--- | A specialisation of 'mapAccept' that only takes ByteString as its input,
+-- | A specialisation of 'mapAccept' that only takes 'Language' as its input,
 -- to avoid ambiguous-type errors when using string literal overloading.
+--
+-- > getHeader >>= maybe render406Error renderResource . mapAcceptLanguage
+-- >     [ ("text/html",        asHtml)
+-- >     , ("application/json", asJson)
+-- >     ]
+mapAcceptLanguage ::
+    [(Language, b)]  -- ^ The map of server-side preferences to values
+    -> ByteString    -- ^ The client-side header value
+    -> Maybe b
+mapAcceptLanguage = mapAccept
+
+
+------------------------------------------------------------------------------
+-- | A specialisation of 'mapAccept' that only takes 'ByteString' as its
+-- input, to avoid ambiguous-type errors when using string literal
+-- overloading.
 --
 -- > getHeader >>= maybe render406Error encodeResourceWith . mapAcceptBytes
 -- >     [ ("compress", compress)
@@ -156,8 +178,9 @@ mapContent options ctype =
 
 
 ------------------------------------------------------------------------------
--- | A specialisation of 'mapContent' that only takes MediaType as its input,
--- to avoid ambiguous-type errors when using string literal overloading.
+-- | A specialisation of 'mapContent' that only takes 'MediaType' as its
+-- input, to avoid ambiguous-type errors when using string literal
+-- overloading.
 --
 -- > getContentType >>=
 -- >     maybe send415Error readRequestBodyWith . mapContentMedia
@@ -169,6 +192,22 @@ mapContentMedia
     -> ByteString        -- ^ The client request's header value
     -> Maybe b
 mapContentMedia = mapContent
+
+
+------------------------------------------------------------------------------
+-- | A specialisation of 'mapContent' that only takes 'Language' as its input,
+-- to avoid ambiguous-type errors when using string literal overloading.
+--
+-- > getContentType >>=
+-- >     maybe send415Error readRequestBodyWith . mapContentLanguage
+-- >         [ ("application/json", parseJson)
+-- >         , ("text/plain",       parseText)
+-- >         ]
+mapContentLanguage
+    :: [(Language, b)]  -- ^ The map of server-side responses
+    -> ByteString        -- ^ The client request's header value
+    -> Maybe b
+mapContentLanguage = mapContent
 
 
 ------------------------------------------------------------------------------
