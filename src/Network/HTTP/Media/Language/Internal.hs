@@ -3,8 +3,6 @@
 -- language negotiation.
 module Network.HTTP.Media.Language.Internal
     ( Language (..)
-    , toList
-    , toByteString
     ) where
 
 ------------------------------------------------------------------------------
@@ -20,8 +18,9 @@ import Data.Maybe      (fromMaybe)
 import Data.String     (IsString (..))
 
 ------------------------------------------------------------------------------
-import Network.HTTP.Media.Accept (Accept (..))
-import Network.HTTP.Media.Utils  (hyphen, isAlpha)
+import Network.HTTP.Media.Accept       (Accept (..))
+import Network.HTTP.Media.RenderHeader (RenderHeader (..))
+import Network.HTTP.Media.Utils        (hyphen, isAlpha)
 
 
 ------------------------------------------------------------------------------
@@ -37,7 +36,7 @@ newtype Language = Language [ByteString]
 -- Note that internally, Language [] equates to *.
 
 instance Show Language where
-    show = BS.toString . toByteString
+    show = BS.toString . renderHeader
 
 instance IsString Language where
     fromString "*" = Language []
@@ -64,17 +63,7 @@ instance Accept Language where
     moreSpecificThan (Language a) (Language b) =
         b `isPrefixOf` a && length a > length b
 
-
-------------------------------------------------------------------------------
--- | Converts 'Language' to a list of its language parts. The wildcard
--- produces an empty list.
-toList :: Language -> [ByteString]
-toList (Language l) = l
-
-
-------------------------------------------------------------------------------
--- | Converts 'Language' to 'ByteString'.
-toByteString :: Language -> ByteString
-toByteString (Language []) = "*"
-toByteString (Language l)  = BS.intercalate "-" l
+instance RenderHeader Language where
+    renderHeader (Language []) = "*"
+    renderHeader (Language l)  = BS.intercalate "-" l
 

@@ -8,7 +8,6 @@ module Network.HTTP.Media.MediaType
     , Parameters
     , (//)
     , (/:)
-    , toByteString
 
     -- * Querying
     , mainType

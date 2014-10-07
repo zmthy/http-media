@@ -7,8 +7,7 @@ module Network.HTTP.Media.Accept
     ) where
 
 ------------------------------------------------------------------------------
-import Data.ByteString
-import Data.ByteString.UTF8 (toString)
+import Data.ByteString (ByteString)
 
 
 ------------------------------------------------------------------------------
@@ -22,14 +21,6 @@ class Show a => Accept a where
     -- | Specifies how to parse an Accept-* header after quality has been
     -- handled.
     parseAccept :: ByteString -> Maybe a
-
-    -- | Specifies how to show an Accept-* header. Defaults to the standard
-    -- show method.
-    --
-    -- Mostly useful just for avoiding quotes when rendering 'ByteString's
-    -- with accompanying quality.
-    showAccept :: a -> String
-    showAccept = show
 
     -- | Evaluates whether either the left argument matches the right one.
     --
@@ -54,7 +45,6 @@ class Show a => Accept a where
 
 instance Accept ByteString where
     parseAccept = Just
-    showAccept = toString
     matches = (==)
     moreSpecificThan _ _ = False
 

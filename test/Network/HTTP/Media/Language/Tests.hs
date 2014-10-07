@@ -12,7 +12,7 @@ import Distribution.TestSuite.QuickCheck
 
 ------------------------------------------------------------------------------
 import Network.HTTP.Media.Accept
-import Network.HTTP.Media.Language
+import Network.HTTP.Media.RenderHeader
 import Network.HTTP.Media.Language.Gen
 
 
@@ -111,5 +111,5 @@ testMostSpecific = testGroup "mostSpecific"
 testParseAccept :: Test
 testParseAccept = testProperty "parseAccept" $ do
     lang <- genLanguage
-    return $ parseAccept (toByteString lang) == Just lang
+    return $ parseAccept (renderHeader lang) == Just lang
 

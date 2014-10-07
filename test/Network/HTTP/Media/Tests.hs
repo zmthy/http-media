@@ -4,8 +4,6 @@ module Network.HTTP.Media.Tests (tests) where
 ------------------------------------------------------------------------------
 import Control.Monad                     (replicateM)
 import Data.ByteString                   (ByteString)
-import Data.ByteString.UTF8              (fromString)
-import Data.List                         (intercalate)
 import Data.Map                          (empty)
 import Data.Maybe                        (isNothing, listToMaybe)
 import Data.Word                         (Word16)
@@ -38,24 +36,23 @@ testParse = testGroup "parseQuality"
     [ testProperty "Without quality" $ do
         media <- medias
         return $
-            parseQuality (group media) == Just (map maxQuality media)
+            parseQuality (renderHeader media) == Just (map maxQuality media)
     , testProperty "With quality" $ do
         media <- medias >>= mapM (flip fmap (choose (0, 1000)) . Quality)
-        return $ parseQuality (group media) == Just media
+        return $ parseQuality (renderHeader media) == Just media
     ]
   where
     medias = listOf1 genMediaType
-    group media = fromString $ intercalate "," (map show media)
 
 
 ------------------------------------------------------------------------------
 testMatchAccept :: Test
-testMatchAccept = testMatch "Accept" matchAccept qToBS
+testMatchAccept = testMatch "Accept" matchAccept renderHeader
 
 
 ------------------------------------------------------------------------------
 testMapAccept :: Test
-testMapAccept = testMap "Accept" mapAccept qToBS
+testMapAccept = testMap "Accept" mapAccept renderHeader
 
 
 ------------------------------------------------------------------------------
@@ -63,7 +60,7 @@ testMatchContent :: Test
 testMatchContent = testGroup "matchContent"
     [ testProperty "Most specific" $ do
         media <- genConcreteMediaType
-        let client = toBS
+        let client = renderHeader
                 [ MediaType "*" "*" empty
                 , media { subType = "*" }
                 , media { parameters = empty }
@@ -73,17 +70,19 @@ testMatchContent = testGroup "matchContent"
     , testProperty "Nothing" $ do
         (server, client) <- genServerAndClient
         let client' = filter (not . flip any server . matches) client
-        return . isNothing $ matchAccept server (toBS client')
+        return . isNothing $ matchAccept server (renderHeader client')
     , testProperty "Left biased" $ do
         server <- genServer
-        return $ matchAccept server (toBS server) == Just (head server)
+        return $
+            matchAccept server (renderHeader server) == Just (head server)
     , testProperty "Against */*" $ do
         server <- genServer
         let stars = "*/*" :: ByteString
-        return $ matchAccept server (toBS [stars]) == Just (head server)
+        return $
+            matchAccept server (renderHeader [stars]) == Just (head server)
     , testProperty "Against type/*" $ do
         server <- genServer
-        let client = toBS [subStarOf $ head server]
+        let client = renderHeader [subStarOf $ head server]
         return $ matchAccept server client == Just (head server)
     ]
 
@@ -94,12 +93,12 @@ testMapContent = testGroup "mapContent"
     [ testProperty "Matches" $ do
         server <- genServer
         let zipped = zip server server
-        return $ mapAccept zipped (toBS server) == listToMaybe server
+        return $ mapAccept zipped (renderHeader server) == listToMaybe server
     , testProperty "Nothing" $ do
         server <- genServer
         client <- listOf1 $ genDiffMediaTypesWith genConcreteMediaType server
         let zipped = zip server $ repeat ()
-        return . isNothing $ mapAccept zipped (toBS client)
+        return . isNothing $ mapAccept zipped (renderHeader client)
     ]
 
 
@@ -195,14 +194,4 @@ genServerAndClient = do
     server <- genServer
     client <- listOf1 $ genDiffMediaTypesWith genConcreteMediaType server
     return (server, client)
-
-
-------------------------------------------------------------------------------
-toBS :: Accept a => [a] -> ByteString
-toBS = fromString . intercalate "," . map showAccept
-
-
-------------------------------------------------------------------------------
-qToBS :: Accept a => [Quality a] -> ByteString
-qToBS = fromString . intercalate "," . map show
 

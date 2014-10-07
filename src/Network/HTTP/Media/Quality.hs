@@ -8,11 +8,19 @@ module Network.HTTP.Media.Quality
     ) where
 
 ------------------------------------------------------------------------------
-import Data.Maybe (listToMaybe)
-import Data.Word  (Word16)
+import qualified Data.ByteString      as BS
+import qualified Data.ByteString.UTF8 as BS
 
 ------------------------------------------------------------------------------
-import Network.HTTP.Media.Accept
+import Data.ByteString (ByteString)
+import Data.List       (dropWhileEnd)
+import Data.Maybe      (listToMaybe)
+import Data.Monoid     ((<>))
+import Data.Word       (Word16)
+
+------------------------------------------------------------------------------
+import Network.HTTP.Media.RenderHeader (RenderHeader (..))
+import Network.HTTP.Media.Utils        (zero)
 
 ------------------------------------------------------------------------------
 -- | Attaches a quality value to data.
@@ -21,8 +29,11 @@ data Quality a = Quality
     , qualityValue :: Word16
     } deriving (Eq)
 
-instance Accept a => Show (Quality a) where
-    show (Quality a q) = showAccept a ++ ";q=" ++ showQ q
+instance RenderHeader a => Show (Quality a) where
+    show = BS.toString . renderHeader
+
+instance RenderHeader h => RenderHeader (Quality h) where
+    renderHeader (Quality a q) = renderHeader a <> ";q=" <> showQ q
 
 
 ------------------------------------------------------------------------------
@@ -39,10 +50,13 @@ minQuality = flip Quality 0
 
 ------------------------------------------------------------------------------
 -- | Converts the integral value into its standard quality representation.
-showQ :: Word16 -> String
+showQ :: Word16 -> ByteString
 showQ 1000 = "1"
 showQ 0    = "0"
-showQ q    = '0' : '.' : let s = show q in replicate (3 - length s) '0' ++ s
+showQ q    = "0." <> BS.replicate (3 - length s) zero <> b
+  where
+    s = show q
+    b = BS.fromString (dropWhileEnd (== '0') s)
 
 
 ------------------------------------------------------------------------------

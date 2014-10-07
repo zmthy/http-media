@@ -14,6 +14,7 @@ module Network.HTTP.Media
 
     -- * Languages
     , Language
+    , toParts
 
     -- * Accept matching
     , matchAccept
@@ -36,6 +37,9 @@ module Network.HTTP.Media
 
     -- * Accept
     , Accept (..)
+
+    -- * Rendering
+    , RenderHeader (..)
     ) where
 
 ------------------------------------------------------------------------------
@@ -48,9 +52,10 @@ import Data.ByteString      (ByteString, split)
 import Data.ByteString.UTF8 (toString)
 
 ------------------------------------------------------------------------------
-import Network.HTTP.Media.Accept    as Accept
-import Network.HTTP.Media.Language  as Language
-import Network.HTTP.Media.MediaType as MediaType
+import Network.HTTP.Media.Accept       as Accept
+import Network.HTTP.Media.RenderHeader
+import Network.HTTP.Media.Language     as Language
+import Network.HTTP.Media.MediaType    as MediaType
 import Network.HTTP.Media.Quality
 import Network.HTTP.Media.Utils
 

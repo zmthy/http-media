@@ -1,5 +1,5 @@
 name:          http-media
-version:       0.3.0
+version:       0.4.0
 license:       MIT
 license-file:  LICENSE
 author:        Timothy Jones
@@ -51,11 +51,12 @@ library
   exposed-modules:
     Network.HTTP.Media
     Network.HTTP.Media.Accept
-    Network.HTTP.Media.MediaType
     Network.HTTP.Media.Language
+    Network.HTTP.Media.MediaType
+    Network.HTTP.Media.RenderHeader
   other-modules:
-    Network.HTTP.Media.MediaType.Internal
     Network.HTTP.Media.Language.Internal
+    Network.HTTP.Media.MediaType.Internal
     Network.HTTP.Media.Quality
     Network.HTTP.Media.Utils
   build-depends:
@@ -78,15 +79,16 @@ test-suite test-http-media
     Network.HTTP.Media.Accept
     Network.HTTP.Media.Accept.Tests
     Network.HTTP.Media.Gen
-    Network.HTTP.Media.MediaType
-    Network.HTTP.Media.MediaType.Gen
-    Network.HTTP.Media.MediaType.Internal
-    Network.HTTP.Media.MediaType.Tests
     Network.HTTP.Media.Language
     Network.HTTP.Media.Language.Gen
     Network.HTTP.Media.Language.Internal
     Network.HTTP.Media.Language.Tests
+    Network.HTTP.Media.MediaType
+    Network.HTTP.Media.MediaType.Gen
+    Network.HTTP.Media.MediaType.Internal
+    Network.HTTP.Media.MediaType.Tests
     Network.HTTP.Media.Quality
+    Network.HTTP.Media.RenderHeader
     Network.HTTP.Media.Tests
     Network.HTTP.Media.Utils
 

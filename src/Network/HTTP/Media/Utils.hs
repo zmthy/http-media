@@ -14,6 +14,7 @@ module Network.HTTP.Media.Utils
     , space
     , equal
     , hyphen
+    , zero
     ) where
 
 ------------------------------------------------------------------------------
@@ -62,6 +63,7 @@ isValidChar c = c >= 97 && c <= 122 || c >= 48 && c <= 57 ||
 
 ------------------------------------------------------------------------------
 -- | 'ByteString' compatible characters.
-slash, semi, comma, space, equal, hyphen :: Word8
-[slash, semi, comma, space, equal, hyphen] = [47, 59, 44, 32, 61, 45]
+slash, semi, comma, space, equal, hyphen, zero :: Word8
+[slash, semi, comma, space, equal, hyphen, zero] =
+    [47, 59, 44, 32, 61, 45, 48]
 
