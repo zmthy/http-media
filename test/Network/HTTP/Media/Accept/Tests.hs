@@ -45,4 +45,3 @@ testMostSpecific :: Test
 testMostSpecific = testProperty "mostSpecific" $ do
     string <- genByteString
     liftM ((== string) . mostSpecific string) genByteString
-

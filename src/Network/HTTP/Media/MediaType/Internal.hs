@@ -76,4 +76,3 @@ instance RenderHeader MediaType where
 ------------------------------------------------------------------------------
 -- | 'MediaType' parameters.
 type Parameters = Map ByteString ByteString
-

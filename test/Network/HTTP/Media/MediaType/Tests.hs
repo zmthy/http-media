@@ -202,4 +202,3 @@ testParseAccept = testProperty "parseAccept" $ do
 -- | Like 'join', but applies the given function to the first argument.
 dotJoin :: (a -> a -> b) -> (a -> a) -> a -> b
 dotJoin f g a = f (g a) a
-

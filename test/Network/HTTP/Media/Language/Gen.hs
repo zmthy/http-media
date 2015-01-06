@@ -116,4 +116,3 @@ genByteString = resize 8 $ Gen.genByteStringFrom ([65..90] ++ [97..122])
 ------------------------------------------------------------------------------
 genDiffByteString :: ByteString -> Gen ByteString
 genDiffByteString = Gen.genDiffByteStringWith genByteString
-

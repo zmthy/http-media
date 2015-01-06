@@ -40,4 +40,3 @@ genDiffByteStringWith gen bs = do
 -- different to the given one.
 genDiffByteString :: ByteString -> Gen ByteString
 genDiffByteString = genDiffByteStringWith genByteString
-

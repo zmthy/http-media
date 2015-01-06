@@ -72,4 +72,3 @@ readQ ('0' : '.' : t)
         t ++ replicate (3 - length t) '0'
     | otherwise     = Nothing
 readQ _   = Nothing
-

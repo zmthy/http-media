@@ -112,4 +112,3 @@ testParseAccept :: Test
 testParseAccept = testProperty "parseAccept" $ do
     lang <- genLanguage
     return $ parseAccept (renderHeader lang) == Just lang
-

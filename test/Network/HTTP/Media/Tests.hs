@@ -194,4 +194,3 @@ genServerAndClient = do
     server <- genServer
     client <- listOf1 $ genDiffMediaTypesWith genConcreteMediaType server
     return (server, client)
-

@@ -66,4 +66,3 @@ instance Accept Language where
 instance RenderHeader Language where
     renderHeader (Language []) = "*"
     renderHeader (Language l)  = BS.intercalate "-" l
-

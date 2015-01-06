@@ -26,4 +26,3 @@ instance RenderHeader ByteString where
 
 instance RenderHeader h => RenderHeader [h] where
     renderHeader = intercalate "," . map renderHeader
-

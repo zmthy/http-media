@@ -55,4 +55,3 @@ mostSpecific :: Accept a => a -> a -> a
 mostSpecific a b
     | b `moreSpecificThan` a = b
     | otherwise              = a
-

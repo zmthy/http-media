@@ -31,4 +31,3 @@ recv = getContentType >>= maybe send415Error readRequestBodyWith . mapContentMed
 ```
 
 The API is agnostic to your choice of server.
-

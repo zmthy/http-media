@@ -283,4 +283,3 @@ lookupMatches ((k, v) : r) a
     | Accept.matches k a = Just v
     | otherwise         = lookupMatches r a
 lookupMatches [] _ = Nothing
-

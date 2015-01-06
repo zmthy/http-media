@@ -101,4 +101,3 @@ ensureV = ensure (`notElem` [44, 59])
 ensure :: (Word8 -> Bool) -> ByteString -> ByteString
 ensure f bs = maybe
     (error $ "Invalid character in " ++ show bs) (const bs) (BS.find f bs)
-

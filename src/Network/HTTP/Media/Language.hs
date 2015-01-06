@@ -18,4 +18,3 @@ import Network.HTTP.Media.Language.Internal
 -- produces an empty list.
 toParts :: Language -> [ByteString]
 toParts (Language l) = l
-
