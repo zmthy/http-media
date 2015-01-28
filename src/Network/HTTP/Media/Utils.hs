@@ -23,11 +23,11 @@ breakChar c = fmap BS.tail . BS.break (== c)
 
 
 ------------------------------------------------------------------------------
--- | Trims space characters from both ends of a ByteString.
+-- | Trims tab and space characters from both ends of a ByteString.
 trimBS :: ByteString -> ByteString
-trimBS = BS.reverse . dropSpace . BS.reverse . dropSpace
+trimBS = fst . BS.spanEnd isLWS . BS.dropWhile isLWS
   where
-    dropSpace = BS.dropWhile (== ' ')
+    isLWS c = c == ' ' || c == '\t'
 
 
 ------------------------------------------------------------------------------

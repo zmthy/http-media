@@ -22,7 +22,7 @@ import Data.Monoid          ((<>))
 ------------------------------------------------------------------------------
 import Network.HTTP.Media.Accept       (Accept (..))
 import Network.HTTP.Media.RenderHeader (RenderHeader (..))
-import Network.HTTP.Media.Utils        (breakChar)
+import Network.HTTP.Media.Utils        (breakChar, trimBS)
 
 
 ------------------------------------------------------------------------------
@@ -42,7 +42,7 @@ instance IsString MediaType where
 
 instance Accept MediaType where
     parseAccept bs = do
-        let pieces = BS.split ';' bs
+        let pieces = map trimBS $ BS.split ';' bs
         guard $ not (null pieces)
         let (m : ps) = pieces
             (a, b)   = both CI.mk (breakChar '/' m)

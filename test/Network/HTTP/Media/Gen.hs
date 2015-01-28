@@ -8,6 +8,8 @@ module Network.HTTP.Media.Gen
     , genDiffWith
     , genDiffByteString
     , genDiffCIByteString
+
+    , padString
     ) where
 
 ------------------------------------------------------------------------------
@@ -15,9 +17,12 @@ import qualified Data.ByteString.Char8 as BS
 import qualified Data.CaseInsensitive  as CI
 
 ------------------------------------------------------------------------------
+import Control.Applicative  ((<$>))
+import Control.Monad        (liftM2, join)
 import Data.ByteString      (ByteString)
 import Data.CaseInsensitive (CI)
-import Test.QuickCheck.Gen  (Gen, elements, listOf1)
+import Data.Monoid          ((<>))
+import Test.QuickCheck.Gen  (Gen, elements, listOf, listOf1)
 
 
 ------------------------------------------------------------------------------
@@ -61,3 +66,11 @@ genDiffByteString = genDiffWith genByteString
 ------------------------------------------------------------------------------
 genDiffCIByteString :: CI ByteString -> Gen (CI ByteString)
 genDiffCIByteString = genDiffWith genCIByteString
+
+
+------------------------------------------------------------------------------
+-- | Pad a 'ByteString' with a random amount of tab and space characters.
+padString :: ByteString -> Gen (CI ByteString)
+padString c =
+    CI.mk <$> join (liftM2 pad) (BS.pack <$> listOf (elements " \t"))
+  where pad a b = a <> c <> b

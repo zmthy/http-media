@@ -191,11 +191,12 @@ testMostSpecific = testGroup "mostSpecific"
 testParseAccept :: Test
 testParseAccept = testProperty "parseAccept" $ do
     media <- genMediaType
+    semi  <- padString ";"
     let main   = mainType media
         sub    = subType media
         params = parameters media
         parsed = parseAccept . foldedCase $ main <> "/" <> sub <> mconcat
-            (map (uncurry ((<>) . (<> "=") . (";" <>))) $ Map.toList params)
+            (map (uncurry ((<>) . (<> "=") . (semi <>))) $ Map.toList params)
     return $ parsed == Just media
 
 
