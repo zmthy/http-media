@@ -190,12 +190,14 @@ testMostSpecific = testGroup "mostSpecific"
 testParseAccept :: Test
 testParseAccept = testProperty "parseAccept" $ do
     media <- genMediaType
-    let main   = mainType media
-        sub    = subType media
-        params = parameters media
-        parsed = parseAccept $ main <> "/" <> sub <> mconcat
+    let main          = mainType media
+        sub           = subType media
+        params        = parameters media
+        parsedNoSpace = parseAccept $ main <> "/" <> sub <> mconcat
             (map (uncurry ((<>) . (<> "=") . (";" <>))) $ Map.toList params)
-    return $ parsed == Just media
+        parsedSpace   = parseAccept $ main <> "/" <> sub <> mconcat
+            (map (uncurry ((<>) . (<> "=") . (" ; " <>))) $ Map.toList params)
+    return $ parsedNoSpace == Just media && parsedSpace == Just media
 
 
 ------------------------------------------------------------------------------

@@ -33,11 +33,11 @@ breakByte w = fmap BS.tail . BS.breakByte w
 
 
 ------------------------------------------------------------------------------
--- | Trims space characters from both ends of a ByteString.
+-- | Trims tab and space characters from both ends of a ByteString.
 trimBS :: ByteString -> ByteString
-trimBS = BS.reverse . dropSpace . BS.reverse . dropSpace
+trimBS = fst . BS.spanEnd isLWS . snd . BS.span isLWS
   where
-    dropSpace = BS.dropWhile (== space)
+    isLWS c = (c == space) || (c == htab)
 
 
 ------------------------------------------------------------------------------
@@ -63,6 +63,6 @@ isValidChar c = c >= 97 && c <= 122 || c >= 48 && c <= 57 ||
 
 ------------------------------------------------------------------------------
 -- | 'ByteString' compatible characters.
-slash, semi, comma, space, equal, hyphen, zero :: Word8
-[slash, semi, comma, space, equal, hyphen, zero] =
-    [47, 59, 44, 32, 61, 45, 48]
+slash, semi, comma, space, equal, hyphen, zero, htab :: Word8
+[slash, semi, comma, space, equal, hyphen, zero, htab] =
+    [47, 59, 44, 32, 61, 45, 48, 9]
