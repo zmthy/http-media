@@ -1,13 +1,13 @@
 name:          http-media
-version:       0.4.0
+version:       0.4.1
 license:       MIT
 license-file:  LICENSE
 author:        Timothy Jones
 maintainer:    Timothy Jones <git@zmthy.io>
-homepage:      http://github.com/zmthy/http-media
-bug-reports:   http://github.com/zmthy/http-media/issues
+homepage:      https://github.com/zmthy/http-media
+bug-reports:   https://github.com/zmthy/http-media/issues
+copyright:     (c) 2012-2015 Timothy Jones
 category:      Web
-copyright:     (c) 2012-2014 Timothy Jones
 build-type:    Simple
 cabal-version: >= 1.10
 synopsis:      Processing HTTP Content-Type and Accept headers
@@ -38,7 +38,6 @@ description:
   .
   The API is agnostic to your choice of server.
 
-
 library
   hs-source-dirs: src
 
@@ -60,10 +59,10 @@ library
     Network.HTTP.Media.Quality
     Network.HTTP.Media.Utils
   build-depends:
-    base        >= 4.6.0  && < 5.0,
-    bytestring  >= 0.10.0 && < 0.11,
-    containers  >= 0.5.0  && < 0.6,
-    utf8-string >= 0.3.7  && < 0.4
+    base        >= 4.6  && < 5.0,
+    bytestring  >= 0.10 && < 0.11,
+    containers  >= 0.5  && < 0.6,
+    utf8-string >= 0.3  && < 1.1
 
 test-suite test-http-media
   type:           detailed-0.9
@@ -92,16 +91,16 @@ test-suite test-http-media
     Network.HTTP.Media.Tests
     Network.HTTP.Media.Utils
 
-  ghc-options: -Wall -fhpc
+  ghc-options: -Wall -Werror
 
   build-depends:
-    base                  >= 4.6.0  && < 5.0,
-    bytestring            >= 0.10.0 && < 0.11,
-    Cabal                 >= 1.18.0 && < 1.21,
-    cabal-test-quickcheck >= 0.1.0  && < 0.2,
-    containers            >= 0.5.0  && < 0.6,
-    QuickCheck            >= 2.6    && < 2.9,
-    utf8-string           >= 0.3.7  && < 0.4
+    base                  >= 4.6  && < 5.0,
+    bytestring            >= 0.10 && < 0.11,
+    Cabal                 >= 1.19 && < 1.23,
+    cabal-test-quickcheck >= 0.1  && < 0.2,
+    containers            >= 0.5  && < 0.6,
+    QuickCheck            >= 2.6  && < 2.9,
+    utf8-string           >= 0.3  && < 1.1
 
 source-repository head
   type:     git
