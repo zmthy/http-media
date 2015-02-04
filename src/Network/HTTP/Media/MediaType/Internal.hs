@@ -39,9 +39,11 @@ instance IsString MediaType where
     fromString str = flip fromMaybe (parseAccept $ BS.fromString str) $
         error $ "Invalid media type literal " ++ str
 
+
+
 instance Accept MediaType where
     parseAccept bs = do
-        let pieces = BS.split semi bs
+        let pieces = map trimBS $ BS.split semi bs
         guard $ not (null pieces)
         let (m : ps) = pieces
             (a, b)   = breakByte slash m
