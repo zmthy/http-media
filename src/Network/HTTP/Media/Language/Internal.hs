@@ -6,12 +6,12 @@ module Network.HTTP.Media.Language.Internal
     ) where
 
 ------------------------------------------------------------------------------
-import qualified Data.ByteString      as BS
-import qualified Data.ByteString.UTF8 as BS hiding (length)
+import qualified Data.ByteString.Char8 as BS
 
 ------------------------------------------------------------------------------
 import Control.Monad   (guard)
 import Data.ByteString (ByteString)
+import Data.Char       (isAlpha)
 import Data.Functor    ((<$>))
 import Data.List       (isPrefixOf)
 import Data.Maybe      (fromMaybe)
@@ -20,7 +20,6 @@ import Data.String     (IsString (..))
 ------------------------------------------------------------------------------
 import Network.HTTP.Media.Accept       (Accept (..))
 import Network.HTTP.Media.RenderHeader (RenderHeader (..))
-import Network.HTTP.Media.Utils        (hyphen, isAlpha)
 
 
 ------------------------------------------------------------------------------
@@ -36,17 +35,17 @@ newtype Language = Language [ByteString]
 -- Note that internally, Language [] equates to *.
 
 instance Show Language where
-    show = BS.toString . renderHeader
+    show = BS.unpack . renderHeader
 
 instance IsString Language where
     fromString "*" = Language []
-    fromString str = flip fromMaybe (parseAccept $ BS.fromString str) $
+    fromString str = flip fromMaybe (parseAccept $ BS.pack str) $
         error $ "Invalid language literal " ++ str
 
 instance Accept Language where
     parseAccept "*" = Just $ Language []
     parseAccept bs = do
-        let pieces = BS.split hyphen bs
+        let pieces = BS.split '-' bs
         guard $ not (null pieces)
         Language <$> mapM check pieces
       where

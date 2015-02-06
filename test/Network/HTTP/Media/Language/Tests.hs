@@ -2,7 +2,7 @@
 module Network.HTTP.Media.Language.Tests (tests) where
 
 ------------------------------------------------------------------------------
-import qualified Data.ByteString.UTF8 as BS
+import qualified Data.ByteString.Char8 as BS
 
 ------------------------------------------------------------------------------
 import Control.Applicative               ((<$>))
@@ -47,7 +47,7 @@ testEq = testGroup "Eq"
 testShow :: Test
 testShow = testProperty "show" $ do
     lang <- genLanguage
-    return $ parseAccept (BS.fromString $ show lang) == Just lang
+    return $ parseAccept (BS.pack $ show lang) == Just lang
 
 
 ------------------------------------------------------------------------------

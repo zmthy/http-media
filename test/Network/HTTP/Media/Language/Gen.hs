@@ -110,7 +110,7 @@ genNonMatchingLanguages = do
 
 ------------------------------------------------------------------------------
 genByteString :: Gen ByteString
-genByteString = resize 8 $ Gen.genByteStringFrom ([65..90] ++ [97..122])
+genByteString = resize 8 $ Gen.genByteStringFrom (['a'..'z'] ++ ['A'..'Z'])
 
 
 ------------------------------------------------------------------------------

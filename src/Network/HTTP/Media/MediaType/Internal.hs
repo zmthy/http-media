@@ -6,9 +6,8 @@ module Network.HTTP.Media.MediaType.Internal
     ) where
 
 ------------------------------------------------------------------------------
-import qualified Data.ByteString      as BS
-import qualified Data.ByteString.UTF8 as BS
-import qualified Data.Map             as Map
+import qualified Data.ByteString.Char8 as BS
+import qualified Data.Map              as Map
 
 ------------------------------------------------------------------------------
 import Control.Monad   (guard)
@@ -19,9 +18,11 @@ import Data.Maybe      (fromMaybe)
 import Data.Monoid     ((<>))
 
 ------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------
 import Network.HTTP.Media.Accept       (Accept (..))
 import Network.HTTP.Media.RenderHeader (RenderHeader (..))
-import Network.HTTP.Media.Utils
+import Network.HTTP.Media.Utils        (breakChar)
 
 
 ------------------------------------------------------------------------------
@@ -33,21 +34,21 @@ data MediaType = MediaType
     } deriving (Eq)
 
 instance Show MediaType where
-    show = BS.toString . renderHeader
+    show = BS.unpack . renderHeader
 
 instance IsString MediaType where
-    fromString str = flip fromMaybe (parseAccept $ BS.fromString str) $
+    fromString str = flip fromMaybe (parseAccept $ BS.pack str) $
         error $ "Invalid media type literal " ++ str
 
 instance Accept MediaType where
     parseAccept bs = do
-        let pieces = BS.split semi bs
+        let pieces = BS.split ';' bs
         guard $ not (null pieces)
         let (m : ps) = pieces
-            (a, b)   = breakByte slash m
-        guard $ BS.elem slash m && (a /= "*" || b == "*")
+            (a, b)   = breakChar '/' m
+        guard $ BS.elem '/' m && (a /= "*" || b == "*")
         return $ MediaType a b $
-            foldr (uncurry Map.insert . breakByte equal) Map.empty ps
+            foldr (uncurry Map.insert . breakChar '=') Map.empty ps
 
     matches a b
         | mainType b == "*" = params

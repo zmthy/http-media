@@ -8,22 +8,24 @@ module Network.HTTP.Media.Gen
     ) where
 
 ------------------------------------------------------------------------------
+import qualified Data.ByteString.Char8 as BS
+
+------------------------------------------------------------------------------
 import Control.Applicative ((<$>))
-import Data.ByteString     (ByteString, pack)
-import Data.Word           (Word8)
+import Data.ByteString     (ByteString)
 import Test.QuickCheck.Gen (Gen, elements, listOf1)
 
 
 ------------------------------------------------------------------------------
 -- | Produces a non-empty ByteString of random characters from the given set.
-genByteStringFrom :: [Word8] -> Gen ByteString
-genByteStringFrom validChars = pack <$> listOf1 (elements validChars)
+genByteStringFrom :: [Char] -> Gen ByteString
+genByteStringFrom validChars = BS.pack <$> listOf1 (elements validChars)
 
 
 ------------------------------------------------------------------------------
 -- | Produces a non-empty ByteString of random alphanumeric characters.
 genByteString :: Gen ByteString
-genByteString = genByteStringFrom $ [48..57] ++ [65..90] ++ [97..122]
+genByteString = genByteStringFrom $ ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9']
 
 
 ------------------------------------------------------------------------------

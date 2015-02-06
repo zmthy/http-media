@@ -2,8 +2,8 @@
 module Network.HTTP.Media.MediaType.Tests (tests) where
 
 ------------------------------------------------------------------------------
-import qualified Data.ByteString.UTF8 as BS
-import qualified Data.Map             as Map
+import qualified Data.ByteString.Char8 as BS
+import qualified Data.Map              as Map
 
 ------------------------------------------------------------------------------
 import Control.Monad                     (join, liftM)
@@ -53,7 +53,7 @@ testEq = testGroup "Eq"
 testShow :: Test
 testShow = testProperty "show" $ do
     media <- genMediaType
-    return $ parseAccept (BS.fromString $ show media) == Just media
+    return $ parseAccept (BS.pack $ show media) == Just media
 
 
 ------------------------------------------------------------------------------

@@ -8,19 +8,17 @@ module Network.HTTP.Media.Quality
     ) where
 
 ------------------------------------------------------------------------------
-import qualified Data.ByteString      as BS
-import qualified Data.ByteString.UTF8 as BS
+import qualified Data.ByteString.Char8 as BS
 
 ------------------------------------------------------------------------------
 import Data.ByteString (ByteString)
+import Data.Char       (isDigit)
 import Data.List       (dropWhileEnd)
-import Data.Maybe      (listToMaybe)
 import Data.Monoid     ((<>))
 import Data.Word       (Word16)
 
 ------------------------------------------------------------------------------
 import Network.HTTP.Media.RenderHeader (RenderHeader (..))
-import Network.HTTP.Media.Utils        (zero)
 
 ------------------------------------------------------------------------------
 -- | Attaches a quality value to data.
@@ -30,7 +28,7 @@ data Quality a = Quality
     } deriving (Eq)
 
 instance RenderHeader a => Show (Quality a) where
-    show = BS.toString . renderHeader
+    show = BS.unpack . renderHeader
 
 instance RenderHeader h => RenderHeader (Quality h) where
     renderHeader (Quality a q) = renderHeader a <> ";q=" <> showQ q
@@ -53,22 +51,40 @@ minQuality = flip Quality 0
 showQ :: Word16 -> ByteString
 showQ 1000 = "1"
 showQ 0    = "0"
-showQ q    = "0." <> BS.replicate (3 - length s) zero <> b
+showQ q    = "0." <> BS.replicate (3 - length s) '0' <> b
   where
     s = show q
-    b = BS.fromString (dropWhileEnd (== '0') s)
+    b = BS.pack (dropWhileEnd (== '0') s)
 
 
 ------------------------------------------------------------------------------
 -- | Reads the standard quality representation into an integral value.
-readQ :: String -> Maybe Word16
-readQ "1" = Just 1000
-readQ "0" = Just 0
-readQ ('1' : '.' : t)
-    | length t <= 3 && all (== '0') t = Just 1000
-    | otherwise                       = Nothing
-readQ ('0' : '.' : t)
-    | length t <= 3 = fmap fst . listToMaybe . filter (null . snd) . reads $
-        t ++ replicate (3 - length t) '0'
-    | otherwise     = Nothing
-readQ _   = Nothing
+readQ :: ByteString -> Maybe Word16
+readQ bs
+    | BS.null bs = Nothing
+    | h == '1'   = read1 t
+    | h == '0'   = read0 t
+    | otherwise  = Nothing
+  where
+    h = BS.head bs
+    t = BS.tail bs
+
+read1 :: ByteString -> Maybe Word16
+read1 bs
+    | BS.null bs || h == '.' && BS.length t < 4 && BS.all (== '0') t
+                = Just 1000
+    | otherwise = Nothing
+  where
+    h = BS.head bs
+    t = BS.tail bs
+
+read0 :: ByteString -> Maybe Word16
+read0 bs
+    | BS.null bs = Just 0
+    | h == '.' && BS.length t < 4 && BS.all isDigit t
+                = Just (toWord (t <> BS.replicate (3 - BS.length t) '0'))
+    | otherwise = Nothing
+  where
+    h = BS.head bs
+    t = BS.tail bs
+    toWord = read . BS.unpack

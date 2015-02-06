@@ -18,13 +18,12 @@ module Network.HTTP.Media.MediaType
     ) where
 
 ------------------------------------------------------------------------------
-import qualified Data.ByteString as BS
-import qualified Data.Map        as Map
+import qualified Data.ByteString.Char8 as BS
+import qualified Data.Map              as Map
 
 ------------------------------------------------------------------------------
 import Data.ByteString (ByteString)
 import Data.Map        (empty, insert)
-import Data.Word       (Word8)
 
 ------------------------------------------------------------------------------
 import qualified Network.HTTP.Media.MediaType.Internal as Internal
@@ -93,11 +92,11 @@ ensureR bs = if l == 0 || l > 127
 -- a parameter value. RFC 4288 does not specify what characters are valid, so
 -- here we just disallow parameter and media type breakers, ',' and ';'.
 ensureV :: ByteString -> ByteString
-ensureV = ensure (`notElem` [44, 59])
+ensureV = ensure (`notElem` ",;")
 
 
 ------------------------------------------------------------------------------
 -- | Ensures the predicate matches for every character in the given string.
-ensure :: (Word8 -> Bool) -> ByteString -> ByteString
+ensure :: (Char -> Bool) -> ByteString -> ByteString
 ensure f bs = maybe
     (error $ "Invalid character in " ++ show bs) (const bs) (BS.find f bs)

@@ -43,13 +43,12 @@ module Network.HTTP.Media
     ) where
 
 ------------------------------------------------------------------------------
-import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BS
 
 ------------------------------------------------------------------------------
 import Control.Applicative  (pure, (<$>), (<*>), (<|>))
 import Control.Monad        (guard, (>=>))
-import Data.ByteString      (ByteString, split)
-import Data.ByteString.UTF8 (toString)
+import Data.ByteString      (ByteString)
 
 ------------------------------------------------------------------------------
 import Network.HTTP.Media.Accept       as Accept
@@ -57,7 +56,6 @@ import Network.HTTP.Media.RenderHeader
 import Network.HTTP.Media.Language     as Language
 import Network.HTTP.Media.MediaType    as MediaType
 import Network.HTTP.Media.Quality
-import Network.HTTP.Media.Utils
 
 
 ------------------------------------------------------------------------------
@@ -218,11 +216,11 @@ mapContentLanguage = mapContent
 ------------------------------------------------------------------------------
 -- | Parses a full Accept header into a list of quality-valued media types.
 parseQuality :: Accept a => ByteString -> Maybe [Quality a]
-parseQuality = (. split comma) . mapM $ \bs ->
-    let (accept, q) = BS.breakSubstring ";q=" $ BS.filter (/= space) bs
+parseQuality = (. BS.split ',') . mapM $ \bs ->
+    let (accept, q) = BS.breakSubstring ";q=" $ BS.filter (/= ' ') bs
     in (<*> parseAccept accept) $ if BS.null q
         then pure maxQuality else flip Quality <$> readQ
-            (toString $ BS.takeWhile (/= semi) $ BS.drop 3 q)
+            (BS.takeWhile (/= ';') $ BS.drop 3 q)
 
 
 ------------------------------------------------------------------------------
