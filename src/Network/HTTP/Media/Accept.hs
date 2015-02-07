@@ -7,6 +7,9 @@ module Network.HTTP.Media.Accept
     ) where
 
 ------------------------------------------------------------------------------
+import qualified Data.CaseInsensitive as CI
+
+------------------------------------------------------------------------------
 import Data.ByteString (ByteString)
 
 
@@ -45,7 +48,7 @@ class Show a => Accept a where
 
 instance Accept ByteString where
     parseAccept = Just
-    matches = (==)
+    matches a b = CI.mk a == CI.mk b
     moreSpecificThan _ _ = False
 
 

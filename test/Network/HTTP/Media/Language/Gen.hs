@@ -18,8 +18,9 @@ module Network.HTTP.Media.Language.Gen
     ) where
 
 ------------------------------------------------------------------------------
-import Control.Applicative ((<$>))
-import Data.ByteString     (ByteString)
+import Control.Applicative  ((<$>))
+import Data.ByteString      (ByteString)
+import Data.CaseInsensitive (CI)
 import Test.QuickCheck.Gen
 
 ------------------------------------------------------------------------------
@@ -38,36 +39,34 @@ anything = Language []
 ------------------------------------------------------------------------------
 -- | Generates any kind of Language.
 genLanguage :: Gen Language
-genLanguage = Language <$> listOf genByteString
+genLanguage = Language <$> listOf genCIByteString
 
 
 ------------------------------------------------------------------------------
 -- | Generates a Language that does not match everything.
 genConcreteLanguage :: Gen Language
-genConcreteLanguage = Language <$> listOf1 genByteString
+genConcreteLanguage = Language <$> listOf1 genCIByteString
 
 
 ------------------------------------------------------------------------------
 -- | Generates a different Language to the given one.
 genDiffLanguage :: Language -> Gen Language
 genDiffLanguage (Language []) = genConcreteLanguage
-genDiffLanguage lang           = do
-    lang' <- genLanguage
-    if lang == lang' then genDiffLanguage lang else return lang'
+genDiffLanguage l             = Gen.genDiffWith genLanguage l
 
 
 ------------------------------------------------------------------------------
 -- | Generate a Language that has the given language as a prefix.
 genMatchingLanguage :: Language -> Gen Language
 genMatchingLanguage (Language pre) =
-    (Language . (pre ++)) <$> listOf genByteString
+    (Language . (pre ++)) <$> listOf genCIByteString
 
 
 ------------------------------------------------------------------------------
 -- | Generate a Language that has the given language as a proper prefix.
 genDiffMatchingLanguage :: Language -> Gen Language
 genDiffMatchingLanguage (Language pre) =
-    (Language . (pre ++)) <$> listOf1 genByteString
+    (Language . (pre ++)) <$> listOf1 genCIByteString
 
 
 ------------------------------------------------------------------------------
@@ -75,7 +74,7 @@ genDiffMatchingLanguage (Language pre) =
 genNonMatchingLanguage :: Language -> Gen Language
 genNonMatchingLanguage (Language [])        = genConcreteLanguage
 genNonMatchingLanguage (Language (pre : _)) = do
-    pre' <- genDiffByteString pre
+    pre' <- genDiffCIByteString pre
     genMatchingLanguage $ Language [pre']
 
 
@@ -109,10 +108,11 @@ genNonMatchingLanguages = do
 
 
 ------------------------------------------------------------------------------
-genByteString :: Gen ByteString
-genByteString = resize 8 $ Gen.genByteStringFrom (['a'..'z'] ++ ['A'..'Z'])
+genCIByteString :: Gen (CI ByteString)
+genCIByteString =
+    resize 8 $ Gen.genCIByteStringFrom (['a'..'z'] ++ ['A'..'Z'])
 
 
 ------------------------------------------------------------------------------
-genDiffByteString :: ByteString -> Gen ByteString
-genDiffByteString = Gen.genDiffByteStringWith genByteString
+genDiffCIByteString :: CI ByteString -> Gen (CI ByteString)
+genDiffCIByteString = Gen.genDiffWith genCIByteString

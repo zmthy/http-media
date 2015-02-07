@@ -7,6 +7,7 @@ import qualified Data.Map              as Map
 
 ------------------------------------------------------------------------------
 import Control.Monad                     (join, liftM)
+import Data.CaseInsensitive              (foldedCase)
 import Data.String                       (fromString)
 import Data.Maybe                        (isNothing)
 import Data.Monoid                       ((<>), mconcat)
@@ -68,10 +69,10 @@ testHas :: Test
 testHas = testGroup "(/?)"
     [ testProperty "True for property it has" $ do
         media <- genWithParams
-        return $ all (media /?) (Map.keys $ parameters media)
+        return $ all ((media /?) . foldedCase) (Map.keys $ parameters media)
     , testProperty "False for property it doesn't have" $ do
         media <- genWithParams
-        return $ all (not . (stripParams media /?))
+        return $ all (not . (stripParams media /?) . foldedCase)
             (Map.keys $ parameters media)
     ]
 
@@ -81,11 +82,11 @@ testGet :: Test
 testGet = testGroup "(/.)"
     [ testProperty "Retrieves property it has" $ do
         media  <- genWithParams
-        let is n v = (&& media /. n == Just v)
+        let is n v = (&& media /. foldedCase n == Just v)
         return $ Map.foldrWithKey is True $ parameters media
     , testProperty "Nothing for property it doesn't have" $ do
         media <- genWithParams
-        let is n _ = (&& isNothing (stripParams media /. n))
+        let is n _ = (&& isNothing (stripParams media /. foldedCase n))
         return $ Map.foldrWithKey is True $ parameters media
     ]
 
@@ -98,12 +99,12 @@ testMatches = testGroup "matches"
         return $ matches media media
     , testProperty "Same sub but different main don't match" $ do
         media <- genMaybeSubStar
-        main  <- genDiffByteString $ mainType media
+        main  <- genDiffCIByteString $ mainType media
         return $ not (matches media media { mainType = main }) &&
             not (matches media { mainType = main } media)
     , testProperty "Same main but different sub don't match" $ do
         media <- genConcreteMediaType
-        sub   <- genDiffByteString $ subType media
+        sub   <- genDiffCIByteString $ subType media
         return . not $ matches media media { subType = sub } ||
             matches media { subType = sub } media
     , testProperty "Different parameters don't match" $
@@ -193,7 +194,7 @@ testParseAccept = testProperty "parseAccept" $ do
     let main   = mainType media
         sub    = subType media
         params = parameters media
-        parsed = parseAccept $ main <> "/" <> sub <> mconcat
+        parsed = parseAccept . foldedCase $ main <> "/" <> sub <> mconcat
             (map (uncurry ((<>) . (<> "=") . (";" <>))) $ Map.toList params)
     return $ parsed == Just media
 

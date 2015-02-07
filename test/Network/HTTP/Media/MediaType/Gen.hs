@@ -27,9 +27,10 @@ module Network.HTTP.Media.MediaType.Gen
 import qualified Data.Map as Map
 
 ------------------------------------------------------------------------------
-import Control.Monad       (liftM, liftM2)
-import Data.ByteString     (ByteString)
-import Data.Map            (fromList)
+import Control.Monad        (liftM, liftM2)
+import Data.ByteString      (ByteString)
+import Data.CaseInsensitive (CI)
+import Data.Map             (fromList)
 import Test.QuickCheck.Gen
 
 ------------------------------------------------------------------------------
@@ -39,7 +40,7 @@ import Network.HTTP.Media.MediaType.Internal
 
 ------------------------------------------------------------------------------
 -- | Parameter entry for testing.
-type ParamEntry = (ByteString, ByteString)
+type ParamEntry = (CI ByteString, CI ByteString)
 
 
 ------------------------------------------------------------------------------
@@ -58,7 +59,7 @@ genMediaType = oneof [return anything, genSubStar, genConcreteMediaType]
 -- | Generates a MediaType with just a concrete main type.
 genSubStar :: Gen MediaType
 genSubStar = do
-    main <- genByteString
+    main <- genCIByteString
     return $ MediaType main "*" Map.empty
 
 
@@ -78,8 +79,8 @@ subStarOf media = media { subType = "*", parameters = Map.empty }
 -- | Generates a concrete MediaType which may have parameters.
 genConcreteMediaType :: Gen MediaType
 genConcreteMediaType = do
-    main <- genByteString
-    sub  <- genByteString
+    main <- genCIByteString
+    sub  <- genCIByteString
     params <- oneof [return Map.empty, genParameters]
     return $ MediaType main sub params
 
@@ -88,8 +89,8 @@ genConcreteMediaType = do
 -- | Generates a concrete MediaType with no parameters.
 genWithoutParams :: Gen MediaType
 genWithoutParams = do
-    main <- genByteString
-    sub  <- genByteString
+    main <- genCIByteString
+    sub  <- genCIByteString
     return $ MediaType main sub Map.empty
 
 
@@ -97,8 +98,8 @@ genWithoutParams = do
 -- | Generates a MediaType with at least one parameter.
 genWithParams :: Gen MediaType
 genWithParams = do
-    main   <- genByteString
-    sub    <- genByteString
+    main   <- genCIByteString
+    sub    <- genCIByteString
     params <- genParameters
     return $ MediaType main sub params
 
@@ -143,7 +144,7 @@ genDiffMediaType = genDiffMediaTypes . (: [])
 -- | Reuse for 'mayParams' and 'someParams'.
 mkGenParams :: (Gen ParamEntry -> Gen [ParamEntry]) -> Gen Parameters
 mkGenParams = liftM fromList .
-    ($ liftM2 (,) (genDiffByteString "q") genByteString)
+    ($ liftM2 (,) (genDiffCIByteString "q") genCIByteString)
 
 
 ------------------------------------------------------------------------------

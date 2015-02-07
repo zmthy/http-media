@@ -7,7 +7,8 @@ module Network.HTTP.Media.Language
     ) where
 
 ------------------------------------------------------------------------------
-import Data.ByteString (ByteString)
+import Data.ByteString      (ByteString)
+import Data.CaseInsensitive (CI)
 
 ------------------------------------------------------------------------------
 import Network.HTTP.Media.Language.Internal
@@ -16,5 +17,5 @@ import Network.HTTP.Media.Language.Internal
 ------------------------------------------------------------------------------
 -- | Converts 'Language' to a list of its language parts. The wildcard
 -- produces an empty list.
-toParts :: Language -> [ByteString]
+toParts :: Language -> [CI ByteString]
 toParts (Language l) = l

@@ -19,11 +19,13 @@ module Network.HTTP.Media.MediaType
 
 ------------------------------------------------------------------------------
 import qualified Data.ByteString.Char8 as BS
+import qualified Data.CaseInsensitive  as CI
 import qualified Data.Map              as Map
 
 ------------------------------------------------------------------------------
-import Data.ByteString (ByteString)
-import Data.Map        (empty, insert)
+import Data.ByteString      (ByteString)
+import Data.CaseInsensitive (CI)
+import Data.Map             (empty, insert)
 
 ------------------------------------------------------------------------------
 import qualified Network.HTTP.Media.MediaType.Internal as Internal
@@ -36,13 +38,13 @@ import Network.HTTP.Media.Utils
 
 ------------------------------------------------------------------------------
 -- | Retrieves the main type of a 'MediaType'.
-mainType :: MediaType -> ByteString
+mainType :: MediaType -> CI ByteString
 mainType = Internal.mainType
 
 
 ------------------------------------------------------------------------------
 -- | Retrieves the sub type of a 'MediaType'.
-subType :: MediaType -> ByteString
+subType :: MediaType -> CI ByteString
 subType = Internal.subType
 
 
@@ -69,20 +71,20 @@ a // b = MediaType (ensureR a) (ensureR b) empty
 ------------------------------------------------------------------------------
 -- | Evaluates if a 'MediaType' has a parameter of the given name.
 (/?) :: MediaType -> ByteString -> Bool
-(MediaType _ _ p) /? k = Map.member k p
+(MediaType _ _ p) /? k = Map.member (CI.mk k) p
 
 
 ------------------------------------------------------------------------------
 -- | Retrieves a parameter from a 'MediaType'.
-(/.) :: MediaType -> ByteString -> Maybe ByteString
-(MediaType _ _ p) /. k = Map.lookup k p
+(/.) :: MediaType -> ByteString -> Maybe (CI ByteString)
+(MediaType _ _ p) /. k = Map.lookup (CI.mk k) p
 
 
 ------------------------------------------------------------------------------
 -- | Ensures that the 'ByteString' matches the ABNF for `reg-name` in RFC
 -- 4288.
-ensureR :: ByteString -> ByteString
-ensureR bs = if l == 0 || l > 127
+ensureR :: ByteString -> CI ByteString
+ensureR bs = CI.mk $ if l == 0 || l > 127
     then error $ "Invalid length for " ++ show bs else ensure isValidChar bs
   where l = BS.length bs
 
@@ -91,8 +93,8 @@ ensureR bs = if l == 0 || l > 127
 -- | Ensures that the 'ByteString' does not contain invalid characters for
 -- a parameter value. RFC 4288 does not specify what characters are valid, so
 -- here we just disallow parameter and media type breakers, ',' and ';'.
-ensureV :: ByteString -> ByteString
-ensureV = ensure (`notElem` ",;")
+ensureV :: ByteString -> CI ByteString
+ensureV = CI.mk . ensure (`notElem` ",;")
 
 
 ------------------------------------------------------------------------------

@@ -7,17 +7,17 @@ module Network.HTTP.Media.MediaType.Internal
 
 ------------------------------------------------------------------------------
 import qualified Data.ByteString.Char8 as BS
+import qualified Data.CaseInsensitive  as CI
 import qualified Data.Map              as Map
 
 ------------------------------------------------------------------------------
-import Control.Monad   (guard)
-import Data.ByteString (ByteString)
-import Data.String     (IsString (..))
-import Data.Map        (Map)
-import Data.Maybe      (fromMaybe)
-import Data.Monoid     ((<>))
-
-------------------------------------------------------------------------------
+import Control.Monad        (guard)
+import Data.ByteString      (ByteString)
+import Data.CaseInsensitive (CI, original)
+import Data.String          (IsString (..))
+import Data.Map             (Map)
+import Data.Maybe           (fromMaybe)
+import Data.Monoid          ((<>))
 
 ------------------------------------------------------------------------------
 import Network.HTTP.Media.Accept       (Accept (..))
@@ -28,9 +28,9 @@ import Network.HTTP.Media.Utils        (breakChar)
 ------------------------------------------------------------------------------
 -- | An HTTP media type, consisting of the type, subtype, and parameters.
 data MediaType = MediaType
-    { mainType   :: ByteString  -- ^ The main type of the MediaType
-    , subType    :: ByteString  -- ^ The sub type of the MediaType
-    , parameters :: Parameters  -- ^ The parameters of the MediaType
+    { mainType   :: CI ByteString  -- ^ The main type of the MediaType
+    , subType    :: CI ByteString  -- ^ The sub type of the MediaType
+    , parameters :: Parameters     -- ^ The parameters of the MediaType
     } deriving (Eq)
 
 instance Show MediaType where
@@ -45,10 +45,12 @@ instance Accept MediaType where
         let pieces = BS.split ';' bs
         guard $ not (null pieces)
         let (m : ps) = pieces
-            (a, b)   = breakChar '/' m
+            (a, b)   = both CI.mk (breakChar '/' m)
         guard $ BS.elem '/' m && (a /= "*" || b == "*")
-        return $ MediaType a b $
-            foldr (uncurry Map.insert . breakChar '=') Map.empty ps
+        return $ MediaType a b (foldr insert Map.empty ps)
+      where
+        both f (a, b) = (f a, f b)
+        insert = uncurry Map.insert . both CI.mk . breakChar '='
 
     matches a b
         | mainType b == "*" = params
@@ -69,11 +71,12 @@ instance Accept MediaType where
         params = not (Map.null $ parameters a) && Map.null (parameters b)
 
 instance RenderHeader MediaType where
-    renderHeader (MediaType a b p) = Map.foldrWithKey f (a <> "/" <> b) p
+    renderHeader (MediaType a b p) =
+        Map.foldrWithKey f (original a <> "/" <> original b) p
       where
-        f k v = (<> ";" <> k <> "=" <> v)
+        f k v = (<> ";" <> original k <> "=" <> original v)
 
 
 ------------------------------------------------------------------------------
 -- | 'MediaType' parameters.
-type Parameters = Map ByteString ByteString
+type Parameters = Map (CI ByteString) (CI ByteString)

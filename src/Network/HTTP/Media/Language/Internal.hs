@@ -7,15 +7,17 @@ module Network.HTTP.Media.Language.Internal
 
 ------------------------------------------------------------------------------
 import qualified Data.ByteString.Char8 as BS
+import qualified Data.CaseInsensitive  as CI
 
 ------------------------------------------------------------------------------
-import Control.Monad   (guard)
-import Data.ByteString (ByteString)
-import Data.Char       (isAlpha)
-import Data.Functor    ((<$>))
-import Data.List       (isPrefixOf)
-import Data.Maybe      (fromMaybe)
-import Data.String     (IsString (..))
+import Control.Monad        (guard)
+import Data.ByteString      (ByteString)
+import Data.CaseInsensitive (CI, original)
+import Data.Char            (isAlpha)
+import Data.Functor         ((<$>))
+import Data.List            (isPrefixOf)
+import Data.Maybe           (fromMaybe)
+import Data.String          (IsString (..))
 
 ------------------------------------------------------------------------------
 import Network.HTTP.Media.Accept       (Accept (..))
@@ -29,7 +31,7 @@ import Network.HTTP.Media.RenderHeader (RenderHeader (..))
 -- Specifically:
 --
 -- > language-range = ( ( 1*8ALPHA *( "-" 1*8ALPHA ) ) | "*" )
-newtype Language = Language [ByteString]
+newtype Language = Language [CI ByteString]
     deriving (Eq)
 
 -- Note that internally, Language [] equates to *.
@@ -52,7 +54,7 @@ instance Accept Language where
         check part = do
             let len = BS.length part
             guard $ len >= 1 && len <= 8 && BS.all isAlpha part
-            return part
+            return (CI.mk part)
 
     -- Languages match if the right argument is a prefix of the left.
     matches (Language a) (Language b)  = b `isPrefixOf` a
@@ -64,4 +66,4 @@ instance Accept Language where
 
 instance RenderHeader Language where
     renderHeader (Language []) = "*"
-    renderHeader (Language l)  = BS.intercalate "-" l
+    renderHeader (Language l)  = BS.intercalate "-" (map original l)
