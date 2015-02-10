@@ -4,6 +4,7 @@
 module Network.HTTP.Media.Accept
     ( Accept (..)
     , mostSpecific
+    , Proxy (..)
     ) where
 
 ------------------------------------------------------------------------------
@@ -46,6 +47,12 @@ class Show a => Accept a where
     -- concept of specificity, this is the empty relation (always false).
     moreSpecificThan :: a -> a -> Bool
 
+    -- | Indicates whether extension parameters are permitted after the weight
+    -- parameter when this type appears in an Accept header. Defaults to
+    -- false.
+    hasExtensionParameters :: Proxy a -> Bool
+    hasExtensionParameters _ = False
+
 instance Accept ByteString where
     parseAccept = Just
     matches a b = CI.mk a == CI.mk b
@@ -58,3 +65,9 @@ mostSpecific :: Accept a => a -> a -> a
 mostSpecific a b
     | b `moreSpecificThan` a = b
     | otherwise              = a
+
+
+------------------------------------------------------------------------------
+-- | Serves the same purpose as the Proxy type in base, but redefined here in
+-- a basic form for older versions of base that do not include it.
+data Proxy a = Proxy

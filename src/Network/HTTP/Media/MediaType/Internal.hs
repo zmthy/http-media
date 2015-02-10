@@ -70,6 +70,8 @@ instance Accept MediaType where
         subB = subType b == "*"
         params = not (Map.null $ parameters a) && Map.null (parameters b)
 
+    hasExtensionParameters _ = True
+
 instance RenderHeader MediaType where
     renderHeader (MediaType a b p) =
         Map.foldrWithKey f (original a <> "/" <> original b) p

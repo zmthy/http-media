@@ -21,16 +21,22 @@ module Network.HTTP.Media.MediaType.Gen
     , genParameters
     , genMaybeParameters
     , genDiffParameters
+
+    -- * Rendering Parameters
+    , renderParameters
     ) where
 
 ------------------------------------------------------------------------------
 import qualified Data.Map as Map
 
 ------------------------------------------------------------------------------
+import Control.Applicative  ((<$>))
 import Control.Monad        (liftM, liftM2)
 import Data.ByteString      (ByteString)
-import Data.CaseInsensitive (CI)
+import Data.CaseInsensitive (CI, original)
+import Data.Foldable        (foldlM)
 import Data.Map             (fromList)
+import Data.Monoid          ((<>))
 import Test.QuickCheck.Gen
 
 ------------------------------------------------------------------------------
@@ -168,3 +174,15 @@ genDiffParameters params = do
     if params' `Map.isSubmapOf` params
         then genDiffParameters params
         else return params'
+
+
+------------------------------------------------------------------------------
+-- | Render parameters with a generated amount of whitespace between the
+-- semicolons. Note that there is a leading semicolon in front of the
+-- parameters, as it is expected that this will always be attached to
+-- a preceding 'MediaType' rendering.
+renderParameters :: Parameters -> Gen ByteString
+renderParameters params = foldlM pad "" (Map.toList params)
+  where
+    pad s (k, v) =
+        (s <>) . (<> original k <> "=" <> original v) <$> padString ";"

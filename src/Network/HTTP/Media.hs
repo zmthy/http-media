@@ -49,6 +49,7 @@ import qualified Data.ByteString.Char8 as BS
 import Control.Applicative  (pure, (<$>), (<*>), (<|>))
 import Control.Monad        (guard, (>=>))
 import Data.ByteString      (ByteString)
+import Data.Maybe           (fromMaybe)
 
 ------------------------------------------------------------------------------
 import Network.HTTP.Media.Accept       as Accept
@@ -56,6 +57,7 @@ import Network.HTTP.Media.RenderHeader
 import Network.HTTP.Media.Language     as Language
 import Network.HTTP.Media.MediaType    as MediaType
 import Network.HTTP.Media.Quality
+import Network.HTTP.Media.Utils        (trimBS)
 
 
 ------------------------------------------------------------------------------
@@ -216,11 +218,28 @@ mapContentLanguage = mapContent
 ------------------------------------------------------------------------------
 -- | Parses a full Accept header into a list of quality-valued media types.
 parseQuality :: Accept a => ByteString -> Maybe [Quality a]
-parseQuality = (. BS.split ',') . mapM $ \bs ->
-    let (accept, q) = BS.breakSubstring ";q=" $ BS.filter (/= ' ') bs
-    in (<*> parseAccept accept) $ if BS.null q
-        then pure maxQuality else flip Quality <$> readQ
-            (BS.takeWhile (/= ';') $ BS.drop 3 q)
+parseQuality = parseQuality' Proxy
+
+parseQuality' :: Accept a => Proxy a -> ByteString -> Maybe [Quality a]
+parseQuality' p = (. map trimBS . BS.split ',') . mapM $ \ s ->
+    let (accept, q) = fromMaybe (s, Nothing) $ if ext then findQ s else getQ s
+    in maybe (pure maxQuality) (fmap (flip Quality) . readQ) q <*>
+        parseAccept accept
+  where
+    ext = hasExtensionParameters p
+
+    -- Split on ';', and check if a quality value is there. A value of Nothing
+    -- indicates there was no parameter, whereas a value of Nothing in the
+    -- pair indicates the parameter was not a quality value.
+    getQ s = let (a, b) = trimBS <$> BS.breakEnd (== ';') s in
+        if BS.null a then Nothing else Just (BS.init a,
+            if BS.isPrefixOf "q=" b then Just (BS.drop 2 b) else Nothing)
+
+    -- Trawl backwards through the string, ignoring extension parameters.
+    findQ s = do
+        let q = getQ s
+        (a, m) <- q
+        maybe (findQ a) (const q) m
 
 
 ------------------------------------------------------------------------------

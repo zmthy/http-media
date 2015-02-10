@@ -2,20 +2,23 @@
 module Network.HTTP.Media.Tests (tests) where
 
 ------------------------------------------------------------------------------
-import Control.Monad                     (replicateM)
+import Control.Applicative               ((<$>), (<*>))
+import Control.Monad                     ((>=>), replicateM)
 import Data.ByteString                   (ByteString)
+import Data.Foldable                     (foldlM)
 import Data.Map                          (empty)
 import Data.Maybe                        (isNothing, listToMaybe)
+import Data.Monoid                       ((<>))
 import Data.Word                         (Word16)
 import Distribution.TestSuite.QuickCheck
 import Test.QuickCheck
 
 ------------------------------------------------------------------------------
 import Network.HTTP.Media                    hiding (parameters, subType)
+import Network.HTTP.Media.Gen                (padString)
 import Network.HTTP.Media.MediaType.Gen
 import Network.HTTP.Media.MediaType.Internal
 import Network.HTTP.Media.Quality
-
 
 ------------------------------------------------------------------------------
 tests :: [Test]
@@ -34,15 +37,30 @@ tests =
 testParse :: Test
 testParse = testGroup "parseQuality"
     [ testProperty "Without quality" $ do
-        media <- medias
-        return $
-            parseQuality (renderHeader media) == Just (map maxQuality media)
+        media    <- medias
+        rendered <- padConcat (return . renderHeader) media
+        return $ parseQuality rendered == Just (map maxQuality media)
     , testProperty "With quality" $ do
-        media <- medias >>= mapM (flip fmap (choose (0, 1000)) . Quality)
-        return $ parseQuality (renderHeader media) == Just media
+        media    <- qualities
+        rendered <- padConcat padQuality media
+        return $ parseQuality rendered == Just media
+    , testProperty "With extensions" $ do
+        media    <- qualities
+        rendered <- padConcat (padQuality >=> padExtensions) media
+        return $ parseQuality rendered == Just media
     ]
   where
     medias = listOf1 genMediaType
+    qualities = medias >>= mapM (flip fmap (choose (0, 1000)) . Quality)
+    padConcat f l = flip (foldlM (padComma f)) (tail l) =<< f (head l)
+    padComma f a b = pad a <$> padString "," <*> f b
+    padQuality qMedia = do
+        semi <- padString ";"
+        let d = renderHeader (qualityData qMedia)
+            v = showQ (qualityValue qMedia)
+        return $ d <> semi <> "q=" <> v
+    padExtensions s = genParameters >>= fmap (s <>) . renderParameters
+    pad a s b = a <> s <> b
 
 
 ------------------------------------------------------------------------------

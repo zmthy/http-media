@@ -4,6 +4,7 @@ module Network.HTTP.Media.Quality
     ( Quality (..)
     , maxQuality
     , minQuality
+    , showQ
     , readQ
     ) where
 

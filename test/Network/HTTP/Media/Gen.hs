@@ -70,7 +70,6 @@ genDiffCIByteString = genDiffWith genCIByteString
 
 ------------------------------------------------------------------------------
 -- | Pad a 'ByteString' with a random amount of tab and space characters.
-padString :: ByteString -> Gen (CI ByteString)
-padString c =
-    CI.mk <$> join (liftM2 pad) (BS.pack <$> listOf (elements " \t"))
+padString :: ByteString -> Gen ByteString
+padString c = join (liftM2 pad) (BS.pack <$> listOf (elements " \t"))
   where pad a b = a <> c <> b

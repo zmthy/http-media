@@ -10,7 +10,7 @@ import Control.Monad                     (join, liftM)
 import Data.CaseInsensitive              (foldedCase)
 import Data.String                       (fromString)
 import Data.Maybe                        (isNothing)
-import Data.Monoid                       ((<>), mconcat)
+import Data.Monoid                       ((<>))
 import Distribution.TestSuite.QuickCheck
 
 ------------------------------------------------------------------------------
@@ -191,12 +191,10 @@ testMostSpecific = testGroup "mostSpecific"
 testParseAccept :: Test
 testParseAccept = testProperty "parseAccept" $ do
     media <- genMediaType
-    semi  <- padString ";"
     let main   = mainType media
         sub    = subType media
-        params = parameters media
-        parsed = parseAccept . foldedCase $ main <> "/" <> sub <> mconcat
-            (map (uncurry ((<>) . (<> "=") . (semi <>))) $ Map.toList params)
+    params <- renderParameters (parameters media)
+    let parsed = parseAccept $ foldedCase (main <> "/" <> sub) <> params
     return $ parsed == Just media
 
 
