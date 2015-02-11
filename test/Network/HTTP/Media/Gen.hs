@@ -20,7 +20,7 @@ import qualified Data.CaseInsensitive  as CI
 import Control.Applicative  ((<$>))
 import Control.Monad        (liftM2, join)
 import Data.ByteString      (ByteString)
-import Data.CaseInsensitive (CI)
+import Data.CaseInsensitive (CI, original)
 import Data.Monoid          ((<>))
 import Test.QuickCheck.Gen  (Gen, elements, listOf, listOf1)
 
@@ -57,13 +57,15 @@ genDiffWith gen a = do
 
 
 ------------------------------------------------------------------------------
--- | Produces a non-empty ByteString of random alphanumeric characters
--- different to the given one.
+-- | Produces a non-empty ByteString of random alphanumeric characters that
+-- is case-insensitively different to the given one.
 genDiffByteString :: ByteString -> Gen ByteString
-genDiffByteString = genDiffWith genByteString
+genDiffByteString = fmap original . genDiffCIByteString . CI.mk
 
 
 ------------------------------------------------------------------------------
+-- | Produces a non-empty case-insensitive ByteString of random alphanumeric
+-- characters that is different to the given one.
 genDiffCIByteString :: CI ByteString -> Gen (CI ByteString)
 genDiffCIByteString = genDiffWith genCIByteString
 
