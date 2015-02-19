@@ -3,12 +3,3 @@ language: haskell
 ghc:
   - 7.8
   - 7.6
-
-install:
-  - cabal sandbox init
-  - cabal install cabal-install
-  - export CABAL=.cabal-sandbox/bin/cabal
-  - $CABAL install --only-dependencies --enable-tests
-
-script:
-  - $CABAL configure --enable-tests && $CABAL build && $CABAL test
