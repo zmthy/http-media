@@ -26,7 +26,7 @@ import Network.HTTP.Media.RenderHeader (RenderHeader (..))
 data Quality a = Quality
     { qualityData  :: a
     , qualityValue :: Word16
-    } deriving (Eq)
+    } deriving (Eq, Ord)
 
 instance RenderHeader a => Show (Quality a) where
     show = BS.unpack . renderHeader

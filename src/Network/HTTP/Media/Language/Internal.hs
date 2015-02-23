@@ -32,7 +32,7 @@ import Network.HTTP.Media.RenderHeader (RenderHeader (..))
 --
 -- > language-range = ( ( 1*8ALPHA *( "-" 1*8ALPHA ) ) | "*" )
 newtype Language = Language [CI ByteString]
-    deriving (Eq)
+    deriving (Eq, Ord)
 
 -- Note that internally, Language [] equates to *.
 
