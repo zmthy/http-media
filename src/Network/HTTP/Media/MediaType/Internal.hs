@@ -31,7 +31,7 @@ data MediaType = MediaType
     { mainType   :: CI ByteString  -- ^ The main type of the MediaType
     , subType    :: CI ByteString  -- ^ The sub type of the MediaType
     , parameters :: Parameters     -- ^ The parameters of the MediaType
-    } deriving (Eq)
+    } deriving (Eq, Ord)
 
 instance Show MediaType where
     show = BS.unpack . renderHeader
