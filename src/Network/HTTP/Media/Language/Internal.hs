@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 ------------------------------------------------------------------------------
 -- | Defines the 'Language' accept header with an 'Accept' instance for use in
 -- language negotiation.
@@ -14,7 +16,9 @@ import Control.Monad        (guard)
 import Data.ByteString      (ByteString)
 import Data.CaseInsensitive (CI, original)
 import Data.Char            (isAlpha)
+#if !MIN_VERSION_base(4, 8, 0)
 import Data.Functor         ((<$>))
+#endif
 import Data.List            (isPrefixOf)
 import Data.Maybe           (fromMaybe)
 import Data.String          (IsString (..))

@@ -1,4 +1,4 @@
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE CPP, TupleSections #-}
 
 ------------------------------------------------------------------------------
 -- | Contains definitions for generating 'Language's.
@@ -18,7 +18,9 @@ module Network.HTTP.Media.Language.Gen
     ) where
 
 ------------------------------------------------------------------------------
+#if !MIN_VERSION_base(4, 8, 0)
 import Control.Applicative  ((<$>))
+#endif
 import Data.ByteString      (ByteString)
 import Data.CaseInsensitive (CI)
 import Test.QuickCheck.Gen

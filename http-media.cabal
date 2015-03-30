@@ -1,5 +1,5 @@
 name:          http-media
-version:       0.6.0
+version:       0.6.1
 license:       MIT
 license-file:  LICENSE
 author:        Timothy Jones
@@ -46,6 +46,8 @@ library
   default-language: Haskell2010
   default-extensions:
     OverloadedStrings
+  other-extensions:
+    CPP
 
   exposed-modules:
     Network.HTTP.Media
@@ -71,6 +73,9 @@ test-suite test-http-media
   default-language: Haskell2010
   default-extensions:
     OverloadedStrings
+  other-extensions:
+    CPP
+    TupleSections
 
   test-module: Tests
   other-modules:

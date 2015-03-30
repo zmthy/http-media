@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 ------------------------------------------------------------------------------
 module Network.HTTP.Media.Language.Tests (tests) where
 
@@ -5,7 +7,9 @@ module Network.HTTP.Media.Language.Tests (tests) where
 import qualified Data.ByteString.Char8 as BS
 
 ------------------------------------------------------------------------------
+#if !MIN_VERSION_base(4, 8, 0)
 import Control.Applicative               ((<$>))
+#endif
 import Control.Monad                     (join)
 import Data.String                       (fromString)
 import Distribution.TestSuite.QuickCheck

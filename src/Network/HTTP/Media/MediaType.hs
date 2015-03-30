@@ -94,7 +94,7 @@ ensureR bs = CI.mk $ if l == 0 || l > 127
 -- a parameter value. RFC 4288 does not specify what characters are valid, so
 -- here we just disallow parameter and media type breakers, ',' and ';'.
 ensureV :: ByteString -> CI ByteString
-ensureV = CI.mk . ensure (`notElem` ",;")
+ensureV = CI.mk . ensure (`notElem` [',', ';'])
 
 
 ------------------------------------------------------------------------------

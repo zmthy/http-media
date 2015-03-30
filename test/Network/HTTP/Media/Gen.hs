@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 ------------------------------------------------------------------------------
 -- | Contains definitions for generating 'ByteString's.
 module Network.HTTP.Media.Gen
@@ -17,7 +19,9 @@ import qualified Data.ByteString.Char8 as BS
 import qualified Data.CaseInsensitive  as CI
 
 ------------------------------------------------------------------------------
+#if !MIN_VERSION_base(4, 8, 0)
 import Control.Applicative  ((<$>))
+#endif
 import Control.Monad        (liftM2, join)
 import Data.ByteString      (ByteString)
 import Data.CaseInsensitive (CI, original)

@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 ------------------------------------------------------------------------------
 -- | Contains definitions for generating 'MediaType's.
 module Network.HTTP.Media.MediaType.Gen
@@ -30,7 +32,9 @@ module Network.HTTP.Media.MediaType.Gen
 import qualified Data.Map as Map
 
 ------------------------------------------------------------------------------
+#if !MIN_VERSION_base(4, 8, 0)
 import Control.Applicative  ((<$>))
+#endif
 import Control.Monad        (liftM, liftM2)
 import Data.ByteString      (ByteString)
 import Data.CaseInsensitive (CI, original)
