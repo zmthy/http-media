@@ -2,8 +2,9 @@
 module Network.HTTP.Media.Accept.Tests (tests) where
 
 ------------------------------------------------------------------------------
-import Control.Monad                     (join, liftM, liftM2)
-import Distribution.TestSuite.QuickCheck
+import Control.Monad                        (join, liftM, liftM2)
+import Test.Framework                       (Test, testGroup)
+import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 ------------------------------------------------------------------------------
 import Network.HTTP.Media.Accept

@@ -1,8 +1,8 @@
 ------------------------------------------------------------------------------
-module Tests (tests) where
+module Main (main) where
 
 ------------------------------------------------------------------------------
-import Distribution.TestSuite
+import Test.Framework (defaultMain, testGroup)
 
 ------------------------------------------------------------------------------
 import qualified Network.HTTP.Media.Tests           as Media
@@ -12,8 +12,8 @@ import qualified Network.HTTP.Media.Language.Tests  as Language
 
 
 ------------------------------------------------------------------------------
-tests :: IO [Test]
-tests = return
+main :: IO ()
+main = defaultMain
     [ testGroup "MediaType" MediaType.tests
     , testGroup "Accept"    Accept.tests
     , testGroup "Media"     Media.tests

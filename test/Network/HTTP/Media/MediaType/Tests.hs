@@ -6,12 +6,13 @@ import qualified Data.ByteString.Char8 as BS
 import qualified Data.Map              as Map
 
 ------------------------------------------------------------------------------
-import Control.Monad                     (join, liftM)
-import Data.CaseInsensitive              (foldedCase)
-import Data.String                       (fromString)
-import Data.Maybe                        (isNothing)
-import Data.Monoid                       ((<>))
-import Distribution.TestSuite.QuickCheck
+import Control.Monad                        (join, liftM)
+import Data.CaseInsensitive                 (foldedCase)
+import Data.String                          (fromString)
+import Data.Maybe                           (isNothing)
+import Data.Monoid                          ((<>))
+import Test.Framework                       (Test, testGroup)
+import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 ------------------------------------------------------------------------------
 import Network.HTTP.Media.Accept

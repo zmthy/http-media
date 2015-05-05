@@ -8,11 +8,12 @@ import qualified Data.ByteString.Char8 as BS
 
 ------------------------------------------------------------------------------
 #if !MIN_VERSION_base(4, 8, 0)
-import Control.Applicative               ((<$>))
+import Control.Applicative                  ((<$>))
 #endif
-import Control.Monad                     (join)
-import Data.String                       (fromString)
-import Distribution.TestSuite.QuickCheck
+import Control.Monad                        (join)
+import Data.String                          (fromString)
+import Test.Framework                       (Test, testGroup)
+import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 ------------------------------------------------------------------------------
 import Network.HTTP.Media.Accept
