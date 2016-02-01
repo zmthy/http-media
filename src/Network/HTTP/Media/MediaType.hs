@@ -58,7 +58,10 @@ parameters = Internal.parameters
 -- | Builds a 'MediaType' without parameters. Can produce an error if
 -- either type is invalid.
 (//) :: ByteString -> ByteString -> MediaType
-a // b = MediaType (ensureR a) (ensureR b) empty
+a // b
+    | a == "*" && b == "*" = MediaType (CI.mk a) (CI.mk b) empty
+    | b == "*"             = MediaType (ensureR a) (CI.mk b) empty
+    | otherwise            = MediaType (ensureR a) (ensureR b) empty
 
 
 ------------------------------------------------------------------------------
