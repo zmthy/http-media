@@ -15,14 +15,16 @@ module Network.HTTP.Media.Gen
     ) where
 
 ------------------------------------------------------------------------------
+#if !MIN_VERSION_base(4, 8, 0)
+import Data.Functor ((<$>))
+#endif
+
+------------------------------------------------------------------------------
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.CaseInsensitive  as CI
 
 ------------------------------------------------------------------------------
-#if !MIN_VERSION_base(4, 8, 0)
-import Control.Applicative  ((<$>))
-#endif
-import Control.Monad        (liftM2, join)
+import Control.Monad        (join, liftM2)
 import Data.ByteString      (ByteString)
 import Data.CaseInsensitive (CI, original)
 import Data.Monoid          ((<>))
@@ -31,12 +33,12 @@ import Test.QuickCheck.Gen  (Gen, elements, listOf, listOf1)
 
 ------------------------------------------------------------------------------
 -- | Produces a non-empty ByteString of random characters from the given set.
-genByteStringFrom :: [Char] -> Gen ByteString
+genByteStringFrom :: String -> Gen ByteString
 genByteStringFrom = fmap BS.pack . listOf1 . elements
 
 
 ------------------------------------------------------------------------------
-genCIByteStringFrom :: [Char] -> Gen (CI ByteString)
+genCIByteStringFrom :: String -> Gen (CI ByteString)
 genCIByteStringFrom = fmap CI.mk . genByteStringFrom
 
 

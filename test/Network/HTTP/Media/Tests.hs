@@ -5,9 +5,11 @@ module Network.HTTP.Media.Tests (tests) where
 
 ------------------------------------------------------------------------------
 #if !MIN_VERSION_base(4, 8, 0)
-import Control.Applicative                  ((<$>), (<*>))
+import Control.Applicative ((<$>), (<*>))
 #endif
-import Control.Monad                        ((>=>), replicateM)
+
+------------------------------------------------------------------------------
+import Control.Monad                        (replicateM, (>=>))
 import Data.ByteString                      (ByteString)
 import Data.Foldable                        (foldlM)
 import Data.Map                             (empty)

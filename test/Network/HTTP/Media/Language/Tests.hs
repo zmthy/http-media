@@ -4,21 +4,26 @@
 module Network.HTTP.Media.Language.Tests (tests) where
 
 ------------------------------------------------------------------------------
+#if !MIN_VERSION_base(4, 8, 0)
+import Data.Functor ((<$>))
+#endif
+
+------------------------------------------------------------------------------
 import qualified Data.ByteString.Char8 as BS
 
 ------------------------------------------------------------------------------
-#if !MIN_VERSION_base(4, 8, 0)
-import Control.Applicative                  ((<$>))
-#endif
 import Control.Monad                        (join)
+import Data.Maybe                           (isNothing)
+import Data.Monoid                          ((<>))
 import Data.String                          (fromString)
 import Test.Framework                       (Test, testGroup)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
 ------------------------------------------------------------------------------
 import Network.HTTP.Media.Accept
-import Network.HTTP.Media.RenderHeader
+import Network.HTTP.Media.Language
 import Network.HTTP.Media.Language.Gen
+import Network.HTTP.Media.RenderHeader
 
 
 ------------------------------------------------------------------------------
@@ -114,6 +119,11 @@ testMostSpecific = testGroup "mostSpecific"
 
 ------------------------------------------------------------------------------
 testParseAccept :: Test
-testParseAccept = testProperty "parseAccept" $ do
-    lang <- genLanguage
-    return $ parseAccept (renderHeader lang) == Just lang
+testParseAccept = testGroup "parseAccept"
+    [ testProperty "Valid parse"$ do
+        lang <- genLanguage
+        return $ parseAccept (renderHeader lang) == Just lang
+    , testProperty "Trailing hyphen" $ do
+        bs <- renderHeader <$> genLanguage
+        return $ isNothing (parseAccept $ bs <> "-" :: Maybe Language)
+    ]

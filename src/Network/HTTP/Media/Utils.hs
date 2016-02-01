@@ -18,8 +18,12 @@ import Data.ByteString (ByteString)
 ------------------------------------------------------------------------------
 -- | Equivalent to 'Data.ByteString.break' (on equality against the given
 -- character), but leaves out the byte that the string is broken on.
-breakChar :: Char -> ByteString -> (ByteString, ByteString)
-breakChar c = fmap BS.tail . BS.break (== c)
+breakChar :: Char -> ByteString -> Maybe (ByteString, ByteString)
+breakChar c = safeTail . BS.break (== c)
+  where
+    safeTail (a, b)
+        | BS.null b = Nothing
+        | otherwise = Just (a, BS.tail b)
 
 
 ------------------------------------------------------------------------------

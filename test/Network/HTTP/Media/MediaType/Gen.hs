@@ -29,12 +29,14 @@ module Network.HTTP.Media.MediaType.Gen
     ) where
 
 ------------------------------------------------------------------------------
+#if !MIN_VERSION_base(4, 8, 0)
+import Data.Functor ((<$>))
+#endif
+
+------------------------------------------------------------------------------
 import qualified Data.Map as Map
 
 ------------------------------------------------------------------------------
-#if !MIN_VERSION_base(4, 8, 0)
-import Control.Applicative  ((<$>))
-#endif
 import Control.Monad        (liftM, liftM2)
 import Data.ByteString      (ByteString)
 import Data.CaseInsensitive (CI, original)

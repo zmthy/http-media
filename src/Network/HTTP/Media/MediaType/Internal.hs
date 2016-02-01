@@ -11,13 +11,13 @@ import qualified Data.CaseInsensitive  as CI
 import qualified Data.Map              as Map
 
 ------------------------------------------------------------------------------
-import Control.Monad        (guard)
+import Control.Monad        (foldM, guard)
 import Data.ByteString      (ByteString)
 import Data.CaseInsensitive (CI, original)
-import Data.String          (IsString (..))
 import Data.Map             (Map)
 import Data.Maybe           (fromMaybe)
 import Data.Monoid          ((<>))
+import Data.String          (IsString (..))
 
 ------------------------------------------------------------------------------
 import Network.HTTP.Media.Accept       (Accept (..))
@@ -42,15 +42,17 @@ instance IsString MediaType where
 
 instance Accept MediaType where
     parseAccept bs = do
-        let pieces = map trimBS $ BS.split ';' bs
-        guard $ not (null pieces)
-        let (m : ps) = pieces
-            (a, b)   = both CI.mk (breakChar '/' m)
-        guard $ BS.elem '/' m && (a /= "*" || b == "*")
-        return $ MediaType a b (foldr insert Map.empty ps)
+        (s, ps) <- uncons (map trimBS (BS.split ';' bs))
+        (a, b)  <- breakChar '/' s
+        guard $ not (BS.null a || BS.null b) && (a /= "*" || b == "*")
+        ps' <- foldM insert Map.empty ps
+        return $ MediaType (CI.mk a) (CI.mk b) ps'
       where
+        uncons []      = Nothing
+        uncons (a : b) = Just (a, b)
         both f (a, b) = (f a, f b)
-        insert = uncurry Map.insert . both CI.mk . breakChar '='
+        insert ps =
+          fmap (flip (uncurry Map.insert) ps . both CI.mk) . breakChar '='
 
     matches a b
         | mainType b == "*" = params

@@ -1,5 +1,12 @@
+{-# LANGUAGE CPP #-}
+
 ------------------------------------------------------------------------------
 module Network.HTTP.Media.MediaType.Tests (tests) where
+
+------------------------------------------------------------------------------
+#if !MIN_VERSION_base(4, 8, 0)
+import Data.Functor ((<$>))
+#endif
 
 ------------------------------------------------------------------------------
 import qualified Data.ByteString.Char8 as BS
@@ -7,19 +14,22 @@ import qualified Data.Map              as Map
 
 ------------------------------------------------------------------------------
 import Control.Monad                        (join, liftM)
+import Data.ByteString                      (ByteString)
 import Data.CaseInsensitive                 (foldedCase)
-import Data.String                          (fromString)
 import Data.Maybe                           (isNothing)
 import Data.Monoid                          ((<>))
+import Data.String                          (fromString)
 import Test.Framework                       (Test, testGroup)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
+import Test.QuickCheck.Gen                  (Gen)
 
 ------------------------------------------------------------------------------
 import Network.HTTP.Media.Accept
 import Network.HTTP.Media.Gen
-import Network.HTTP.Media.MediaType          ((/?), (/.))
-import Network.HTTP.Media.MediaType.Internal
+import Network.HTTP.Media.MediaType          ((/.), (/?))
 import Network.HTTP.Media.MediaType.Gen
+import Network.HTTP.Media.MediaType.Internal
+import Network.HTTP.Media.RenderHeader       (renderHeader)
 
 
 ------------------------------------------------------------------------------
@@ -190,13 +200,43 @@ testMostSpecific = testGroup "mostSpecific"
 
 ------------------------------------------------------------------------------
 testParseAccept :: Test
-testParseAccept = testProperty "parseAccept" $ do
-    media <- genMediaType
-    let main   = mainType media
-        sub    = subType media
-    params <- renderParameters (parameters media)
-    let parsed = parseAccept $ foldedCase (main <> "/" <> sub) <> params
-    return $ parsed == Just media
+testParseAccept = testGroup "parseAccept"
+    [ testProperty "Valid parse" $ do
+        media <- genMediaType
+        let main = mainType media
+            sub  = subType media
+        params <- renderParameters (parameters media)
+        let parsed = parseAccept $ foldedCase (main <> "/" <> sub) <> params
+        return $ parsed == Just media
+    , testProperty "No sub" $ do
+        bs <- genByteString
+        return $ isNothing (parseAccept bs :: Maybe MediaType)
+    , testProperty "Empty main" $ do
+        sep <- padString "/"
+        bs  <- (sep <>) <$> genByteString
+        return $ isNothing (parseAccept bs :: Maybe MediaType)
+    , testProperty "Empty sub" $ do
+        sep <- padString "/"
+        bs  <- (<> sep) <$> genByteString
+        return $ isNothing (parseAccept bs :: Maybe MediaType)
+    , testProperty "Empty parameters" $ do
+        sep <- padString ";"
+        bs  <- renderHeader <$> genWithoutParams
+        return $ isNothing (parseAccept (bs <> sep) :: Maybe MediaType)
+    , testProperty "No value" $
+        isNothing <$> genMediaNameAndParams ""
+    , testProperty "Empty value" $ do
+        eq <- padString "="
+        isNothing <$> genMediaNameAndParams eq
+    ]
+
+genMediaNameAndParams :: ByteString -> Gen (Maybe MediaType)
+genMediaNameAndParams eq = do
+    sep  <- padString ";"
+    bs   <- renderHeader <$> genByteString
+    name <- genByteString
+    ps   <- genMaybeParameters >>= renderParameters
+    return $ parseAccept (bs <> sep <> name <> eq <> sep <> ps)
 
 
 ------------------------------------------------------------------------------
