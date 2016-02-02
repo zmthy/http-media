@@ -9,11 +9,9 @@ import Control.Applicative ((<$>), (<*>))
 #endif
 
 ------------------------------------------------------------------------------
-import Control.Monad                        (replicateM, (>=>))
-import Data.ByteString                      (ByteString)
+import Control.Monad                        (join, replicateM, (>=>))
 import Data.Foldable                        (foldlM)
 import Data.Map                             (empty)
-import Data.Maybe                           (listToMaybe)
 import Data.Monoid                          ((<>))
 import Data.Word                            (Word16)
 import Test.Framework                       (Test, testGroup)
@@ -83,32 +81,21 @@ testMapAccept = testMap "Accept" mapAccept renderHeader
 ------------------------------------------------------------------------------
 testMatchContent :: Test
 testMatchContent = testGroup "matchContent"
-    [ testProperty "Most specific" $ do
-        media <- genConcreteMediaType
-        let client = renderHeader
-                [ MediaType "*" "*" empty
-                , media { subType = "*" }
-                , media { parameters = empty }
-                , media
-                ]
-        return $ matchAccept [media] client === Just media
+    [ testProperty "Matches" $ do
+        media <- genMediaType
+        return $ matchContent [media] (renderHeader media) === Just media
     , testProperty "Nothing" $ do
-        (server, client) <- genServerAndClient
-        let client' = filter (not . flip any server . matches) client
-        return $ matchAccept server (renderHeader client') === Nothing
-    , testProperty "Left biased" $ do
-        server <- genServer
-        return $
-            matchAccept server (renderHeader server) === Just (head server)
+        content <- genMediaType
+        parsers <- filter (not . matches content) <$> genServer
+        return $ matchContent parsers (renderHeader content) === Nothing
     , testProperty "Against */*" $ do
-        server <- genServer
-        let stars = "*/*" :: ByteString
+        media <- genMediaType
         return $
-            matchAccept server (renderHeader [stars]) === Just (head server)
+            matchContent [anything] (renderHeader media) === Just anything
     , testProperty "Against type/*" $ do
-        server <- genServer
-        let client = renderHeader [subStarOf $ head server]
-        return $ matchAccept server client === Just (head server)
+        media <- genMediaType
+        let sub = subStarOf media
+        return $ matchContent [sub] (renderHeader media) === Just sub
     ]
 
 
@@ -116,14 +103,12 @@ testMatchContent = testGroup "matchContent"
 testMapContent :: Test
 testMapContent = testGroup "mapContent"
     [ testProperty "Matches" $ do
-        server <- genServer
-        let zipped = zip server server
-        return $ mapAccept zipped (renderHeader server) === listToMaybe server
+        media <- genMediaType
+        return $ mapContent [(media, ())] (renderHeader media) === Just ()
     , testProperty "Nothing" $ do
-        server <- genServer
-        client <- listOf1 $ genDiffMediaTypesWith genConcreteMediaType server
-        let zipped = zip server $ repeat ()
-        return $ mapAccept zipped (renderHeader client) === Nothing
+        content <- genMediaType
+        parsers <- join zip . filter (not . matches content) <$> genServer
+        return $ mapContent parsers (renderHeader content) === Nothing
     ]
 
 
@@ -161,10 +146,9 @@ testMatch name match qToI = testGroup ("match" ++ name)
                 ]
         return $ match [media] client === Just media
     , testProperty "Nothing" $ do
-        server <- genServer
-        client <- listOf1 $ genDiffMediaTypesWith genConcreteMediaType server
-        let client' = filter (not . flip any server . matches) client
-        return $ match server (qToI $ map maxQuality client') === Nothing
+        client <- listOf1 genConcreteMediaType
+        server <- filter (not . flip any client . matches) <$> genServer
+        return $ match server (qToI $ map maxQuality client) === Nothing
     , testProperty "Never chooses q=0" $ do
         server <- genServer
         return $ match server (qToI $ map minQuality server) === Nothing
