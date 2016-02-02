@@ -16,11 +16,11 @@ import qualified Data.Map              as Map
 import Control.Monad                        (join, liftM)
 import Data.ByteString                      (ByteString)
 import Data.CaseInsensitive                 (foldedCase)
-import Data.Maybe                           (isNothing)
 import Data.Monoid                          ((<>))
 import Data.String                          (fromString)
 import Test.Framework                       (Test, testGroup)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
+import Test.QuickCheck                      (property, (.&&.), (===))
 import Test.QuickCheck.Gen                  (Gen)
 
 ------------------------------------------------------------------------------
@@ -53,7 +53,7 @@ testEq :: Test
 testEq = testGroup "Eq"
     [ testProperty "==" $ do
         media <- genMediaType
-        return $ media == media
+        return $ media === media
     , testProperty "/=" $ do
         media  <- genMediaType
         media' <- genDiffMediaType media
@@ -65,14 +65,14 @@ testEq = testGroup "Eq"
 testShow :: Test
 testShow = testProperty "show" $ do
     media <- genMediaType
-    return $ parseAccept (BS.pack $ show media) == Just media
+    return $ parseAccept (BS.pack $ show media) === Just media
 
 
 ------------------------------------------------------------------------------
 testFromString :: Test
 testFromString = testProperty "fromString" $ do
     media <- genMediaType
-    return $ media == fromString (show media)
+    return $ media === fromString (show media)
 
 
 ------------------------------------------------------------------------------
@@ -93,12 +93,12 @@ testGet :: Test
 testGet = testGroup "(/.)"
     [ testProperty "Retrieves property it has" $ do
         media  <- genWithParams
-        let is n v = (&& media /. foldedCase n == Just v)
-        return $ Map.foldrWithKey is True $ parameters media
+        let is n v = (.&&. media /. foldedCase n === Just v)
+        return $ Map.foldrWithKey is (property True) $ parameters media
     , testProperty "Nothing for property it doesn't have" $ do
         media <- genWithParams
-        let is n _ = (&& isNothing (stripParams media /. foldedCase n))
-        return $ Map.foldrWithKey is True $ parameters media
+        let is n _ = (.&&. stripParams media /. foldedCase n === Nothing)
+        return $ Map.foldrWithKey is (property True) $ parameters media
     ]
 
 
@@ -171,30 +171,30 @@ testMostSpecific :: Test
 testMostSpecific = testGroup "mostSpecific"
     [ testProperty "With */*" $ do
         media <- genConcreteMediaType
-        return $ mostSpecific media anything == media &&
-            mostSpecific anything media == media
+        return $ mostSpecific media anything === media .&&.
+            mostSpecific anything media === media
     , testProperty "With type/*" $ do
         media <- genConcreteMediaType
         let m1 = media { parameters = Map.empty }
             m2 = m1 { subType = "*" }
-        return $ mostSpecific m1 m2 == m1 && mostSpecific m2 m1 == m1
+        return $ mostSpecific m1 m2 === m1 .&&. mostSpecific m2 m1 === m1
     , testProperty "With parameters" $ do
         media  <- genMediaType
         params <- genParameters
         let media'  = media { parameters = params }
             media'' = media { parameters = Map.empty }
-        return $ mostSpecific media' media'' == media' &&
-            mostSpecific media'' media' == media'
+        return $ mostSpecific media' media'' === media' .&&.
+            mostSpecific media'' media' === media'
     , testProperty "Different types" $ do
         media  <- genConcreteMediaType
         media' <- genDiffMediaTypeWith genConcreteMediaType media
-        return $ mostSpecific media media' == media
+        return $ mostSpecific media media' === media
     , testProperty "Left biased" $ do
         media  <- genConcreteMediaType
         media' <- genConcreteMediaType
         let media'' = media' { parameters = parameters media }
-        return $ mostSpecific media media'' == media &&
-            mostSpecific media'' media == media''
+        return $ mostSpecific media media'' === media .&&.
+            mostSpecific media'' media === media''
     ]
 
 
@@ -207,27 +207,27 @@ testParseAccept = testGroup "parseAccept"
             sub  = subType media
         params <- renderParameters (parameters media)
         let parsed = parseAccept $ foldedCase (main <> "/" <> sub) <> params
-        return $ parsed == Just media
+        return $ parsed === Just media
     , testProperty "No sub" $ do
         bs <- genByteString
-        return $ isNothing (parseAccept bs :: Maybe MediaType)
+        return $ (parseAccept bs :: Maybe MediaType) === Nothing
     , testProperty "Empty main" $ do
         sep <- padString "/"
         bs  <- (sep <>) <$> genByteString
-        return $ isNothing (parseAccept bs :: Maybe MediaType)
+        return $ (parseAccept bs :: Maybe MediaType) === Nothing
     , testProperty "Empty sub" $ do
         sep <- padString "/"
         bs  <- (<> sep) <$> genByteString
-        return $ isNothing (parseAccept bs :: Maybe MediaType)
+        return $ (parseAccept bs :: Maybe MediaType) === Nothing
     , testProperty "Empty parameters" $ do
         sep <- padString ";"
         bs  <- renderHeader <$> genWithoutParams
-        return $ isNothing (parseAccept (bs <> sep) :: Maybe MediaType)
+        return $ (parseAccept (bs <> sep) :: Maybe MediaType) === Nothing
     , testProperty "No value" $
-        isNothing <$> genMediaNameAndParams ""
+        (=== Nothing) <$> genMediaNameAndParams ""
     , testProperty "Empty value" $ do
         eq <- padString "="
-        isNothing <$> genMediaNameAndParams eq
+        (=== Nothing) <$> genMediaNameAndParams eq
     ]
 
 genMediaNameAndParams :: ByteString -> Gen (Maybe MediaType)

@@ -13,11 +13,11 @@ import qualified Data.ByteString.Char8 as BS
 
 ------------------------------------------------------------------------------
 import Control.Monad                        (join)
-import Data.Maybe                           (isNothing)
 import Data.Monoid                          ((<>))
 import Data.String                          (fromString)
 import Test.Framework                       (Test, testGroup)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
+import Test.QuickCheck                      ((.&&.), (===))
 
 ------------------------------------------------------------------------------
 import Network.HTTP.Media.Accept
@@ -45,7 +45,7 @@ testEq :: Test
 testEq = testGroup "Eq"
     [ testProperty "==" $ do
         lang <- genLanguage
-        return $ lang == lang
+        return $ lang === lang
     , testProperty "/=" $ do
         lang  <- genLanguage
         lang' <- genDiffLanguage lang
@@ -57,14 +57,14 @@ testEq = testGroup "Eq"
 testShow :: Test
 testShow = testProperty "show" $ do
     lang <- genLanguage
-    return $ parseAccept (BS.pack $ show lang) == Just lang
+    return $ parseAccept (BS.pack $ show lang) === Just lang
 
 
 ------------------------------------------------------------------------------
 testFromString :: Test
 testFromString = testProperty "fromString" $ do
     lang <- genLanguage
-    return $ lang == fromString (show lang)
+    return $ lang === fromString (show lang)
 
 
 ------------------------------------------------------------------------------
@@ -104,16 +104,16 @@ testMostSpecific :: Test
 testMostSpecific = testGroup "mostSpecific"
     [ testProperty "With *" $ do
         lang <- genLanguage
-        return $ mostSpecific lang anything == lang &&
-            mostSpecific anything lang == lang
+        return $ mostSpecific lang anything === lang .&&.
+            mostSpecific anything lang === lang
     , testProperty "Proper prefix" $ do
         (pre, lang) <- genMatchingLanguages
-        return $ mostSpecific lang pre == lang &&
-            mostSpecific pre lang == lang
+        return $ mostSpecific lang pre === lang .&&.
+            mostSpecific pre lang === lang
     , testProperty "Left biased" $ do
         (lang, lang') <- genNonMatchingLanguages
-        return $ mostSpecific lang lang' == lang &&
-            mostSpecific lang' lang == lang'
+        return $ mostSpecific lang lang' === lang .&&.
+            mostSpecific lang' lang === lang'
     ]
 
 
@@ -122,8 +122,8 @@ testParseAccept :: Test
 testParseAccept = testGroup "parseAccept"
     [ testProperty "Valid parse"$ do
         lang <- genLanguage
-        return $ parseAccept (renderHeader lang) == Just lang
+        return $ parseAccept (renderHeader lang) === Just lang
     , testProperty "Trailing hyphen" $ do
         bs <- renderHeader <$> genLanguage
-        return $ isNothing (parseAccept $ bs <> "-" :: Maybe Language)
+        return $ (parseAccept $ bs <> "-" :: Maybe Language) === Nothing
     ]

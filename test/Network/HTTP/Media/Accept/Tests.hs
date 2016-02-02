@@ -1,10 +1,17 @@
+{-# LANGUAGE CPP #-}
+
 ------------------------------------------------------------------------------
 module Network.HTTP.Media.Accept.Tests (tests) where
 
 ------------------------------------------------------------------------------
-import Control.Monad                        (join, liftM, liftM2)
+#if !MIN_VERSION_base(4, 8, 0)
+import Control.Applicative ((<$>), (<*>))
+#endif
+
+------------------------------------------------------------------------------
 import Test.Framework                       (Test, testGroup)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
+import Test.QuickCheck                      ((===))
 
 ------------------------------------------------------------------------------
 import Network.HTTP.Media.Accept
@@ -38,11 +45,11 @@ testMatches = testGroup "matches"
 -- required for the 'moreSpecificThan' test.
 testMoreSpecificThan :: Test
 testMoreSpecificThan = testProperty "moreSpecificThan" $
-    join (liftM2 ((not .) . moreSpecificThan)) genByteString
+    (not .) . moreSpecificThan <$> genByteString <*> genByteString
 
 
 ------------------------------------------------------------------------------
 testMostSpecific :: Test
 testMostSpecific = testProperty "mostSpecific" $ do
     string <- genByteString
-    liftM ((== string) . mostSpecific string) genByteString
+    (=== string) . mostSpecific string <$> genByteString

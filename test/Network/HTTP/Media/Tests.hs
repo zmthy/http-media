@@ -13,7 +13,7 @@ import Control.Monad                        (replicateM, (>=>))
 import Data.ByteString                      (ByteString)
 import Data.Foldable                        (foldlM)
 import Data.Map                             (empty)
-import Data.Maybe                           (isNothing, listToMaybe)
+import Data.Maybe                           (listToMaybe)
 import Data.Monoid                          ((<>))
 import Data.Word                            (Word16)
 import Test.Framework                       (Test, testGroup)
@@ -46,15 +46,15 @@ testParse = testGroup "parseQuality"
     [ testProperty "Without quality" $ do
         media    <- medias
         rendered <- padConcat (return . renderHeader) media
-        return $ parseQuality rendered == Just (map maxQuality media)
+        return $ parseQuality rendered === Just (map maxQuality media)
     , testProperty "With quality" $ do
         media    <- qualities
         rendered <- padConcat padQuality media
-        return $ parseQuality rendered == Just media
+        return $ parseQuality rendered === Just media
     , testProperty "With extensions" $ do
         media    <- qualities
         rendered <- padConcat (padQuality >=> padExtensions) media
-        return $ parseQuality rendered == Just media
+        return $ parseQuality rendered === Just media
     ]
   where
     medias = listOf1 genMediaType
@@ -91,24 +91,24 @@ testMatchContent = testGroup "matchContent"
                 , media { parameters = empty }
                 , media
                 ]
-        return $ matchAccept [media] client == Just media
+        return $ matchAccept [media] client === Just media
     , testProperty "Nothing" $ do
         (server, client) <- genServerAndClient
         let client' = filter (not . flip any server . matches) client
-        return . isNothing $ matchAccept server (renderHeader client')
+        return $ matchAccept server (renderHeader client') === Nothing
     , testProperty "Left biased" $ do
         server <- genServer
         return $
-            matchAccept server (renderHeader server) == Just (head server)
+            matchAccept server (renderHeader server) === Just (head server)
     , testProperty "Against */*" $ do
         server <- genServer
         let stars = "*/*" :: ByteString
         return $
-            matchAccept server (renderHeader [stars]) == Just (head server)
+            matchAccept server (renderHeader [stars]) === Just (head server)
     , testProperty "Against type/*" $ do
         server <- genServer
         let client = renderHeader [subStarOf $ head server]
-        return $ matchAccept server client == Just (head server)
+        return $ matchAccept server client === Just (head server)
     ]
 
 
@@ -118,12 +118,12 @@ testMapContent = testGroup "mapContent"
     [ testProperty "Matches" $ do
         server <- genServer
         let zipped = zip server server
-        return $ mapAccept zipped (renderHeader server) == listToMaybe server
+        return $ mapAccept zipped (renderHeader server) === listToMaybe server
     , testProperty "Nothing" $ do
         server <- genServer
         client <- listOf1 $ genDiffMediaTypesWith genConcreteMediaType server
         let zipped = zip server $ repeat ()
-        return . isNothing $ mapAccept zipped (renderHeader client)
+        return $ mapAccept zipped (renderHeader client) === Nothing
     ]
 
 
@@ -149,7 +149,7 @@ testMatch name match qToI = testGroup ("match" ++ name)
         qs     <- replicateM (length server) $ choose (1, 1000)
         let client = zipWith Quality server qs
             qmax v q = if qualityValue q > qualityValue v then q else v
-        return $ match server (qToI client) ==
+        return $ match server (qToI client) ===
             Just (qualityData $ foldr1 qmax client)
     , testProperty "Most specific" $ do
         media <- genConcreteMediaType
@@ -159,30 +159,28 @@ testMatch name match qToI = testGroup ("match" ++ name)
                 , media { parameters = empty }
                 , media
                 ]
-        return $ match [media] client == Just media
+        return $ match [media] client === Just media
     , testProperty "Nothing" $ do
         server <- genServer
         client <- listOf1 $ genDiffMediaTypesWith genConcreteMediaType server
         let client' = filter (not . flip any server . matches) client
-        return . isNothing $ match server
-            (qToI $ map maxQuality client')
+        return $ match server (qToI $ map maxQuality client') === Nothing
     , testProperty "Never chooses q=0" $ do
         server <- genServer
-        return . isNothing $
-            match server (qToI $ map minQuality server)
+        return $ match server (qToI $ map minQuality server) === Nothing
     , testProperty "Left biased" $ do
         server <- genServer
         let client = qToI $ map maxQuality server
-        return $ match server client == Just (head server)
+        return $ match server client === Just (head server)
     , testProperty "Against */*" $ do
         server <- genServer
         let stars = "*/*" :: MediaType
-        return $ match server (qToI [maxQuality stars]) ==
+        return $ match server (qToI [maxQuality stars]) ===
             Just (head server)
     , testProperty "Against type/*" $ do
         server <- genServer
         let client = qToI [maxQuality (subStarOf $ head server)]
-        return $ match server client == Just (head server)
+        return $ match server client === Just (head server)
     ]
 
 
@@ -199,12 +197,12 @@ testMap name mapf qToI = testGroup ("map" ++ name)
         let client = zipWith Quality server qs
             qmax q v = if qualityValue q >= qualityValue v then q else v
             zipped = zip server server
-        return $ mapf zipped (qToI client) ==
+        return $ mapf zipped (qToI client) ===
             Just (qualityData $ foldr1 qmax client)
     , testProperty "Nothing" $ do
         (server, client) <- genServerAndClient
         let zipped = zip server $ repeat "*/*"
-        return . isNothing $ mapf zipped (qToI $ map maxQuality client)
+        return $ mapf zipped (qToI $ map maxQuality client) === Nothing
     ]
 
 
