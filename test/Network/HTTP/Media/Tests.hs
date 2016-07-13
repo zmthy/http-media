@@ -199,5 +199,6 @@ genServer = listOf1 genConcreteMediaType
 genServerAndClient :: Gen ([MediaType], [MediaType])
 genServerAndClient = do
     server <- genServer
-    client <- listOf1 $ genDiffMediaTypesWith genConcreteMediaType server
+    client <- filter (not . flip any server . flip matches) <$>
+        listOf1 (genDiffMediaTypesWith genConcreteMediaType server)
     return (server, client)
