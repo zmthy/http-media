@@ -2,6 +2,7 @@
 -- | Defines the quality value data type.
 module Network.HTTP.Media.Quality
     ( Quality (..)
+    , quality
     , maxQuality
     , minQuality
     , showQ
@@ -11,6 +12,7 @@ module Network.HTTP.Media.Quality
 import qualified Data.ByteString.Char8           as BS
 
 import           Data.ByteString                 (ByteString)
+import           Data.ByteString.UTF8            (toString)
 import           Data.Char                       (isDigit)
 import           Data.List                       (dropWhileEnd)
 import           Data.Maybe                      (fromMaybe)
@@ -31,6 +33,13 @@ instance RenderHeader a => Show (Quality a) where
 
 instance RenderHeader h => RenderHeader (Quality h) where
     renderHeader (Quality a q) = renderHeader a <> ";q=" <> showQ q
+
+
+------------------------------------------------------------------------------
+-- | Manually construct a quality value.
+quality :: a -> ByteString -> Quality a
+quality x q = Quality x $ flip fromMaybe (readQ q) $
+    error ("Invalid quality value " ++ toString q)
 
 
 ------------------------------------------------------------------------------

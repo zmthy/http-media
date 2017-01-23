@@ -33,6 +33,9 @@ module Network.HTTP.Media
 
     -- * Quality values
     , Quality
+    , quality
+    , maxQuality
+    , minQuality
     , parseQuality
     , matchQuality
     , mapQuality
