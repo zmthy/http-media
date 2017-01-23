@@ -17,23 +17,19 @@ module Network.HTTP.Media.MediaType
     , (/.)
     ) where
 
-------------------------------------------------------------------------------
-import qualified Data.ByteString.Char8 as BS
-import qualified Data.CaseInsensitive  as CI
-import qualified Data.Map              as Map
+import qualified Data.ByteString.Char8                 as BS
+import qualified Data.CaseInsensitive                  as CI
+import qualified Data.Map                              as Map
 
-------------------------------------------------------------------------------
-import Data.ByteString      (ByteString)
-import Data.CaseInsensitive (CI)
-import Data.Map             (empty, insert)
+import           Data.ByteString                       (ByteString)
+import           Data.CaseInsensitive                  (CI)
+import           Data.Map                              (empty, insert)
 
-------------------------------------------------------------------------------
 import qualified Network.HTTP.Media.MediaType.Internal as Internal
 
-------------------------------------------------------------------------------
-import Network.HTTP.Media.MediaType.Internal (MediaType (MediaType))
-import Network.HTTP.Media.MediaType.Internal hiding (MediaType (..))
-import Network.HTTP.Media.Utils
+import           Network.HTTP.Media.MediaType.Internal (MediaType (MediaType))
+import           Network.HTTP.Media.MediaType.Internal hiding (MediaType (..))
+import           Network.HTTP.Media.Utils
 
 
 ------------------------------------------------------------------------------

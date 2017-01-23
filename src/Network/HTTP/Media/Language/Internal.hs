@@ -7,27 +7,23 @@ module Network.HTTP.Media.Language.Internal
     ( Language (..)
     ) where
 
-------------------------------------------------------------------------------
 #if !MIN_VERSION_base(4, 8, 0)
-import Data.Functor ((<$>))
+import           Data.Functor                    ((<$>))
 #endif
 
-------------------------------------------------------------------------------
-import qualified Data.ByteString.Char8 as BS
-import qualified Data.CaseInsensitive  as CI
+import qualified Data.ByteString.Char8           as BS
+import qualified Data.CaseInsensitive            as CI
 
-------------------------------------------------------------------------------
-import Control.Monad        (guard)
-import Data.ByteString      (ByteString)
-import Data.CaseInsensitive (CI, original)
-import Data.Char            (isAlpha)
-import Data.List            (isPrefixOf)
-import Data.Maybe           (fromMaybe)
-import Data.String          (IsString (..))
+import           Control.Monad                   (guard)
+import           Data.ByteString                 (ByteString)
+import           Data.CaseInsensitive            (CI, original)
+import           Data.Char                       (isAlpha)
+import           Data.List                       (isPrefixOf)
+import           Data.Maybe                      (fromMaybe)
+import           Data.String                     (IsString (..))
 
-------------------------------------------------------------------------------
-import Network.HTTP.Media.Accept       (Accept (..))
-import Network.HTTP.Media.RenderHeader (RenderHeader (..))
+import           Network.HTTP.Media.Accept       (Accept (..))
+import           Network.HTTP.Media.RenderHeader (RenderHeader (..))
 
 
 ------------------------------------------------------------------------------

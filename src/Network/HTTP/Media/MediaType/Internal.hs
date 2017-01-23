@@ -5,24 +5,21 @@ module Network.HTTP.Media.MediaType.Internal
     , Parameters
     ) where
 
-------------------------------------------------------------------------------
-import qualified Data.ByteString.Char8 as BS
-import qualified Data.CaseInsensitive  as CI
-import qualified Data.Map              as Map
+import qualified Data.ByteString.Char8           as BS
+import qualified Data.CaseInsensitive            as CI
+import qualified Data.Map                        as Map
 
-------------------------------------------------------------------------------
-import Control.Monad        (foldM, guard)
-import Data.ByteString      (ByteString)
-import Data.CaseInsensitive (CI, original)
-import Data.Map             (Map)
-import Data.Maybe           (fromMaybe)
-import Data.Monoid          ((<>))
-import Data.String          (IsString (..))
+import           Control.Monad                   (foldM, guard)
+import           Data.ByteString                 (ByteString)
+import           Data.CaseInsensitive            (CI, original)
+import           Data.Map                        (Map)
+import           Data.Maybe                      (fromMaybe)
+import           Data.Monoid                     ((<>))
+import           Data.String                     (IsString (..))
 
-------------------------------------------------------------------------------
-import Network.HTTP.Media.Accept       (Accept (..))
-import Network.HTTP.Media.RenderHeader (RenderHeader (..))
-import Network.HTTP.Media.Utils        (breakChar, trimBS)
+import           Network.HTTP.Media.Accept       (Accept (..))
+import           Network.HTTP.Media.RenderHeader (RenderHeader (..))
+import           Network.HTTP.Media.Utils        (breakChar, trimBS)
 
 
 ------------------------------------------------------------------------------

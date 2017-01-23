@@ -8,18 +8,16 @@ module Network.HTTP.Media.Quality
     , readQ
     ) where
 
-------------------------------------------------------------------------------
-import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString.Char8           as BS
 
-------------------------------------------------------------------------------
-import Data.ByteString (ByteString)
-import Data.Char       (isDigit)
-import Data.List       (dropWhileEnd)
-import Data.Monoid     ((<>))
-import Data.Word       (Word16)
+import           Data.ByteString                 (ByteString)
+import           Data.Char                       (isDigit)
+import           Data.List                       (dropWhileEnd)
+import           Data.Maybe                      (fromMaybe)
+import           Data.Monoid                     ((<>))
+import           Data.Word                       (Word16)
 
-------------------------------------------------------------------------------
-import Network.HTTP.Media.RenderHeader (RenderHeader (..))
+import           Network.HTTP.Media.RenderHeader (RenderHeader (..))
 
 ------------------------------------------------------------------------------
 -- | Attaches a quality value to data.

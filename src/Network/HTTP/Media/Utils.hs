@@ -8,11 +8,9 @@ module Network.HTTP.Media.Utils
     , isValidChar
     ) where
 
-------------------------------------------------------------------------------
 import qualified Data.ByteString.Char8 as BS
 
-------------------------------------------------------------------------------
-import Data.ByteString (ByteString)
+import           Data.ByteString       (ByteString)
 
 
 ------------------------------------------------------------------------------

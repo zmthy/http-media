@@ -4,14 +4,12 @@
 module Network.HTTP.Media.Accept
     ( Accept (..)
     , mostSpecific
-    , Proxy (..)
     ) where
 
-------------------------------------------------------------------------------
 import qualified Data.CaseInsensitive as CI
 
-------------------------------------------------------------------------------
-import Data.ByteString (ByteString)
+import           Data.ByteString      (ByteString)
+import           Data.Proxy           (Proxy)
 
 
 ------------------------------------------------------------------------------
@@ -65,9 +63,3 @@ mostSpecific :: Accept a => a -> a -> a
 mostSpecific a b
     | b `moreSpecificThan` a = b
     | otherwise              = a
-
-
-------------------------------------------------------------------------------
--- | Serves the same purpose as the Proxy type in base, but redefined here in
--- a basic form for older versions of base that do not include it.
-data Proxy a = Proxy

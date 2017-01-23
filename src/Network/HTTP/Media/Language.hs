@@ -6,12 +6,10 @@ module Network.HTTP.Media.Language
     , toParts
     ) where
 
-------------------------------------------------------------------------------
-import Data.ByteString      (ByteString)
-import Data.CaseInsensitive (CI)
+import           Data.ByteString                      (ByteString)
+import           Data.CaseInsensitive                 (CI)
 
-------------------------------------------------------------------------------
-import Network.HTTP.Media.Language.Internal
+import           Network.HTTP.Media.Language.Internal
 
 
 ------------------------------------------------------------------------------

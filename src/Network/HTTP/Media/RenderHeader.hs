@@ -8,8 +8,7 @@ module Network.HTTP.Media.RenderHeader
     ( RenderHeader (..)
     ) where
 
-------------------------------------------------------------------------------
-import Data.ByteString (ByteString, intercalate)
+import           Data.ByteString (ByteString, intercalate)
 
 
 ------------------------------------------------------------------------------

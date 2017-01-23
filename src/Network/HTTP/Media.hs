@@ -44,28 +44,25 @@ module Network.HTTP.Media
     , RenderHeader (..)
     ) where
 
-------------------------------------------------------------------------------
 #if MIN_VERSION_base(4, 8, 0)
-import Control.Applicative ((<|>))
+import           Control.Applicative             ((<|>))
 #else
-import Control.Applicative (pure, (<$>), (<*>), (<|>))
+import           Control.Applicative             (pure, (<$>), (<*>), (<|>))
 #endif
 
-------------------------------------------------------------------------------
-import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString.Char8           as BS
 
-------------------------------------------------------------------------------
-import Control.Monad   (guard, (>=>))
-import Data.ByteString (ByteString)
-import Data.Maybe      (fromMaybe)
+import           Control.Monad                   (guard, (>=>))
+import           Data.ByteString                 (ByteString)
+import           Data.Maybe                      (fromMaybe)
+import           Data.Proxy                      (Proxy (Proxy))
 
-------------------------------------------------------------------------------
-import Network.HTTP.Media.Accept       as Accept
-import Network.HTTP.Media.Language     as Language
-import Network.HTTP.Media.MediaType    as MediaType
-import Network.HTTP.Media.Quality
-import Network.HTTP.Media.RenderHeader
-import Network.HTTP.Media.Utils        (trimBS)
+import           Network.HTTP.Media.Accept       as Accept
+import           Network.HTTP.Media.Language     as Language
+import           Network.HTTP.Media.MediaType    as MediaType
+import           Network.HTTP.Media.Quality
+import           Network.HTTP.Media.RenderHeader
+import           Network.HTTP.Media.Utils        (trimBS)
 
 
 ------------------------------------------------------------------------------
