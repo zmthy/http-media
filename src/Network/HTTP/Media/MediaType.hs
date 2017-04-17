@@ -6,6 +6,7 @@ module Network.HTTP.Media.MediaType
     -- * Type and creation
       MediaType
     , Parameters
+    , fromByteString
     , (//)
     , (/:)
 
@@ -52,6 +53,14 @@ subType = Internal.subType
 -- | Retrieves the parameters of a 'MediaType'.
 parameters :: MediaType -> Parameters
 parameters = Internal.parameters
+
+
+------------------------------------------------------------------------------
+-- | Builds a 'MediaType' by splitting a ByteString. Can produce an error if
+-- either type is invalid.
+fromByteString :: ByteString -> MediaType
+fromByteString ab = a // BS.drop 1 b
+  where (a, b) = BS.break (=='/') ab
 
 
 ------------------------------------------------------------------------------
