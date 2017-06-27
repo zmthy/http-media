@@ -7,19 +7,20 @@ Issues
 ------
 
 Issues include bugs, build errors, and feature requests.  You can file
-issues through the [Issues] (https://github.com/zmthy/http-media/issues)
+issues through the [Issues](https://github.com/zmthy/http-media/issues)
 page.  Please ensure that a duplicate of your issue has not already been
 filed, and provide as much relevant information as possible.
 
 Pull Requests
 -------------
 
-To submit a contribution to the project, send a [Pull Request]
-(https://github.com/zmthy/http-media/pulls).  Submitted code should
-follow the [Snap Framework Haskell Style Guide]
-(http://snapframework.com/docs/style-guide), with a full line of hyphens
-before documentation and between import blocks.  All of the tests must
-pass, and Haddock documentation coverage should be at 100%.
+To submit a contribution to the project, send a [Pull
+Request](https://github.com/zmthy/http-media/pulls).  Submitted code
+should follow the [Snap Framework Haskell Style
+Guide](http://snapframework.com/docs/style-guide), with a full line of
+hyphens before documentation.  All of the tests must pass, and Haddock
+documentation coverage should be at 100%.  Summarise your change under
+the current Develop entry in the `CHANGES.md` log.
 
 Git commit messages must follow the standard of a one-line summary of at
 most 50 characters (with no final period), and at least one following

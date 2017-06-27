@@ -39,6 +39,9 @@ description:
   .
   The API is agnostic to your choice of server.
 
+extra-source-files:
+  CHANGES.md
+
 library
   default-language: Haskell2010
 
