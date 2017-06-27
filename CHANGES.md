@@ -4,6 +4,8 @@ Changelog
   Travis now tests against a range of Stack LTS environments, instead of
   using multi-ghc.
 
+  Support for base-4.6 has now been correctly removed in the Cabal file.
+
 - [Version 0.7.0](https://github.com/zmthy/http-media/releases/tag/v0.7.0)
 
   The Travis configuration has dropped support for GHC 7.6 and added
