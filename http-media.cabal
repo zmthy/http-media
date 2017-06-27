@@ -1,5 +1,5 @@
 name:          http-media
-version:       0.7.0
+version:       0.7.1-pre
 license:       MIT
 license-file:  LICENSE
 author:        Timothy Jones
@@ -122,4 +122,4 @@ test-suite test-http-media
 
 source-repository head
   type:     git
-  location: git://github.com/zmthy/http-media.git
+  location: https://github.com/zmthy/http-media
