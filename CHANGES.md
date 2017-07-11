@@ -1,6 +1,8 @@
 Changelog
 =========
 
+- [Version 0.7.1](https://github.com/zmthy/http-media/releases/tag/v0.7.1)
+
   Travis now tests against a range of Stack LTS environments, instead of
   using multi-ghc.
 
