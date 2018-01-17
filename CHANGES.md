@@ -1,6 +1,11 @@
 Changelog
 =========
 
+- [Version 0.7.1.2](https://github.com/zmthy/http-media/releases/tag/v0.7.1.2)
+
+  The bounds for QuickCheck have been updated to include the latest
+  version.
+
 - [Version 0.7.1.1](https://github.com/zmthy/http-media/releases/tag/v0.7.1.1)
 
   The bounds for base have been updated to include support for GHC 8.2.
