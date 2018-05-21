@@ -11,6 +11,8 @@ import           Control.Applicative                   ((<$>), (<*>))
 ------------------------------------------------------------------------------
 import           Control.Monad                         (join, replicateM, (>=>))
 import           Data.Foldable                         (foldlM)
+import           Data.Function                         (on)
+import           Data.List                             (nubBy)
 import           Data.Map                              (empty)
 import           Data.Monoid                           ((<>))
 import           Data.Word                             (Word16)
@@ -154,16 +156,16 @@ testMatch name match qToI = testGroup ("match" ++ name)
         server <- genServer
         return $ match server (qToI $ map minQuality server) === Nothing
     , testProperty "Left biased" $ do
-        server <- genServer
+        server <- genNubServer
         let client = qToI $ map maxQuality server
         return $ match server client === Just (head server)
     , testProperty "Against */*" $ do
-        server <- genServer
+        server <- genNubServer
         let stars = "*/*" :: MediaType
         return $ match server (qToI [maxQuality stars]) ===
             Just (head server)
     , testProperty "Against type/*" $ do
-        server <- genServer
+        server <- genNubServer
         let client = qToI [maxQuality (subStarOf $ head server)]
         return $ match server client === Just (head server)
     ]
@@ -194,6 +196,11 @@ testMap name mapf qToI = testGroup ("map" ++ name)
 ------------------------------------------------------------------------------
 genServer :: Gen [MediaType]
 genServer = listOf1 genConcreteMediaType
+
+
+------------------------------------------------------------------------------
+genNubServer :: Gen [MediaType]
+genNubServer = nubBy (on (==) stripParams) <$> genServer
 
 
 ------------------------------------------------------------------------------
