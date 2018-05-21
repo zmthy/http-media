@@ -30,24 +30,24 @@ module Network.HTTP.Media.MediaType.Gen
 
 ------------------------------------------------------------------------------
 #if !MIN_VERSION_base(4, 8, 0)
-import Data.Functor ((<$>))
+import           Data.Functor                          ((<$>))
 #endif
 
 ------------------------------------------------------------------------------
-import qualified Data.Map as Map
+import qualified Data.Map                              as Map
 
 ------------------------------------------------------------------------------
-import Control.Monad        (liftM, liftM2)
-import Data.ByteString      (ByteString)
-import Data.CaseInsensitive (CI, original)
-import Data.Foldable        (foldlM)
-import Data.Map             (fromList)
-import Data.Monoid          ((<>))
-import Test.QuickCheck.Gen
+import           Control.Monad                         (liftM, liftM2)
+import           Data.ByteString                       (ByteString)
+import           Data.CaseInsensitive                  (CI, original)
+import           Data.Foldable                         (foldlM)
+import           Data.Map                              (fromList)
+import           Data.Monoid                           ((<>))
+import           Test.QuickCheck.Gen
 
 ------------------------------------------------------------------------------
-import Network.HTTP.Media.Gen
-import Network.HTTP.Media.MediaType.Internal
+import           Network.HTTP.Media.Gen
+import           Network.HTTP.Media.MediaType.Internal
 
 
 ------------------------------------------------------------------------------

@@ -16,7 +16,7 @@ module Network.HTTP.Media.Gen
 
 ------------------------------------------------------------------------------
 #if !MIN_VERSION_base(4, 8, 0)
-import Data.Functor ((<$>))
+import           Data.Functor          ((<$>))
 #endif
 
 ------------------------------------------------------------------------------
@@ -24,11 +24,11 @@ import qualified Data.ByteString.Char8 as BS
 import qualified Data.CaseInsensitive  as CI
 
 ------------------------------------------------------------------------------
-import Control.Monad        (join, liftM2)
-import Data.ByteString      (ByteString)
-import Data.CaseInsensitive (CI, original)
-import Data.Monoid          ((<>))
-import Test.QuickCheck.Gen  (Gen, elements, listOf, listOf1)
+import           Control.Monad         (join, liftM2)
+import           Data.ByteString       (ByteString)
+import           Data.CaseInsensitive  (CI, original)
+import           Data.Monoid           ((<>))
+import           Test.QuickCheck.Gen   (Gen, elements, listOf, listOf1)
 
 
 ------------------------------------------------------------------------------

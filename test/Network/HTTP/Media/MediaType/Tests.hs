@@ -5,31 +5,31 @@ module Network.HTTP.Media.MediaType.Tests (tests) where
 
 ------------------------------------------------------------------------------
 #if !MIN_VERSION_base(4, 8, 0)
-import Data.Functor ((<$>))
+import           Data.Functor                          ((<$>))
 #endif
 
 ------------------------------------------------------------------------------
-import qualified Data.ByteString.Char8 as BS
-import qualified Data.Map              as Map
+import qualified Data.ByteString.Char8                 as BS
+import qualified Data.Map                              as Map
 
 ------------------------------------------------------------------------------
-import Control.Monad                        (join, liftM)
-import Data.ByteString                      (ByteString)
-import Data.CaseInsensitive                 (foldedCase)
-import Data.Monoid                          ((<>))
-import Data.String                          (fromString)
-import Test.Framework                       (Test, testGroup)
-import Test.Framework.Providers.QuickCheck2 (testProperty)
-import Test.QuickCheck                      (property, (.&&.), (===))
-import Test.QuickCheck.Gen                  (Gen)
+import           Control.Monad                         (join, liftM)
+import           Data.ByteString                       (ByteString)
+import           Data.CaseInsensitive                  (foldedCase)
+import           Data.Monoid                           ((<>))
+import           Data.String                           (fromString)
+import           Test.Framework                        (Test, testGroup)
+import           Test.Framework.Providers.QuickCheck2  (testProperty)
+import           Test.QuickCheck                       (property, (.&&.), (===))
+import           Test.QuickCheck.Gen                   (Gen)
 
 ------------------------------------------------------------------------------
-import Network.HTTP.Media.Accept
-import Network.HTTP.Media.Gen
-import Network.HTTP.Media.MediaType          ((/.), (/?))
-import Network.HTTP.Media.MediaType.Gen
-import Network.HTTP.Media.MediaType.Internal
-import Network.HTTP.Media.RenderHeader       (renderHeader)
+import           Network.HTTP.Media.Accept
+import           Network.HTTP.Media.Gen
+import           Network.HTTP.Media.MediaType          ((/.), (/?))
+import           Network.HTTP.Media.MediaType.Gen
+import           Network.HTTP.Media.MediaType.Internal
+import           Network.HTTP.Media.RenderHeader       (renderHeader)
 
 
 ------------------------------------------------------------------------------

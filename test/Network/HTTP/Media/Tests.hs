@@ -5,25 +5,26 @@ module Network.HTTP.Media.Tests (tests) where
 
 ------------------------------------------------------------------------------
 #if !MIN_VERSION_base(4, 8, 0)
-import Control.Applicative ((<$>), (<*>))
+import           Control.Applicative                   ((<$>), (<*>))
 #endif
 
 ------------------------------------------------------------------------------
-import Control.Monad                        (join, replicateM, (>=>))
-import Data.Foldable                        (foldlM)
-import Data.Map                             (empty)
-import Data.Monoid                          ((<>))
-import Data.Word                            (Word16)
-import Test.Framework                       (Test, testGroup)
-import Test.Framework.Providers.QuickCheck2 (testProperty)
-import Test.QuickCheck
+import           Control.Monad                         (join, replicateM, (>=>))
+import           Data.Foldable                         (foldlM)
+import           Data.Map                              (empty)
+import           Data.Monoid                           ((<>))
+import           Data.Word                             (Word16)
+import           Test.Framework                        (Test, testGroup)
+import           Test.Framework.Providers.QuickCheck2  (testProperty)
+import           Test.QuickCheck
 
 ------------------------------------------------------------------------------
-import Network.HTTP.Media                    hiding (parameters, subType)
-import Network.HTTP.Media.Gen                (padString)
-import Network.HTTP.Media.MediaType.Gen
-import Network.HTTP.Media.MediaType.Internal
-import Network.HTTP.Media.Quality
+import           Network.HTTP.Media                    hiding (parameters,
+                                                        subType)
+import           Network.HTTP.Media.Gen                (padString)
+import           Network.HTTP.Media.MediaType.Gen
+import           Network.HTTP.Media.MediaType.Internal
+import           Network.HTTP.Media.Quality
 
 ------------------------------------------------------------------------------
 tests :: [Test]
