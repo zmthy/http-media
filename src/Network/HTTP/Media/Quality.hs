@@ -3,6 +3,8 @@
 module Network.HTTP.Media.Quality
     ( Quality (..)
     , quality
+    , QualityOrder
+    , qualityOrder
     , maxQuality
     , minQuality
     , showQ
@@ -40,6 +42,19 @@ instance RenderHeader h => RenderHeader (Quality h) where
 quality :: a -> ByteString -> Quality a
 quality x q = Quality x $ flip fromMaybe (readQ q) $
     error ("Invalid quality value " ++ toString q)
+
+
+------------------------------------------------------------------------------
+-- | An opaque ordered representation of quality values without attached data.
+newtype QualityOrder = QualityOrder Word16
+    deriving (Eq, Ord)
+
+
+------------------------------------------------------------------------------
+-- | Remove the attached data from a quality value, retaining only the
+-- priority of the quality parameter.
+qualityOrder :: Quality a -> QualityOrder
+qualityOrder = QualityOrder . qualityValue
 
 
 ------------------------------------------------------------------------------
