@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveFunctor #-}
+
 ------------------------------------------------------------------------------
 -- | Defines the quality value data type.
 module Network.HTTP.Media.Quality
@@ -7,6 +9,7 @@ module Network.HTTP.Media.Quality
     , qualityOrder
     , maxQuality
     , minQuality
+    , mostSpecific
     , showQ
     , readQ
     ) where
@@ -19,16 +22,18 @@ import           Data.Char                       (isDigit)
 import           Data.List                       (dropWhileEnd)
 import           Data.Maybe                      (fromMaybe)
 import           Data.Monoid                     ((<>))
-import           Data.Word                       (Word16)
+import           Data.Word                       (Word16, Word32)
 
+import           Network.HTTP.Media.Accept       (Accept, moreSpecificThan)
 import           Network.HTTP.Media.RenderHeader (RenderHeader (..))
+
 
 ------------------------------------------------------------------------------
 -- | Attaches a quality value to data.
 data Quality a = Quality
     { qualityData  :: a
     , qualityValue :: Word16
-    } deriving (Eq, Ord)
+    } deriving (Eq, Functor, Ord)
 
 instance RenderHeader a => Show (Quality a) where
     show = BS.unpack . renderHeader
@@ -67,6 +72,19 @@ maxQuality = flip Quality 1000
 -- | Attaches the quality value '0'.
 minQuality :: a -> Quality a
 minQuality = flip Quality 0
+
+
+------------------------------------------------------------------------------
+-- | Combines quality values by specificity. Selects the more specific of the
+-- two arguments, but if they are the same returns the data of the left
+-- argument with the two quality values of both arguments combined.
+mostSpecific :: Accept a => Quality a -> Quality a -> Quality a
+mostSpecific (Quality a q) (Quality b r)
+    | a `moreSpecificThan` b = Quality a q
+    | b `moreSpecificThan` a = Quality b r
+    | otherwise              = Quality a q'
+  where
+    q' = fromIntegral (fromIntegral q * fromIntegral r `div` 1000 :: Word32)
 
 
 ------------------------------------------------------------------------------

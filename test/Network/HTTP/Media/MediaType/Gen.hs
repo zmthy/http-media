@@ -18,6 +18,7 @@ module Network.HTTP.Media.MediaType.Gen
     , genDiffMediaTypeWith
     , genDiffMediaTypes
     , genDiffMediaType
+    , genMatchingPair
 
     -- * Generating Parameters
     , genParameters
@@ -37,7 +38,7 @@ import           Data.Functor                          ((<$>))
 import qualified Data.Map                              as Map
 
 ------------------------------------------------------------------------------
-import           Control.Monad                         (liftM, liftM2)
+import           Control.Monad                         (filterM, liftM, liftM2)
 import           Data.ByteString                       (ByteString)
 import           Data.CaseInsensitive                  (CI, original)
 import           Data.Foldable                         (foldlM)
@@ -141,7 +142,7 @@ genDiffMediaTypeWith gen = genDiffMediaTypesWith gen . (: [])
 
 
 ------------------------------------------------------------------------------
--- | Generates a  different MediaType to the ones in the given list.
+-- | Generates a different MediaType to the ones in the given list.
 genDiffMediaTypes :: [MediaType] -> Gen MediaType
 genDiffMediaTypes = genDiffMediaTypesWith genMediaType
 
@@ -180,6 +181,40 @@ genDiffParameters params = do
     if params' `Map.isSubmapOf` params
         then genDiffParameters params
         else return params'
+
+
+------------------------------------------------------------------------------
+-- | Generates a set of parameters that is a strict submap of the given
+-- parameters.
+genSubParameters :: Parameters -> Gen (Maybe Parameters)
+genSubParameters params
+    | Map.null params = return Nothing
+    | otherwise       = Just . Map.fromList <$> genStrictSublist
+  where
+    list = Map.toList params
+    genStrictSublist = do
+        sublist <- filterM (const $ choose (False, True)) list
+        if sublist == list
+            then genStrictSublist
+            else return sublist
+
+
+------------------------------------------------------------------------------
+-- | Generates a pair of non-equal MediaType values that are in a 'matches'
+-- relation, with the more specific value on the left.
+genMatchingPair :: Gen (MediaType, MediaType)
+genMatchingPair = do
+    a <- oneof [genSubStar, genConcreteMediaType]
+    b <- if subType a == "*"
+        then return anything
+        else oneof $ withSubParameters a : map return [subStarOf a, anything]
+    return (a, b)
+  where
+    withSubParameters a = do
+        params <- genSubParameters (parameters a)
+        return $ case params of
+            Just sub -> a { parameters = sub }
+            Nothing  -> subStarOf a
 
 
 ------------------------------------------------------------------------------

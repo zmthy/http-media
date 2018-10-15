@@ -4,6 +4,12 @@ Changelog
   A separate `QualityOrder` type can now be extracted from a `Quality`
   value for performing comparisons without the attached data value.
 
+  The most specific match will now be used to assign a quality value to
+  each server option, ensuring that less specific matches cannot
+  override lower quality values on more specific matches. In particular,
+  if a type is considered unacceptable by the client, then a separate
+  match with a non-zero quality value cannot make it acceptable.
+
 - [Version 0.7.1.3](https://github.com/zmthy/http-media/releases/tag/v0.7.1.3)
 
   Package bounds have been updated for GHC 8.6.

@@ -11,7 +11,6 @@ import           Control.Applicative                  ((<$>), (<*>))
 ------------------------------------------------------------------------------
 import           Test.Framework                       (Test, testGroup)
 import           Test.Framework.Providers.QuickCheck2 (testProperty)
-import           Test.QuickCheck                      ((===))
 
 ------------------------------------------------------------------------------
 import           Network.HTTP.Media.Accept
@@ -23,7 +22,6 @@ tests :: [Test]
 tests =
     [ testMatches
     , testMoreSpecificThan
-    , testMostSpecific
     ]
 
 
@@ -46,10 +44,3 @@ testMatches = testGroup "matches"
 testMoreSpecificThan :: Test
 testMoreSpecificThan = testProperty "moreSpecificThan" $
     (not .) . moreSpecificThan <$> genByteString <*> genByteString
-
-
-------------------------------------------------------------------------------
-testMostSpecific :: Test
-testMostSpecific = testProperty "mostSpecific" $ do
-    string <- genByteString
-    (=== string) . mostSpecific string <$> genByteString

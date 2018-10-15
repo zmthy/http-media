@@ -17,7 +17,7 @@ import           Data.Monoid                          ((<>))
 import           Data.String                          (fromString)
 import           Test.Framework                       (Test, testGroup)
 import           Test.Framework.Providers.QuickCheck2 (testProperty)
-import           Test.QuickCheck                      ((.&&.), (===))
+import           Test.QuickCheck                      ((===))
 
 ------------------------------------------------------------------------------
 import           Network.HTTP.Media.Accept
@@ -34,7 +34,6 @@ tests =
     , testFromString
     , testMatches
     , testMoreSpecific
-    , testMostSpecific
     , testParseAccept
     ]
 
@@ -96,24 +95,6 @@ testMoreSpecific = testGroup "moreSpecificThan"
         uncurry (flip moreSpecificThan) <$> genDiffMatchingLanguages
     , testProperty "Unrelated languages" $
         not . uncurry moreSpecificThan <$> genNonMatchingLanguages
-    ]
-
-
-------------------------------------------------------------------------------
-testMostSpecific :: Test
-testMostSpecific = testGroup "mostSpecific"
-    [ testProperty "With *" $ do
-        lang <- genLanguage
-        return $ mostSpecific lang anything === lang .&&.
-            mostSpecific anything lang === lang
-    , testProperty "Proper prefix" $ do
-        (pre, lang) <- genMatchingLanguages
-        return $ mostSpecific lang pre === lang .&&.
-            mostSpecific pre lang === lang
-    , testProperty "Left biased" $ do
-        (lang, lang') <- genNonMatchingLanguages
-        return $ mostSpecific lang lang' === lang .&&.
-            mostSpecific lang' lang === lang'
     ]
 
 

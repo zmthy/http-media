@@ -42,7 +42,6 @@ tests =
     , testGet
     , testMatches
     , testMoreSpecificThan
-    , testMostSpecific
     , testParseAccept
     ]
 
@@ -163,38 +162,6 @@ testMoreSpecificThan = testGroup "moreSpecificThan"
         media  <- genWithParams
         params <- genDiffParameters $ parameters media
         return . not $ moreSpecificThan media media { parameters = params }
-    ]
-
-
-------------------------------------------------------------------------------
-testMostSpecific :: Test
-testMostSpecific = testGroup "mostSpecific"
-    [ testProperty "With */*" $ do
-        media <- genConcreteMediaType
-        return $ mostSpecific media anything === media .&&.
-            mostSpecific anything media === media
-    , testProperty "With type/*" $ do
-        media <- genConcreteMediaType
-        let m1 = media { parameters = Map.empty }
-            m2 = m1 { subType = "*" }
-        return $ mostSpecific m1 m2 === m1 .&&. mostSpecific m2 m1 === m1
-    , testProperty "With parameters" $ do
-        media  <- genMediaType
-        params <- genParameters
-        let media'  = media { parameters = params }
-            media'' = media { parameters = Map.empty }
-        return $ mostSpecific media' media'' === media' .&&.
-            mostSpecific media'' media' === media'
-    , testProperty "Different types" $ do
-        media  <- genConcreteMediaType
-        media' <- genDiffMediaTypeWith genConcreteMediaType media
-        return $ mostSpecific media media' === media
-    , testProperty "Left biased" $ do
-        media  <- genConcreteMediaType
-        media' <- genConcreteMediaType
-        let media'' = media' { parameters = parameters media }
-        return $ mostSpecific media media'' === media .&&.
-            mostSpecific media'' media === media''
     ]
 
 

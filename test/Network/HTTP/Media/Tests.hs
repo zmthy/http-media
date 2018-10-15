@@ -132,14 +132,7 @@ testMatch
     -> ([Quality MediaType] -> a)
     -> Test
 testMatch name match qToI = testGroup ("match" ++ name)
-    [ testProperty "Highest quality" $ do
-        server <- genServer
-        qs     <- replicateM (length server) $ choose (1, 1000)
-        let client = zipWith Quality server qs
-            qmax v q = if qualityValue q > qualityValue v then q else v
-        return $ match server (qToI client) ===
-            Just (qualityData $ foldr1 qmax client)
-    , testProperty "Most specific" $ do
+    [ testProperty "Most specific" $ do
         media <- genConcreteMediaType
         let client = qToI $ map maxQuality
                 [ MediaType "*" "*" empty
@@ -152,9 +145,6 @@ testMatch name match qToI = testGroup ("match" ++ name)
         client <- listOf1 genConcreteMediaType
         server <- filter (not . flip any client . matches) <$> genServer
         return $ match server (qToI $ map maxQuality client) === Nothing
-    , testProperty "Never chooses q=0" $ do
-        server <- genServer
-        return $ match server (qToI $ map minQuality server) === Nothing
     , testProperty "Left biased" $ do
         server <- genNubServer
         let client = qToI $ map maxQuality server
@@ -168,6 +158,60 @@ testMatch name match qToI = testGroup ("match" ++ name)
         server <- genNubServer
         let client = qToI [maxQuality (subStarOf $ head server)]
         return $ match server client === Just (head server)
+    , testQuality match qToI
+    ]
+
+
+------------------------------------------------------------------------------
+testQuality
+    :: ([MediaType] -> a -> Maybe MediaType)
+    -> ([Quality MediaType] -> a)
+    -> Test
+testQuality match qToI = testGroup "Quality"
+    [ testProperty "Highest quality" $ do
+        server <- genServer
+        qs     <- replicateM (length server) $ choose (1, 1000)
+        let client = zipWith Quality server qs
+            qmax v q = if qualityValue q > qualityValue v then q else v
+        return $ match server (qToI client) ===
+            Just (qualityData $ foldr1 qmax client)
+    , testProperty "Most specific quality" $ do
+        (a, b) <- genMatchingPair
+        c      <- genDiffMediaType a
+        let client = qToI [quality a "0.5", maxQuality b, maxQuality c]
+        return $ match [a, c] client === Just c
+    , testQ0 match qToI
+    ]
+
+
+------------------------------------------------------------------------------
+testQ0
+    :: ([MediaType] -> a -> Maybe MediaType)
+    -> ([Quality MediaType] -> a)
+    -> Test
+testQ0 match qToI = testGroup "q=0"
+    [ testProperty "Does not choose a q=0" $ do
+        server <- genConcreteMediaType
+        return $ match [server] (qToI [minQuality server]) === Nothing
+    , testProperty "Does not choose any q=0" $ do
+        server <- genServer
+        return $ match server (qToI $ map minQuality server) === Nothing
+    , testProperty "Does not choose q=0 with less specific type" $ do
+        (a, b) <- genMatchingPair
+        let client = qToI [minQuality a, maxQuality b]
+        return $ match [a] client === Nothing
+    , testProperty "Does choose type with q=0 on less specific type" $ do
+        (a, b) <- genMatchingPair
+        let client = qToI [minQuality b, maxQuality a]
+        return $ match [a] client === Just a
+    , testProperty "Does not choose q=0 when followed by same type" $ do
+        server <- genConcreteMediaType
+        let client = qToI [minQuality server, maxQuality server]
+        return $ match [server] client === Nothing
+    , testProperty "Does not choose q=0 when preceded by same type" $ do
+        server <- genConcreteMediaType
+        let client = qToI [maxQuality server, minQuality server]
+        return $ match [server] client === Nothing
     ]
 
 

@@ -59,6 +59,8 @@ import qualified Data.ByteString.Char8           as BS
 
 import           Control.Monad                   (guard, (>=>))
 import           Data.ByteString                 (ByteString)
+import           Data.Foldable                   (foldl', maximumBy)
+import           Data.Function                   (on)
 import           Data.Maybe                      (fromMaybe)
 import           Data.Proxy                      (Proxy (Proxy))
 
@@ -272,17 +274,17 @@ matchQuality
     -> [Quality a]  -- ^ The pre-parsed client-side header value
     -> Maybe a
 matchQuality options acceptq = do
-    let merge (Quality c q) = map (`Quality` q) $ filter (`matches` c) options
-        matched = concatMap merge acceptq
-        (hq, qs) = foldr qfold (0, []) matched
-        qfold (Quality v q) (mq, vs) = case compare q mq of
-            GT -> (q, [v])
-            EQ -> (mq, v : vs)
-            LT -> (mq, vs)
-        specific (a : ms) = Just $ foldl mostSpecific a ms
-        specific []       = Nothing
-    guard (hq /= 0)
-    specific qs
+    guard $ not (null options)
+    Quality m q <- maximumBy (compare `on` fmap qualityOrder) optionsq
+    guard $ q /= 0
+    return m
+  where
+    optionsq = reverse $ map addQuality options
+    addQuality opt = withQValue opt <$> foldl' (mfold opt) Nothing acceptq
+    withQValue opt qv = qv { qualityData = opt }
+    mfold opt cur acq@(Quality acd _)
+        | opt `matches` acd = mostSpecific acq <$> cur <|> Just acq
+        | otherwise         = cur
 
 
 ------------------------------------------------------------------------------

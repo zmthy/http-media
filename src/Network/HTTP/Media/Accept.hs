@@ -3,7 +3,6 @@
 -- functions in the Media module.
 module Network.HTTP.Media.Accept
     ( Accept (..)
-    , mostSpecific
     ) where
 
 import qualified Data.CaseInsensitive as CI
@@ -55,11 +54,3 @@ instance Accept ByteString where
     parseAccept = Just
     matches a b = CI.mk a == CI.mk b
     moreSpecificThan _ _ = False
-
-
-------------------------------------------------------------------------------
--- | Evaluates to whichever argument is more specific. Left biased.
-mostSpecific :: Accept a => a -> a -> a
-mostSpecific a b
-    | b `moreSpecificThan` a = b
-    | otherwise              = a
