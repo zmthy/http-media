@@ -35,7 +35,6 @@ tests =
     , testMatchAccept
     , testMapAccept
     , testMatchContent
-    , testMapContent
     , testMatchQuality
     , testMapQuality
     ]
@@ -78,7 +77,7 @@ testMatchAccept = testMatch "Accept" matchAccept renderHeader
 
 ------------------------------------------------------------------------------
 testMapAccept :: Test
-testMapAccept = testMap "Accept" mapAccept renderHeader
+testMapAccept = testMap "Accept" matchAccept renderHeader
 
 
 ------------------------------------------------------------------------------
@@ -103,26 +102,13 @@ testMatchContent = testGroup "matchContent"
 
 
 ------------------------------------------------------------------------------
-testMapContent :: Test
-testMapContent = testGroup "mapContent"
-    [ testProperty "Matches" $ do
-        media <- genMediaType
-        return $ mapContent [(media, ())] (renderHeader media) === Just ()
-    , testProperty "Nothing" $ do
-        content <- genMediaType
-        parsers <- join zip . filter (not . matches content) <$> genServer
-        return $ mapContent parsers (renderHeader content) === Nothing
-    ]
-
-
-------------------------------------------------------------------------------
 testMatchQuality :: Test
 testMatchQuality = testMatch "Quality" matchQuality id
 
 
 ------------------------------------------------------------------------------
 testMapQuality :: Test
-testMapQuality = testMap "Quality" mapQuality id
+testMapQuality = testMap "Quality" matchQuality $ map (fmap Accept)
 
 
 ------------------------------------------------------------------------------
@@ -218,7 +204,7 @@ testQ0 match qToI = testGroup "q=0"
 ------------------------------------------------------------------------------
 testMap
     :: String
-    -> ([(MediaType, MediaType)] -> a -> Maybe MediaType)
+    -> ([Media MediaType MediaType] -> a -> Maybe (Media MediaType MediaType))
     -> ([Quality MediaType] -> a)
     -> Test
 testMap name mapf qToI = testGroup ("map" ++ name)
@@ -227,13 +213,13 @@ testMap name mapf qToI = testGroup ("map" ++ name)
         qs     <- replicateM (length server) $ choose (1, 1000 :: Word16)
         let client = zipWith Quality server qs
             qmax q v = if qualityValue q >= qualityValue v then q else v
-            zipped = zip server server
-        return $ mapf zipped (qToI client) ===
+            zipf = fmap media . mapf (zipWith Media server server)
+        return $ zipf (qToI client) ===
             Just (qualityData $ foldr1 qmax client)
     , testProperty "Nothing" $ do
         (server, client) <- genServerAndClient
-        let zipped = zip server $ repeat "*/*"
-        return $ mapf zipped (qToI $ map maxQuality client) === Nothing
+        let zipf = fmap media . mapf (zipWith Media server $ repeat "*/*")
+        return $ zipf (qToI $ map maxQuality client) === Nothing
     ]
 
 

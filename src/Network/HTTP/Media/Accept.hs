@@ -17,7 +17,7 @@ import           Data.Proxy           (Proxy)
 --
 -- This allows functions to work on both the standard Accept header and
 -- others such as Accept-Language that still may use quality values.
-class Show a => Accept a where
+class Accept a where
 
     -- | Specifies how to parse an Accept-* header after quality has been
     -- handled.

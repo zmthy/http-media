@@ -4,8 +4,11 @@
 -- | A framework for parsing HTTP media type headers.
 module Network.HTTP.Media
     (
+    -- * Self-describing media
+      Media (Media, accept, media, Accept)
+
     -- * Media types
-      MediaType
+    , MediaType
     , (//)
     , (/:)
     , mainType
@@ -20,16 +23,9 @@ module Network.HTTP.Media
 
     -- * Accept matching
     , matchAccept
-    , mapAccept
-    , mapAcceptMedia
-    , mapAcceptLanguage
-    , mapAcceptBytes
 
     -- * Content matching
     , matchContent
-    , mapContent
-    , mapContentMedia
-    , mapContentLanguage
 
     -- * Quality values
     , Quality
@@ -40,7 +36,6 @@ module Network.HTTP.Media
     , minQuality
     , parseQuality
     , matchQuality
-    , mapQuality
 
     -- * Accept
     , Accept (..)
@@ -94,67 +89,19 @@ matchAccept
 matchAccept = (parseQuality >=>) . matchQuality
 
 
-------------------------------------------------------------------------------
--- | The equivalent of 'matchAccept' above, except the resulting choice is
--- mapped to another value. Convenient for specifying how to translate the
--- resource into each of its available formats.
---
--- > getHeader >>= maybe render406Error renderResource . mapAccept
--- >     [ ("text" // "html",        asHtml)
--- >     , ("application" // "json", asJson)
--- >     ]
-mapAccept
-    :: Accept a
-    => [(a, b)]    -- ^ The map of server-side preferences to values
-    -> ByteString  -- ^ The client-side header value
-    -> Maybe b
-mapAccept = (parseQuality >=>) . mapQuality
+
+data Media a b
+    = Accept { accept :: a }
+    | Media
+    { accept :: a
+    , media  :: b
+    } deriving (Eq, Ord, Show)
 
 
-------------------------------------------------------------------------------
--- | A specialisation of 'mapAccept' that only takes 'MediaType' as its input,
--- to avoid ambiguous-type errors when using string literal overloading.
---
--- > getHeader >>= maybe render406Error renderResource . mapAcceptMedia
--- >     [ ("text/html",        asHtml)
--- >     , ("application/json", asJson)
--- >     ]
-mapAcceptMedia ::
-    [(MediaType, b)]  -- ^ The map of server-side preferences to values
-    -> ByteString     -- ^ The client-side header value
-    -> Maybe b
-mapAcceptMedia = mapAccept
-
-
-------------------------------------------------------------------------------
--- | A specialisation of 'mapAccept' that only takes 'Language' as its input,
--- to avoid ambiguous-type errors when using string literal overloading.
---
--- > getHeader >>= maybe render406Error renderResource . mapAcceptLanguage
--- >     [ ("text/html",        asHtml)
--- >     , ("application/json", asJson)
--- >     ]
-mapAcceptLanguage ::
-    [(Language, b)]  -- ^ The map of server-side preferences to values
-    -> ByteString    -- ^ The client-side header value
-    -> Maybe b
-mapAcceptLanguage = mapAccept
-
-
-------------------------------------------------------------------------------
--- | A specialisation of 'mapAccept' that only takes 'ByteString' as its
--- input, to avoid ambiguous-type errors when using string literal
--- overloading.
---
--- > getHeader >>= maybe render406Error encodeResourceWith . mapAcceptBytes
--- >     [ ("compress", compress)
--- >     , ("gzip",     gzip)
--- >     ]
-mapAcceptBytes ::
-    [(ByteString, b)]  -- ^ The map of server-side preferences to values
-    -> ByteString      -- ^ The client-side header value
-    -> Maybe b
-mapAcceptBytes = mapAccept
+instance Accept a => Accept (Media a b) where
+    parseAccept = fmap Accept . parseAccept
+    matches = matches `on` accept
+    moreSpecificThan = moreSpecificThan `on` accept
 
 
 ------------------------------------------------------------------------------
@@ -178,65 +125,15 @@ matchContent options ctype = foldl choose Nothing options
 
 
 ------------------------------------------------------------------------------
--- | The equivalent of 'matchContent' above, except the resulting choice is
--- mapped to another value.
---
--- > getContentType >>= maybe send415Error readRequestBodyWith . mapContent
--- >     [ ("application" // "json", parseJson)
--- >     , ("text" // "plain",       parseText)
--- >     ]
-mapContent
-    :: Accept a
-    => [(a, b)]    -- ^ The map of server-side responses
-    -> ByteString  -- ^ The client request's header value
-    -> Maybe b
-mapContent options ctype =
-    matchContent (map fst options) ctype >>= lookupMatches options
-
-
-------------------------------------------------------------------------------
--- | A specialisation of 'mapContent' that only takes 'MediaType' as its
--- input, to avoid ambiguous-type errors when using string literal
--- overloading.
---
--- > getContentType >>=
--- >     maybe send415Error readRequestBodyWith . mapContentMedia
--- >         [ ("application/json", parseJson)
--- >         , ("text/plain",       parseText)
--- >         ]
-mapContentMedia
-    :: [(MediaType, b)]  -- ^ The map of server-side responses
-    -> ByteString        -- ^ The client request's header value
-    -> Maybe b
-mapContentMedia = mapContent
-
-
-------------------------------------------------------------------------------
--- | A specialisation of 'mapContent' that only takes 'Language' as its input,
--- to avoid ambiguous-type errors when using string literal overloading.
---
--- > getContentType >>=
--- >     maybe send415Error readRequestBodyWith . mapContentLanguage
--- >         [ ("application/json", parseJson)
--- >         , ("text/plain",       parseText)
--- >         ]
-mapContentLanguage
-    :: [(Language, b)]  -- ^ The map of server-side responses
-    -> ByteString        -- ^ The client request's header value
-    -> Maybe b
-mapContentLanguage = mapContent
-
-
-------------------------------------------------------------------------------
 -- | Parses a full Accept header into a list of quality-valued media types.
 parseQuality :: Accept a => ByteString -> Maybe [Quality a]
 parseQuality = parseQuality' Proxy
 
 parseQuality' :: Accept a => Proxy a -> ByteString -> Maybe [Quality a]
 parseQuality' p = (. map trimBS . BS.split ',') . mapM $ \ s ->
-    let (accept, q) = fromMaybe (s, Nothing) $ if ext then findQ s else getQ s
+    let (acc, q) = fromMaybe (s, Nothing) $ if ext then findQ s else getQ s
     in maybe (pure maxQuality) (fmap (flip Quality) . readQ) q <*>
-        parseAccept accept
+        parseAccept acc
   where
     ext = hasExtensionParameters p
 
@@ -285,30 +182,3 @@ matchQuality options acceptq = do
     mfold opt cur acq@(Quality acd _)
         | opt `matches` acd = mostSpecific acq <$> cur <|> Just acq
         | otherwise         = cur
-
-
-------------------------------------------------------------------------------
--- | The equivalent of 'matchQuality' above, except the resulting choice is
--- mapped to another value. Convenient for specifying how to translate the
--- resource into each of its available formats.
---
--- > parseQuality header >>= maybe render406Error renderResource . mapQuality
--- >     [ ("text" // "html",        asHtml)
--- >     , ("application" // "json", asJson)
--- >     ]
-mapQuality
-    :: Accept a
-    => [(a, b)]     -- ^ The map of server-side preferences to values
-    -> [Quality a]  -- ^ The client-side header value
-    -> Maybe b
-mapQuality options accept =
-    matchQuality (map fst options) accept >>= lookupMatches options
-
-
-------------------------------------------------------------------------------
--- | The equivalent of 'lookupBy matches'.
-lookupMatches :: Accept a => [(a, b)] -> a -> Maybe b
-lookupMatches ((k, v) : r) a
-    | Accept.matches k a = Just v
-    | otherwise         = lookupMatches r a
-lookupMatches [] _ = Nothing
