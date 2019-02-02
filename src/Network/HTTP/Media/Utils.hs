@@ -4,13 +4,18 @@ module Network.HTTP.Media.Utils
     ( breakChar
     , trimBS
 
-    , validChars
-    , isValidChar
+    , mediaChars
+    , isMediaChar
+
+    , tokenChars
+    , isTokenChar
+    , isValidToken
     ) where
 
 import qualified Data.ByteString.Char8 as BS
 
 import           Data.ByteString       (ByteString)
+import           Data.Char             (isControl)
 
 
 ------------------------------------------------------------------------------
@@ -34,12 +39,36 @@ trimBS = fst . BS.spanEnd isLWS . BS.dropWhile isLWS
 
 ------------------------------------------------------------------------------
 -- | List of the valid characters for a media-type `reg-name` as per RFC 4288.
-validChars :: [Char]
-validChars = ['A'..'Z'] ++ ['a'..'z'] ++ ['0'..'9'] ++ "!#$&.+-^_"
+mediaChars :: [Char]
+mediaChars = ['A'..'Z'] ++ ['a'..'z'] ++ ['0'..'9'] ++ "!#$&.+-^_"
 
 
 ------------------------------------------------------------------------------
 -- | Evaluates whether the given character is valid in a media type `reg-name`
 -- as per RFC 4288.
-isValidChar :: Char -> Bool
-isValidChar = (`elem` validChars)
+isMediaChar :: Char -> Bool
+isMediaChar = (`elem` mediaChars)
+
+
+------------------------------------------------------------------------------
+-- | Evaluates whether the given character is valid in an HTTP header token as
+-- per RFC 2616.
+isTokenChar :: Char -> Bool
+isTokenChar = (||) <$> not . isControl <*> (`notElem` separators)
+  where
+    separators = [ '(', ')', '<', '>', '@', ',', ';', ':', '\\'
+                 , '"', '/', '[', ']', '?', '=', '{', '}', ' '
+                 ]
+
+
+------------------------------------------------------------------------------
+-- | HTTP header token characters as per RFC 2616.
+tokenChars :: [Char]
+tokenChars = filter isTokenChar ['\0'..'\127']
+
+
+------------------------------------------------------------------------------
+-- | Evaluates whether the given ASCII string is valid as an HTTP header token
+-- as per RFC 2616.
+isValidToken :: ByteString -> Bool
+isValidToken = (&&) <$> not . BS.null <*> BS.all isTokenChar

@@ -84,7 +84,7 @@ a // b
 -- 4288.
 ensureR :: ByteString -> CI ByteString
 ensureR bs = CI.mk $ if l == 0 || l > 127
-    then error $ "Invalid length for " ++ show bs else ensure isValidChar bs
+    then error $ "Invalid length for " ++ show bs else ensure isMediaChar bs
   where l = BS.length bs
 
 

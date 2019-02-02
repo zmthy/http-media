@@ -14,6 +14,8 @@ Changelog
 
   Numeric characters are now permitted in the tail of a Language value.
 
+  Added support for Accept-Encoding and Content-Encoding.
+
 - [Version 0.7.1.3](https://github.com/zmthy/http-media/releases/tag/v0.7.1.3)
 
   Package bounds have been updated for GHC 8.6.
