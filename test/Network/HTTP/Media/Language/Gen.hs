@@ -112,8 +112,7 @@ genNonMatchingLanguages = do
 
 ------------------------------------------------------------------------------
 genCIByteString :: Gen (CI ByteString)
-genCIByteString =
-    resize 8 $ Gen.genCIByteStringFrom (['a'..'z'] ++ ['A'..'Z'])
+genCIByteString = resize 8 $ Gen.genCIByteString
 
 
 ------------------------------------------------------------------------------

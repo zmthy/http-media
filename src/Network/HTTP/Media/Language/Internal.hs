@@ -17,7 +17,7 @@ import qualified Data.CaseInsensitive            as CI
 import           Control.Monad                   (guard)
 import           Data.ByteString                 (ByteString)
 import           Data.CaseInsensitive            (CI, original)
-import           Data.Char                       (isAlpha)
+import           Data.Char                       (isAlpha, isAlphaNum)
 import           Data.List                       (isPrefixOf)
 import           Data.Maybe                      (fromMaybe)
 import           Data.String                     (IsString (..))
@@ -28,11 +28,11 @@ import           Network.HTTP.Media.RenderHeader (RenderHeader (..))
 
 ------------------------------------------------------------------------------
 -- | Suitable for HTTP language-ranges as defined in
--- <http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.4 RFC2616>.
+-- <https://tools.ietf.org/html/rfc4647#section-2.1 RFC4647>.
 --
 -- Specifically:
 --
--- > language-range = ( ( 1*8ALPHA *( "-" 1*8ALPHA ) ) | "*" )
+-- > language-range = (1*8ALPHA *("-" 1*8alphanum)) / "*"
 newtype Language = Language [CI ByteString]
     deriving (Eq, Ord)
 
@@ -55,7 +55,9 @@ instance Accept Language where
       where
         check part = do
             let len = BS.length part
-            guard $ len >= 1 && len <= 8 && BS.all isAlpha part
+            guard $ len >= 1 && len <= 8 &&
+                isAlpha (BS.head part) &&
+                BS.all isAlphaNum (BS.tail part)
             return (CI.mk part)
 
     -- Languages match if the right argument is a prefix of the left.

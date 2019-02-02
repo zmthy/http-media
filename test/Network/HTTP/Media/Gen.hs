@@ -28,7 +28,7 @@ import           Control.Monad         (join, liftM2)
 import           Data.ByteString       (ByteString)
 import           Data.CaseInsensitive  (CI, original)
 import           Data.Monoid           ((<>))
-import           Test.QuickCheck.Gen   (Gen, elements, listOf, listOf1)
+import           Test.QuickCheck.Gen   (Gen, elements, listOf, listOf1, scale)
 
 
 ------------------------------------------------------------------------------
@@ -43,12 +43,19 @@ genCIByteStringFrom = fmap CI.mk . genByteStringFrom
 
 
 ------------------------------------------------------------------------------
--- | Produces a non-empty ByteString of random alphanumeric characters.
+-- | Produces a non-empty ByteString of random alphanumeric characters with a
+-- non-numeric head.
 genByteString :: Gen ByteString
-genByteString = genByteStringFrom (['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'])
+genByteString = fmap BS.pack . (:) <$>
+    elements alpha <*> scale (max 0 . pred) (listOf (elements alphaNum))
+  where
+    alpha = ['a'..'z'] ++ ['A'..'Z']
+    alphaNum = alpha ++ ['0'..'9']
 
 
 ------------------------------------------------------------------------------
+-- | Produces a non-empty case-insensitive ByteString of random alphanumeric
+-- characters with a non-numeric head.
 genCIByteString :: Gen (CI ByteString)
 genCIByteString = fmap CI.mk genByteString
 
