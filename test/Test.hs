@@ -1,10 +1,8 @@
 ------------------------------------------------------------------------------
 module Main (main) where
 
-------------------------------------------------------------------------------
-import Test.Framework (defaultMain, testGroup)
+import           Test.Framework                     (defaultMain, testGroup)
 
-------------------------------------------------------------------------------
 import qualified Network.HTTP.Media.Accept.Tests    as Accept
 import qualified Network.HTTP.Media.Language.Tests  as Language
 import qualified Network.HTTP.Media.MediaType.Tests as MediaType

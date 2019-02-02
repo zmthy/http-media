@@ -29,15 +29,12 @@ module Network.HTTP.Media.MediaType.Gen
     , renderParameters
     ) where
 
-------------------------------------------------------------------------------
 #if !MIN_VERSION_base(4, 8, 0)
 import           Data.Functor                          ((<$>))
 #endif
 
-------------------------------------------------------------------------------
 import qualified Data.Map                              as Map
 
-------------------------------------------------------------------------------
 import           Control.Monad                         (filterM, liftM, liftM2)
 import           Data.ByteString                       (ByteString)
 import           Data.CaseInsensitive                  (CI, original)
@@ -46,7 +43,6 @@ import           Data.Map                              (fromList)
 import           Data.Monoid                           ((<>))
 import           Test.QuickCheck.Gen
 
-------------------------------------------------------------------------------
 import           Network.HTTP.Media.Gen
 import           Network.HTTP.Media.MediaType.Internal
 

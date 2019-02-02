@@ -3,15 +3,12 @@
 ------------------------------------------------------------------------------
 module Network.HTTP.Media.Language.Tests (tests) where
 
-------------------------------------------------------------------------------
 #if !MIN_VERSION_base(4, 8, 0)
 import           Data.Functor                         ((<$>))
 #endif
 
-------------------------------------------------------------------------------
 import qualified Data.ByteString.Char8                as BS
 
-------------------------------------------------------------------------------
 import           Control.Monad                        (join)
 import           Data.Monoid                          ((<>))
 import           Data.String                          (fromString)
@@ -19,7 +16,6 @@ import           Test.Framework                       (Test, testGroup)
 import           Test.Framework.Providers.QuickCheck2 (testProperty)
 import           Test.QuickCheck                      ((===))
 
-------------------------------------------------------------------------------
 import           Network.HTTP.Media.Accept
 import           Network.HTTP.Media.Language
 import           Network.HTTP.Media.Language.Gen

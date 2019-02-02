@@ -18,18 +18,16 @@ module Network.HTTP.Media.Language.Gen
     , genNonMatchingLanguages
     ) where
 
-------------------------------------------------------------------------------
 #if !MIN_VERSION_base(4, 8, 0)
 import           Control.Applicative                  ((<$>))
 #endif
+
 import           Data.ByteString                      (ByteString)
 import           Data.CaseInsensitive                 (CI)
 import           Test.QuickCheck.Gen
 
-------------------------------------------------------------------------------
 import qualified Network.HTTP.Media.Gen               as Gen
 
-------------------------------------------------------------------------------
 import           Network.HTTP.Media.Language.Internal
 
 
