@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP           #-}
 {-# LANGUAGE TupleSections #-}
 
 ------------------------------------------------------------------------------
@@ -17,10 +16,6 @@ module Network.HTTP.Media.Language.Gen
     , genDiffMatchingLanguages
     , genNonMatchingLanguages
     ) where
-
-#if !MIN_VERSION_base(4, 8, 0)
-import           Control.Applicative                  ((<$>))
-#endif
 
 import           Data.ByteString                      (ByteString)
 import           Data.CaseInsensitive                 (CI)

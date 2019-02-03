@@ -1,15 +1,9 @@
-{-# LANGUAGE CPP #-}
-
 ------------------------------------------------------------------------------
 -- | Defines the 'Language' accept header with an 'Accept' instance for use in
 -- language negotiation.
 module Network.HTTP.Media.Language.Internal
     ( Language (..)
     ) where
-
-#if !MIN_VERSION_base(4, 8, 0)
-import           Data.Functor                    ((<$>))
-#endif
 
 import qualified Data.ByteString.Char8           as BS
 import qualified Data.CaseInsensitive            as CI

@@ -53,9 +53,6 @@ library
   default-extensions:
     OverloadedStrings
 
-  other-extensions:
-    CPP
-
   exposed-modules:
     Network.HTTP.Media
     Network.HTTP.Media.Accept
@@ -92,7 +89,6 @@ test-suite test-http-media
     OverloadedStrings
 
   other-extensions:
-    CPP
     TupleSections
 
   other-modules:

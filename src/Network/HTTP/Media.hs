@@ -1,5 +1,3 @@
-{-# LANGUAGE CPP #-}
-
 ------------------------------------------------------------------------------
 -- | A framework for parsing HTTP media type headers.
 module Network.HTTP.Media
@@ -49,11 +47,7 @@ module Network.HTTP.Media
     , RenderHeader (..)
     ) where
 
-#if MIN_VERSION_base(4, 8, 0)
 import           Control.Applicative             ((<|>))
-#else
-import           Control.Applicative             (pure, (<$>), (<*>), (<|>))
-#endif
 
 import qualified Data.ByteString.Char8           as BS
 

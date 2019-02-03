@@ -1,11 +1,5 @@
-{-# LANGUAGE CPP #-}
-
 ------------------------------------------------------------------------------
 module Network.HTTP.Media.MediaType.Tests (tests) where
-
-#if !MIN_VERSION_base(4, 8, 0)
-import           Data.Functor                          ((<$>))
-#endif
 
 import qualified Data.ByteString.Char8                 as BS
 import qualified Data.Map                              as Map

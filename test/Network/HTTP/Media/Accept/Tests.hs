@@ -1,11 +1,5 @@
-{-# LANGUAGE CPP #-}
-
 ------------------------------------------------------------------------------
 module Network.HTTP.Media.Accept.Tests (tests) where
-
-#if !MIN_VERSION_base(4, 8, 0)
-import           Control.Applicative                  ((<$>), (<*>))
-#endif
 
 import           Test.Framework                       (Test, testGroup)
 import           Test.Framework.Providers.QuickCheck2 (testProperty)

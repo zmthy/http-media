@@ -1,6 +1,8 @@
 Changelog
 =========
 
+  Removed official support for GHC 7.8.
+
   A separate `QualityOrder` type can now be extracted from a `Quality`
   value for performing comparisons without the attached data value.
 

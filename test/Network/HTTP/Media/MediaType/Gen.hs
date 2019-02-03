@@ -1,5 +1,3 @@
-{-# LANGUAGE CPP #-}
-
 ------------------------------------------------------------------------------
 -- | Contains definitions for generating 'MediaType's.
 module Network.HTTP.Media.MediaType.Gen
@@ -28,10 +26,6 @@ module Network.HTTP.Media.MediaType.Gen
     -- * Rendering Parameters
     , renderParameters
     ) where
-
-#if !MIN_VERSION_base(4, 8, 0)
-import           Data.Functor                          ((<$>))
-#endif
 
 import qualified Data.Map                              as Map
 

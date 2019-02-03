@@ -9,9 +9,11 @@ addons:
     - libgmp-dev
 
 env:
-- ARGS="--resolver=lts-2"
 - ARGS="--resolver=lts-6"
 - ARGS="--resolver=lts-9"
+- ARGS="--resolver=lts-11"
+- ARGS="--resolver=lts-12"
+- ARGS="--resolver=lts-13"
 - ARGS="--resolver=nightly"
 
 before_install:
