@@ -12,6 +12,9 @@ module Network.HTTP.Media
     , (/?)
     , (/.)
 
+    -- * Charsets
+    , Charset
+
     -- * Encodings
     , Encoding
 
@@ -23,6 +26,7 @@ module Network.HTTP.Media
     , matchAccept
     , mapAccept
     , mapAcceptMedia
+    , mapAcceptCharset
     , mapAcceptEncoding
     , mapAcceptLanguage
     , mapAcceptBytes
@@ -31,6 +35,7 @@ module Network.HTTP.Media
     , matchContent
     , mapContent
     , mapContentMedia
+    , mapContentCharset
     , mapContentEncoding
     , mapContentLanguage
 
@@ -64,6 +69,7 @@ import           Data.Maybe                      (fromMaybe)
 import           Data.Proxy                      (Proxy (Proxy))
 
 import           Network.HTTP.Media.Accept       as Accept
+import           Network.HTTP.Media.Charset      as Charset
 import           Network.HTTP.Media.Encoding     as Encoding
 import           Network.HTTP.Media.Language     as Language
 import           Network.HTTP.Media.MediaType    as MediaType
@@ -124,6 +130,21 @@ mapAcceptMedia ::
     -> ByteString     -- ^ The client-side header value
     -> Maybe b
 mapAcceptMedia = mapAccept
+
+
+------------------------------------------------------------------------------
+-- | A specialisation of 'mapAccept' that only takes 'Charset' as its input,
+-- to avoid ambiguous-type errors when using string literal overloading.
+--
+-- > getHeader >>= maybe render406Error renderResource . mapAcceptCharset
+-- >     [ ("utf-8",    inUtf8)
+-- >     , ("us-ascii", inAscii)
+-- >     ]
+mapAcceptCharset ::
+    [(Charset, b)]  -- ^ The map of server-side preferences to values
+    -> ByteString   -- ^ The client-side header value
+    -> Maybe b
+mapAcceptCharset = mapAccept
 
 
 ------------------------------------------------------------------------------
@@ -224,6 +245,22 @@ mapContentMedia
     -> ByteString        -- ^ The client request's header value
     -> Maybe b
 mapContentMedia = mapContent
+
+
+------------------------------------------------------------------------------
+-- | A specialisation of 'mapContent' that only takes 'Charset' as its input,
+-- to avoid ambiguous-type errors when using string literal overloading.
+--
+-- > getContentCharset >>=
+-- >     maybe send415Error readRequestBodyWith . mapContentCharset
+-- >         [ ("utf-8",    parseUtf8)
+-- >         , ("us-ascii", parseAscii)
+-- >         ]
+mapContentCharset
+    :: [(Charset, b)]  -- ^ The map of server-side responses
+    -> ByteString      -- ^ The client request's header value
+    -> Maybe b
+mapContentCharset = mapContent
 
 
 ------------------------------------------------------------------------------

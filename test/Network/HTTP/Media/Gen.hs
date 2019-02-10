@@ -1,7 +1,9 @@
 ------------------------------------------------------------------------------
 -- | Contains definitions for generating 'ByteString's.
 module Network.HTTP.Media.Gen
-    ( genByteStringFrom
+    ( genToken
+
+    , genByteStringFrom
     , genCIByteStringFrom
     , genByteString
     , genCIByteString
@@ -12,15 +14,23 @@ module Network.HTTP.Media.Gen
     , padString
     ) where
 
-import qualified Data.ByteString.Char8 as BS
-import qualified Data.CaseInsensitive  as CI
-import qualified Test.QuickCheck.Gen   as Gen
+import qualified Data.ByteString.Char8    as BS
+import qualified Data.CaseInsensitive     as CI
+import qualified Test.QuickCheck.Gen      as Gen
 
-import           Control.Monad         (join, liftM2)
-import           Data.ByteString       (ByteString)
-import           Data.CaseInsensitive  (CI, original)
-import           Data.Monoid           ((<>))
-import           Test.QuickCheck.Gen   (Gen)
+import qualified Network.HTTP.Media.Utils as Utils
+
+import           Control.Monad            (join, liftM2)
+import           Data.ByteString          (ByteString)
+import           Data.CaseInsensitive     (CI, original)
+import           Data.Monoid              ((<>))
+import           Test.QuickCheck.Gen      (Gen)
+
+
+------------------------------------------------------------------------------
+-- | Generates a valid header token.
+genToken :: Gen (CI ByteString)
+genToken = genCIByteStringFrom Utils.tokenChars
 
 
 ------------------------------------------------------------------------------

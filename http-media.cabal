@@ -56,12 +56,14 @@ library
   exposed-modules:
     Network.HTTP.Media
     Network.HTTP.Media.Accept
+    Network.HTTP.Media.Charset
     Network.HTTP.Media.Encoding
     Network.HTTP.Media.Language
     Network.HTTP.Media.MediaType
     Network.HTTP.Media.RenderHeader
 
   other-modules:
+    Network.HTTP.Media.Charset.Internal
     Network.HTTP.Media.Encoding.Internal
     Network.HTTP.Media.Language.Internal
     Network.HTTP.Media.MediaType.Internal
@@ -97,6 +99,10 @@ test-suite test-http-media
     Network.HTTP.Media
     Network.HTTP.Media.Accept
     Network.HTTP.Media.Accept.Tests
+    Network.HTTP.Media.Charset
+    Network.HTTP.Media.Charset.Gen
+    Network.HTTP.Media.Charset.Internal
+    Network.HTTP.Media.Charset.Tests
     Network.HTTP.Media.Gen
     Network.HTTP.Media.Encoding
     Network.HTTP.Media.Encoding.Gen

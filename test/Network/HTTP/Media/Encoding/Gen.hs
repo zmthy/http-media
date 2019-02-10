@@ -11,14 +11,10 @@ module Network.HTTP.Media.Encoding.Gen
     , genDiffConcreteEncodings
     ) where
 
-import           Data.ByteString                      (ByteString)
-import           Data.CaseInsensitive                 (CI)
 import           Test.QuickCheck.Gen
 
-import qualified Network.HTTP.Media.Gen               as Gen
-import qualified Network.HTTP.Media.Utils             as Utils
-
 import           Network.HTTP.Media.Encoding.Internal
+import           Network.HTTP.Media.Gen               (genDiffWith, genToken)
 
 
 ------------------------------------------------------------------------------
@@ -42,13 +38,13 @@ genEncoding = Encoding <$> genToken
 ------------------------------------------------------------------------------
 -- | Generates an Encoding that does not match everything.
 genConcreteEncoding :: Gen Encoding
-genConcreteEncoding = Gen.genDiffWith genEncoding anything
+genConcreteEncoding = genDiffWith genEncoding anything
 
 
 ------------------------------------------------------------------------------
 -- | Generates a different Encoding to the given one.
 genDiffEncoding :: Encoding -> Gen Encoding
-genDiffEncoding = Gen.genDiffWith genEncoding
+genDiffEncoding = genDiffWith genEncoding
 
 
 ------------------------------------------------------------------------------
@@ -56,10 +52,4 @@ genDiffEncoding = Gen.genDiffWith genEncoding
 genDiffConcreteEncodings :: Gen (Encoding, Encoding)
 genDiffConcreteEncodings = do
     enc <- genConcreteEncoding
-    (enc,) <$> Gen.genDiffWith genConcreteEncoding enc
-
-
-------------------------------------------------------------------------------
--- | Generates a valid header token.
-genToken :: Gen (CI ByteString)
-genToken = Gen.genCIByteStringFrom Utils.tokenChars
+    (enc,) <$> genDiffWith genConcreteEncoding enc

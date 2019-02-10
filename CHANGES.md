@@ -16,6 +16,8 @@ Changelog
 
   Added support for Accept-Encoding and Content-Encoding.
 
+  Added support for Accept-Charset and Content-Charset.
+
 - [Version 0.7.1.3](https://github.com/zmthy/http-media/releases/tag/v0.7.1.3)
 
   Package bounds have been updated for GHC 8.6.
