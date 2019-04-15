@@ -1,6 +1,8 @@
 Changelog
 =========
 
+- [Version 0.8.0.0](https://github.com/zmthy/http-media/releases/tag/v0.8.0.0)
+
   Removed official support for GHC 7.8.
 
   A separate `QualityOrder` type can now be extracted from a `Quality`
