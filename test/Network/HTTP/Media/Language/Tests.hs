@@ -6,8 +6,8 @@ import qualified Data.ByteString.Char8                as BS
 import           Control.Monad                        (join)
 import           Data.Monoid                          ((<>))
 import           Data.String                          (fromString)
-import           Test.Framework                       (Test, testGroup)
-import           Test.Framework.Providers.QuickCheck2 (testProperty)
+import           Test.Tasty                           (TestTree, testGroup)
+import           Test.Tasty.QuickCheck                (testProperty)
 import           Test.QuickCheck                      ((===))
 
 import           Network.HTTP.Media.Accept
@@ -17,7 +17,7 @@ import           Network.HTTP.Media.RenderHeader
 
 
 ------------------------------------------------------------------------------
-tests :: [Test]
+tests :: [TestTree]
 tests =
     [ testEq
     , testShow
@@ -30,7 +30,7 @@ tests =
 
 ------------------------------------------------------------------------------
 -- Equality is derived, but we test it here to get 100% coverage.
-testEq :: Test
+testEq :: TestTree
 testEq = testGroup "Eq"
     [ testProperty "==" $ do
         lang <- genLanguage
@@ -43,21 +43,21 @@ testEq = testGroup "Eq"
 
 
 ------------------------------------------------------------------------------
-testShow :: Test
+testShow :: TestTree
 testShow = testProperty "show" $ do
     lang <- genLanguage
     return $ parseAccept (BS.pack $ show lang) === Just lang
 
 
 ------------------------------------------------------------------------------
-testFromString :: Test
+testFromString :: TestTree
 testFromString = testProperty "fromString" $ do
     lang <- genLanguage
     return $ lang === fromString (show lang)
 
 
 ------------------------------------------------------------------------------
-testMatches :: Test
+testMatches :: TestTree
 testMatches = testGroup "matches"
     [ testProperty "Equal values match" $
         join matches <$> genLanguage
@@ -73,7 +73,7 @@ testMatches = testGroup "matches"
 
 
 ------------------------------------------------------------------------------
-testMoreSpecific :: Test
+testMoreSpecific :: TestTree
 testMoreSpecific = testGroup "moreSpecificThan"
     [ testProperty "Against *" $
         flip moreSpecificThan anything <$> genConcreteLanguage
@@ -89,7 +89,7 @@ testMoreSpecific = testGroup "moreSpecificThan"
 
 
 ------------------------------------------------------------------------------
-testParseAccept :: Test
+testParseAccept :: TestTree
 testParseAccept = testGroup "parseAccept"
     [ testProperty "Valid parse"$ do
         lang <- genLanguage

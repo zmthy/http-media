@@ -1,15 +1,15 @@
 ------------------------------------------------------------------------------
 module Network.HTTP.Media.Accept.Tests (tests) where
 
-import           Test.Framework                       (Test, testGroup)
-import           Test.Framework.Providers.QuickCheck2 (testProperty)
+import           Test.Tasty                            (TestTree, testGroup)
+import           Test.Tasty.QuickCheck                 (testProperty)
 
 import           Network.HTTP.Media.Accept
 import           Network.HTTP.Media.Gen
 
 
 ------------------------------------------------------------------------------
-tests :: [Test]
+tests :: [TestTree]
 tests =
     [ testMatches
     , testMoreSpecificThan
@@ -17,7 +17,7 @@ tests =
 
 
 ------------------------------------------------------------------------------
-testMatches :: Test
+testMatches :: TestTree
 testMatches = testGroup "matches"
     [ testProperty "Does match" $ do
         string <- genByteString
@@ -32,6 +32,6 @@ testMatches = testGroup "matches"
 ------------------------------------------------------------------------------
 -- | Note that this test never actually generates any strings, as they are not
 -- required for the 'moreSpecificThan' test.
-testMoreSpecificThan :: Test
+testMoreSpecificThan :: TestTree
 testMoreSpecificThan = testProperty "moreSpecificThan" $
     (not .) . moreSpecificThan <$> genByteString <*> genByteString

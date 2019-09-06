@@ -8,8 +8,8 @@ import           Data.List                             (nubBy)
 import           Data.Map                              (empty)
 import           Data.Monoid                           ((<>))
 import           Data.Word                             (Word16)
-import           Test.Framework                        (Test, testGroup)
-import           Test.Framework.Providers.QuickCheck2  (testProperty)
+import           Test.Tasty                            (TestTree, testGroup)
+import           Test.Tasty.QuickCheck                 (testProperty)
 import           Test.QuickCheck
 
 import           Network.HTTP.Media                    hiding (parameters,
@@ -21,7 +21,7 @@ import           Network.HTTP.Media.Quality
 
 
 ------------------------------------------------------------------------------
-tests :: [Test]
+tests :: [TestTree]
 tests =
     [ testParse
     , testMatchAccept
@@ -34,7 +34,7 @@ tests =
 
 
 ------------------------------------------------------------------------------
-testParse :: Test
+testParse :: TestTree
 testParse = testGroup "parseQuality"
     [ testProperty "Without quality" $ do
         media    <- medias
@@ -64,17 +64,17 @@ testParse = testGroup "parseQuality"
 
 
 ------------------------------------------------------------------------------
-testMatchAccept :: Test
+testMatchAccept :: TestTree
 testMatchAccept = testMatch "Accept" matchAccept renderHeader
 
 
 ------------------------------------------------------------------------------
-testMapAccept :: Test
+testMapAccept :: TestTree
 testMapAccept = testMap "Accept" mapAccept renderHeader
 
 
 ------------------------------------------------------------------------------
-testMatchContent :: Test
+testMatchContent :: TestTree
 testMatchContent = testGroup "matchContent"
     [ testProperty "Matches" $ do
         media <- genMediaType
@@ -95,7 +95,7 @@ testMatchContent = testGroup "matchContent"
 
 
 ------------------------------------------------------------------------------
-testMapContent :: Test
+testMapContent :: TestTree
 testMapContent = testGroup "mapContent"
     [ testProperty "Matches" $ do
         media <- genMediaType
@@ -108,12 +108,12 @@ testMapContent = testGroup "mapContent"
 
 
 ------------------------------------------------------------------------------
-testMatchQuality :: Test
+testMatchQuality :: TestTree
 testMatchQuality = testMatch "Quality" matchQuality id
 
 
 ------------------------------------------------------------------------------
-testMapQuality :: Test
+testMapQuality :: TestTree
 testMapQuality = testMap "Quality" mapQuality id
 
 
@@ -122,7 +122,7 @@ testMatch
     :: String
     -> ([MediaType] -> a -> Maybe MediaType)
     -> ([Quality MediaType] -> a)
-    -> Test
+    -> TestTree
 testMatch name match qToI = testGroup ("match" ++ name)
     [ testProperty "Most specific" $ do
         media <- genConcreteMediaType
@@ -158,7 +158,7 @@ testMatch name match qToI = testGroup ("match" ++ name)
 testQuality
     :: ([MediaType] -> a -> Maybe MediaType)
     -> ([Quality MediaType] -> a)
-    -> Test
+    -> TestTree
 testQuality match qToI = testGroup "Quality"
     [ testProperty "Highest quality" $ do
         server <- genServer
@@ -180,7 +180,7 @@ testQuality match qToI = testGroup "Quality"
 testQ0
     :: ([MediaType] -> a -> Maybe MediaType)
     -> ([Quality MediaType] -> a)
-    -> Test
+    -> TestTree
 testQ0 match qToI = testGroup "q=0"
     [ testProperty "Does not choose a q=0" $ do
         server <- genConcreteMediaType
@@ -212,7 +212,7 @@ testMap
     :: String
     -> ([(MediaType, MediaType)] -> a -> Maybe MediaType)
     -> ([Quality MediaType] -> a)
-    -> Test
+    -> TestTree
 testMap name mapf qToI = testGroup ("map" ++ name)
     [ testProperty "Matches" $ do
         server <- genServer
