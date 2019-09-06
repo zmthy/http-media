@@ -1,13 +1,13 @@
 ------------------------------------------------------------------------------
 module Network.HTTP.Media.Encoding.Tests (tests) where
 
-import qualified Data.ByteString.Char8                as BS
+import qualified Data.ByteString.Char8           as BS
 
-import           Control.Monad                        (join)
-import           Data.String                          (fromString)
-import           Test.Framework                       (Test, testGroup)
-import           Test.Framework.Providers.QuickCheck2 (testProperty)
-import           Test.QuickCheck                      ((===))
+import           Control.Monad                   (join)
+import           Data.String                     (fromString)
+import           Test.QuickCheck                 ((===))
+import           Test.Tasty                      (TestTree, testGroup)
+import           Test.Tasty.QuickCheck           (testProperty)
 
 import           Network.HTTP.Media.Accept
 import           Network.HTTP.Media.Encoding.Gen
@@ -15,7 +15,7 @@ import           Network.HTTP.Media.RenderHeader
 
 
 ------------------------------------------------------------------------------
-tests :: [Test]
+tests :: [TestTree]
 tests =
     [ testEq
     , testShow
@@ -28,7 +28,7 @@ tests =
 
 ------------------------------------------------------------------------------
 -- Equality is derived, but we test it here to get 100% coverage.
-testEq :: Test
+testEq :: TestTree
 testEq = testGroup "Eq"
     [ testProperty "==" $ do
         enc <- genEncoding
@@ -41,21 +41,21 @@ testEq = testGroup "Eq"
 
 
 ------------------------------------------------------------------------------
-testShow :: Test
+testShow :: TestTree
 testShow = testProperty "show" $ do
     enc <- genEncoding
     return $ parseAccept (BS.pack $ show enc) === Just enc
 
 
 ------------------------------------------------------------------------------
-testFromString :: Test
+testFromString :: TestTree
 testFromString = testProperty "fromString" $ do
     enc <- genEncoding
     return $ enc === fromString (show enc)
 
 
 ------------------------------------------------------------------------------
-testMatches :: Test
+testMatches :: TestTree
 testMatches = testGroup "matches"
     [ testProperty "Equal values match" $
         join matches <$> genEncoding
@@ -67,7 +67,7 @@ testMatches = testGroup "matches"
 
 
 ------------------------------------------------------------------------------
-testMoreSpecific :: Test
+testMoreSpecific :: TestTree
 testMoreSpecific = testGroup "moreSpecificThan"
     [ testProperty "Against *" $
         flip moreSpecificThan anything <$> genConcreteEncoding
@@ -79,7 +79,7 @@ testMoreSpecific = testGroup "moreSpecificThan"
 
 
 ------------------------------------------------------------------------------
-testParseAccept :: Test
+testParseAccept :: TestTree
 testParseAccept = testGroup "parseAccept"
     [ testProperty "Empty" $
         parseAccept "" === Just identity

@@ -9,10 +9,10 @@ import           Data.ByteString                       (ByteString)
 import           Data.CaseInsensitive                  (foldedCase)
 import           Data.Monoid                           ((<>))
 import           Data.String                           (fromString)
-import           Test.Framework                        (Test, testGroup)
-import           Test.Framework.Providers.QuickCheck2  (testProperty)
 import           Test.QuickCheck                       (property, (.&&.), (===))
 import           Test.QuickCheck.Gen                   (Gen)
+import           Test.Tasty                            (TestTree, testGroup)
+import           Test.Tasty.QuickCheck                 (testProperty)
 
 import           Network.HTTP.Media.Accept
 import           Network.HTTP.Media.Gen
@@ -23,7 +23,7 @@ import           Network.HTTP.Media.RenderHeader       (renderHeader)
 
 
 ------------------------------------------------------------------------------
-tests :: [Test]
+tests :: [TestTree]
 tests =
     [ testEq
     , testShow
@@ -38,7 +38,7 @@ tests =
 
 ------------------------------------------------------------------------------
 -- Equality is derived, but we test it here to get 100% coverage.
-testEq :: Test
+testEq :: TestTree
 testEq = testGroup "Eq"
     [ testProperty "==" $ do
         media <- genMediaType
@@ -51,21 +51,21 @@ testEq = testGroup "Eq"
 
 
 ------------------------------------------------------------------------------
-testShow :: Test
+testShow :: TestTree
 testShow = testProperty "show" $ do
     media <- genMediaType
     return $ parseAccept (BS.pack $ show media) === Just media
 
 
 ------------------------------------------------------------------------------
-testFromString :: Test
+testFromString :: TestTree
 testFromString = testProperty "fromString" $ do
     media <- genMediaType
     return $ media === fromString (show media)
 
 
 ------------------------------------------------------------------------------
-testHas :: Test
+testHas :: TestTree
 testHas = testGroup "(/?)"
     [ testProperty "True for property it has" $ do
         media <- genWithParams
@@ -78,7 +78,7 @@ testHas = testGroup "(/?)"
 
 
 ------------------------------------------------------------------------------
-testGet :: Test
+testGet :: TestTree
 testGet = testGroup "(/.)"
     [ testProperty "Retrieves property it has" $ do
         media  <- genWithParams
@@ -92,7 +92,7 @@ testGet = testGroup "(/.)"
 
 
 ------------------------------------------------------------------------------
-testMatches :: Test
+testMatches :: TestTree
 testMatches = testGroup "matches"
     [ testProperty "Equal values match" $ do
         media <- genMediaType
@@ -131,7 +131,7 @@ testMatches = testGroup "matches"
 
 
 ------------------------------------------------------------------------------
-testMoreSpecificThan :: Test
+testMoreSpecificThan :: TestTree
 testMoreSpecificThan = testGroup "moreSpecificThan"
     [ testProperty "Against */*" $
         liftM (`moreSpecificThan` anything) genMaybeSubStar
@@ -156,7 +156,7 @@ testMoreSpecificThan = testGroup "moreSpecificThan"
 
 
 ------------------------------------------------------------------------------
-testParseAccept :: Test
+testParseAccept :: TestTree
 testParseAccept = testGroup "parseAccept"
     [ testProperty "Valid parse" $ do
         media <- genMediaType
