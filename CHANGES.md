@@ -1,6 +1,10 @@
 Changelog
 =========
 
+  Exposed `qualityData` accessor.
+
+  Added `isAcceptable` to allow filtering out unacceptable items.
+
 - [Version 0.8.0.0](https://github.com/zmthy/http-media/releases/tag/v0.8.0.0)
 
   Removed official support for GHC 7.8.
