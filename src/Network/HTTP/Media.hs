@@ -40,10 +40,11 @@ module Network.HTTP.Media
     , mapContentLanguage
 
     -- * Quality values
-    , Quality
+    , Quality (qualityData)
     , quality
     , QualityOrder
     , qualityOrder
+    , isAcceptable
     , maxQuality
     , minQuality
     , parseQuality
@@ -343,8 +344,8 @@ matchQuality
     -> Maybe a
 matchQuality options acceptq = do
     guard $ not (null options)
-    Quality m q <- maximumBy (compare `on` fmap qualityOrder) optionsq
-    guard $ q /= 0
+    q@(Quality m _) <- maximumBy (compare `on` fmap qualityOrder) optionsq
+    guard $ isAcceptable q
     return m
   where
     optionsq = reverse $ map addQuality options

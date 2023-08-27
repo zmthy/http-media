@@ -7,6 +7,7 @@ module Network.HTTP.Media.Quality
     , quality
     , QualityOrder
     , qualityOrder
+    , isAcceptable
     , maxQuality
     , minQuality
     , mostSpecific
@@ -54,6 +55,11 @@ quality x q = Quality x $ flip fromMaybe (readQ q) $
 newtype QualityOrder = QualityOrder Word16
     deriving (Eq, Ord)
 
+------------------------------------------------------------------------------
+-- | 0 means not acceptable
+isAcceptable :: Quality a -> Bool
+isAcceptable (Quality _ 0) = False
+isAcceptable (Quality _ _) = True
 
 ------------------------------------------------------------------------------
 -- | Remove the attached data from a quality value, retaining only the
