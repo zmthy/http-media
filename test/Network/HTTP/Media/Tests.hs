@@ -1,3 +1,5 @@
+{-# LANGUAGE TupleSections #-}
+
 ------------------------------------------------------------------------------
 module Network.HTTP.Media.Tests (tests) where
 
@@ -224,7 +226,7 @@ testMap name mapf qToI = testGroup ("map" ++ name)
             Just (qualityData $ foldr1 qmax client)
     , testProperty "Nothing" $ do
         (server, client) <- genServerAndClient
-        let zipped = zip server $ repeat "*/*"
+        let zipped = map (, "*/*") server
         return $ mapf zipped (qToI $ map maxQuality client) === Nothing
     ]
 

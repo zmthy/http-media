@@ -29,7 +29,7 @@ module Network.HTTP.Media.MediaType.Gen
 
 import qualified Data.Map                              as Map
 
-import           Control.Monad                         (filterM, liftM, liftM2)
+import           Control.Monad                         (filterM, liftM2)
 import           Data.ByteString                       (ByteString)
 import           Data.CaseInsensitive                  (CI, original)
 import           Data.Foldable                         (foldlM)
@@ -103,8 +103,7 @@ genWithParams :: Gen MediaType
 genWithParams = do
     main   <- genCIByteString
     sub    <- genCIByteString
-    params <- genParameters
-    return $ MediaType main sub params
+    MediaType main sub <$> genParameters
 
 
 ------------------------------------------------------------------------------
@@ -146,7 +145,7 @@ genDiffMediaType = genDiffMediaTypes . (: [])
 ------------------------------------------------------------------------------
 -- | Reuse for 'mayParams' and 'someParams'.
 mkGenParams :: (Gen ParamEntry -> Gen [ParamEntry]) -> Gen Parameters
-mkGenParams = liftM fromList .
+mkGenParams = fmap fromList .
     ($ liftM2 (,) (genDiffCIByteString "q") genCIByteString)
 
 

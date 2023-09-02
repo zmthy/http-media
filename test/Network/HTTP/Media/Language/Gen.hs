@@ -55,14 +55,14 @@ genDiffLanguage l             = Gen.genDiffWith genLanguage l
 -- | Generate a Language that has the given language as a prefix.
 genMatchingLanguage :: Language -> Gen Language
 genMatchingLanguage (Language pre) =
-    (Language . (pre ++)) <$> listOf genCIByteString
+    Language . (pre ++) <$> listOf genCIByteString
 
 
 ------------------------------------------------------------------------------
 -- | Generate a Language that has the given language as a proper prefix.
 genDiffMatchingLanguage :: Language -> Gen Language
 genDiffMatchingLanguage (Language pre) =
-    (Language . (pre ++)) <$> listOf1 genCIByteString
+    Language . (pre ++) <$> listOf1 genCIByteString
 
 
 ------------------------------------------------------------------------------
@@ -105,7 +105,7 @@ genNonMatchingLanguages = do
 
 ------------------------------------------------------------------------------
 genCIByteString :: Gen (CI ByteString)
-genCIByteString = resize 8 $ Gen.genCIByteString
+genCIByteString = resize 8 Gen.genCIByteString
 
 
 ------------------------------------------------------------------------------

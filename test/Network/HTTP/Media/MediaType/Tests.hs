@@ -4,7 +4,7 @@ module Network.HTTP.Media.MediaType.Tests (tests) where
 import qualified Data.ByteString.Char8                 as BS
 import qualified Data.Map                              as Map
 
-import           Control.Monad                         (join, liftM)
+import           Control.Monad                         (join)
 import           Data.ByteString                       (ByteString)
 import           Data.CaseInsensitive                  (foldedCase)
 import           Data.Monoid                           ((<>))
@@ -72,7 +72,7 @@ testHas = testGroup "(/?)"
         return $ all ((media /?) . foldedCase) (Map.keys $ parameters media)
     , testProperty "False for property it doesn't have" $ do
         media <- genWithParams
-        return $ all (not . (stripParams media /?) . foldedCase)
+        return . not $ any ((stripParams media /?) . foldedCase)
             (Map.keys $ parameters media)
     ]
 
@@ -108,7 +108,7 @@ testMatches = testGroup "matches"
         return . not $ matches media media { subType = sub } ||
             matches media { subType = sub } media
     , testProperty "Different parameters don't match" $
-        liftM (not . dotJoin matches stripParams) genWithParams
+        not . dotJoin matches stripParams <$> genWithParams
     , testProperty "Missing parameters match" $ do
         media <- genWithParams
         let media' = stripParams media
@@ -116,16 +116,16 @@ testMatches = testGroup "matches"
     , testGroup "*/*"
         [ testProperty "Matches itself" $ matches anything anything
         , testProperty "Matches anything on the right" $
-            liftM (`matches` anything) genMediaType
+            (`matches` anything) <$> genMediaType
         , testProperty "Doesn't match more specific on the left" $
-            liftM (not . matches anything) genMaybeSubStar
+            not . (anything `matches`) <$> genMaybeSubStar
         ]
     , testGroup "type/*"
-        [ testProperty "Matches itself" $ liftM (join matches) genSubStar
+        [ testProperty "Matches itself" $ join matches <$> genSubStar
         , testProperty "Matches on the right" $
-            liftM (dotJoin (flip matches) subStarOf) genConcreteMediaType
+            dotJoin (flip matches) subStarOf <$> genConcreteMediaType
         , testProperty "Doesn't match on the left" $
-            liftM (not . dotJoin matches subStarOf) genConcreteMediaType
+            not . dotJoin matches subStarOf <$> genConcreteMediaType
         ]
     ]
 
@@ -134,15 +134,15 @@ testMatches = testGroup "matches"
 testMoreSpecificThan :: TestTree
 testMoreSpecificThan = testGroup "moreSpecificThan"
     [ testProperty "Against */*" $
-        liftM (`moreSpecificThan` anything) genMaybeSubStar
+        (`moreSpecificThan` anything) <$> genMaybeSubStar
     , testProperty "With */*" $
-        liftM (not . moreSpecificThan anything) genMaybeSubStar
+        not . (anything `moreSpecificThan`) <$> genMaybeSubStar
     , testProperty "Against type/*" $
-        liftM (dotJoin (flip moreSpecificThan) subStarOf) genConcreteMediaType
+        dotJoin (flip moreSpecificThan) subStarOf <$> genConcreteMediaType
     , testProperty "With type/*" $
-        liftM (not . dotJoin moreSpecificThan subStarOf) genConcreteMediaType
+        not . dotJoin moreSpecificThan subStarOf <$> genConcreteMediaType
     , testProperty "With parameters" $
-        liftM (dotJoin (flip moreSpecificThan) stripParams) genWithParams
+        dotJoin (flip moreSpecificThan) stripParams <$> genWithParams
     , testProperty "Different types" $ do
         media  <- genWithoutParams
         media' <- genDiffMediaTypeWith genWithoutParams media
