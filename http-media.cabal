@@ -1,12 +1,12 @@
 name:          http-media
-version:       0.8.0.0
+version:       0.8.1.0
 license:       MIT
 license-file:  LICENSE
 author:        Timothy Jones
 maintainer:    Timothy Jones <tim@zmthy.net>
 homepage:      https://github.com/zmthy/http-media
 bug-reports:   https://github.com/zmthy/http-media/issues
-copyright:     (c) 2012-2019 Timothy Jones
+copyright:     (c) 2012-2023 Timothy Jones
 category:      Web
 build-type:    Simple
 cabal-version: >= 1.10
