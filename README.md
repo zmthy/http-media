@@ -1,7 +1,8 @@
 http-media
 ==========
 
-[![Build Status](https://secure.travis-ci.org/zmthy/http-media.svg)](http://travis-ci.org/zmthy/http-media)
+[![Hackage](https://img.shields.io/hackage/v/http-media.svg)](https://hackage.haskell.org/package/http-media)
+[![Build Status](https://github.com/zmthy/http-media/workflows/Haskell-CI/badge.svg)](https://github.com/zmthy/http-media/actions?query=workflow%3AHaskell-CI)
 
 This library is intended to be a comprehensive solution to parsing and
 selecting quality-indexed values in HTTP headers.  It is capable of
