@@ -56,7 +56,8 @@ newtype QualityOrder = QualityOrder Word16
     deriving (Eq, Ord)
 
 ------------------------------------------------------------------------------
--- | 0 means not acceptable
+-- | Whether the quality value is greater than zero; otherwise the value
+-- should never be accepted, even when no other options are available.
 isAcceptable :: Quality a -> Bool
 isAcceptable (Quality _ 0) = False
 isAcceptable (Quality _ _) = True
