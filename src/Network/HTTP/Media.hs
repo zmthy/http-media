@@ -344,16 +344,16 @@ matchQuality
     -> Maybe a
 matchQuality options acceptq = do
     guard $ not (null options)
-    q@(Quality m _) <- maximumBy (compare `on` fmap qualityOrder) optionsq
+    q <- maximumBy (compare `on` fmap qualityOrder) optionsq
     guard $ isAcceptable q
-    return m
+    return $ qualityData q
   where
     optionsq = reverse $ map addQuality options
     addQuality opt = withQValue opt <$> foldl' (mfold opt) Nothing acceptq
-    withQValue opt qv = qv { qualityData = opt }
-    mfold opt cur acq@(Quality acd _)
-        | opt `matches` acd = mostSpecific acq <$> cur <|> Just acq
-        | otherwise         = cur
+    withQValue opt q = q { qualityData = opt }
+    mfold opt cur q
+        | opt `matches` qualityData q = mostSpecific q <$> cur <|> Just q
+        | otherwise                   = cur
 
 
 ------------------------------------------------------------------------------
