@@ -64,7 +64,7 @@ import qualified Data.ByteString.Char8           as BS
 
 import           Control.Monad                   (guard, (>=>))
 import           Data.ByteString                 (ByteString)
-import           Data.Foldable                   (foldl', maximumBy)
+import           Data.Foldable                   (find, foldl', maximumBy)
 import           Data.Function                   (on)
 import           Data.Maybe                      (fromMaybe)
 import           Data.Proxy                      (Proxy (Proxy))
@@ -207,11 +207,7 @@ matchContent
     => [a]         -- ^ The server-side response options
     -> ByteString  -- ^ The client's request value
     -> Maybe a
-matchContent options ctype = foldl choose Nothing options
-  where
-    choose m server = m <|> do
-        parseAccept ctype >>= guard . (`matches` server)
-        Just server
+matchContent = findMatch id
 
 
 ------------------------------------------------------------------------------
@@ -227,8 +223,7 @@ mapContent
     => [(a, b)]    -- ^ The map of server-side responses
     -> ByteString  -- ^ The client request's header value
     -> Maybe b
-mapContent options ctype =
-    matchContent (map fst options) ctype >>= lookupMatches options
+mapContent options = fmap snd . findMatch fst options
 
 
 ------------------------------------------------------------------------------
@@ -342,18 +337,7 @@ matchQuality
     => [a]          -- ^ The server-side options
     -> [Quality a]  -- ^ The pre-parsed client-side header value
     -> Maybe a
-matchQuality options acceptq = do
-    guard $ not (null options)
-    q <- maximumBy (compare `on` fmap qualityOrder) optionsq
-    guard $ isAcceptable q
-    return $ qualityData q
-  where
-    optionsq = reverse $ map addQuality options
-    addQuality opt = withQValue opt <$> foldl' (mfold opt) Nothing acceptq
-    withQValue opt q = q { qualityData = opt }
-    mfold opt cur q
-        | opt `matches` qualityData q = mostSpecific q <$> cur <|> Just q
-        | otherwise                   = cur
+matchQuality = findQuality id
 
 
 ------------------------------------------------------------------------------
@@ -370,14 +354,31 @@ mapQuality
     => [(a, b)]     -- ^ The map of server-side preferences to values
     -> [Quality a]  -- ^ The client-side header value
     -> Maybe b
-mapQuality options accept =
-    matchQuality (map fst options) accept >>= lookupMatches options
+mapQuality options = fmap snd . findQuality fst options
 
 
 ------------------------------------------------------------------------------
--- | The equivalent of 'lookupBy matches'.
-lookupMatches :: Accept a => [(a, b)] -> a -> Maybe b
-lookupMatches ((k, v) : r) a
-    | Accept.matches k a = Just v
-    | otherwise         = lookupMatches r a
-lookupMatches [] _ = Nothing
+-- | Find a match in a list of options against a ByteString using an 'Accept'
+-- instance obtained by mapping the options to another type.
+findMatch :: Accept b => (a -> b) -> [a] -> ByteString -> Maybe a
+findMatch f options bs = do
+    ctype <- parseAccept bs
+    find (matches ctype . f) options
+
+
+------------------------------------------------------------------------------
+-- | Find a quality match between a list of options and a quality-marked list
+-- of a different type, by mapping the type of the former to the latter.
+findQuality :: Accept a => (b -> a) -> [b] -> [Quality a] -> Maybe b
+findQuality f options acceptq = do
+    guard $ not (null options)
+    q <- maximumBy (compare `on` fmap qualityOrder) optionsq
+    guard $ isAcceptable q
+    return $ qualityData q
+  where
+    optionsq = reverse $ map addQuality options
+    addQuality opt = withQValue opt <$> foldl' (mfold opt) Nothing acceptq
+    withQValue opt q = q { qualityData = opt }
+    mfold opt cur q
+        | f opt `matches` qualityData q = mostSpecific q <$> cur <|> Just q
+        | otherwise                     = cur

@@ -106,6 +106,9 @@ testMapContent = testGroup "mapContent"
         content <- genMediaType
         parsers <- join zip . filter (not . matches content) <$> genServer
         return $ mapContent parsers (renderHeader content) === Nothing
+    , testProperty "Overlapping keys" $ do
+        (a, b) <- genMatchingPair
+        return $ mapContent [(a, False), (b, True)] (renderHeader b)
     ]
 
 
