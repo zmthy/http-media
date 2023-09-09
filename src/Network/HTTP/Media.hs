@@ -1,7 +1,7 @@
 -- | A framework for parsing HTTP media type headers.
 module Network.HTTP.Media
   ( -- * Media types
-    MediaType,
+     MediaType,
     (//),
     (/:),
     mainType,
