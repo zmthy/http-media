@@ -1,0 +1,15 @@
+name: Formatting Autofix
+on: pull_request
+jobs:
+  ormolu-inplace:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      - uses: haskell-actions/run-ormolu@v14
+        with:
+          mode: inplace
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "auto: ormolu formatting"
