@@ -18,6 +18,7 @@ import Data.String (IsString (..))
 import Network.HTTP.Media.Accept (Accept (..))
 import Network.HTTP.Media.RenderHeader (RenderHeader (..))
 import Network.HTTP.Media.Utils (breakChar, trimBS)
+import Prelude hiding ((<>))
 
 -- | An HTTP media type, consisting of the type, subtype, and parameters.
 data MediaType = MediaType

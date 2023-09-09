@@ -11,6 +11,7 @@ import Network.HTTP.Media.RenderHeader
 import Test.QuickCheck ((===))
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck (testProperty)
+import Prelude hiding ((<>))
 
 tests :: [TestTree]
 tests =

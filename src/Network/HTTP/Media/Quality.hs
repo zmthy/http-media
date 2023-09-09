@@ -25,6 +25,7 @@ import Data.Monoid ((<>))
 import Data.Word (Word16, Word32)
 import Network.HTTP.Media.Accept (Accept, moreSpecificThan)
 import Network.HTTP.Media.RenderHeader (RenderHeader (..))
+import Prelude hiding ((<>))
 
 -- | Attaches a quality value to data.
 data Quality a = Quality

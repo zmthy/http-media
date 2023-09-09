@@ -36,6 +36,7 @@ import Data.Monoid ((<>))
 import Network.HTTP.Media.Gen
 import Network.HTTP.Media.MediaType.Internal
 import Test.QuickCheck.Gen
+import Prelude hiding ((<>))
 
 -- | Parameter entry for testing.
 type ParamEntry = (CI ByteString, CI ByteString)

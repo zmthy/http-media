@@ -21,6 +21,7 @@ import Data.Monoid ((<>))
 import qualified Network.HTTP.Media.Utils as Utils
 import Test.QuickCheck.Gen (Gen)
 import qualified Test.QuickCheck.Gen as Gen
+import Prelude hiding ((<>))
 
 -- | Generates a valid header token.
 genToken :: Gen (CI ByteString)

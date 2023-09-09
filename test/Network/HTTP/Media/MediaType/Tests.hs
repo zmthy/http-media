@@ -17,6 +17,7 @@ import Test.QuickCheck (property, (.&&.), (===))
 import Test.QuickCheck.Gen (Gen)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck (testProperty)
+import Prelude hiding ((<>))
 
 tests :: [TestTree]
 tests =
