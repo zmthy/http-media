@@ -1,6 +1,8 @@
 Changelog
 =========
 
+- [Version 0.8.1.1](https://github.com/zmthy/http-media/releases/tag/v0.8.1.1)
+
   Fixed a bug when mapping againt a client-side content header where a
   match would be overridden by a more specific key earlier in the map.
 
