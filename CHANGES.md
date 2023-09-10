@@ -1,7 +1,12 @@
 Changelog
 =========
 
-- [ Version 0.8.1.0](https://github.com/zmthy/http-media/releases/tag/v0.8.1.0)
+  Fixed a bug when mapping againt a client-side content header where a
+  match would be overridden by a more specific key earlier in the map.
+
+  The bounds for tasty have been updated to include the latest version.
+
+- [Version 0.8.1.0](https://github.com/zmthy/http-media/releases/tag/v0.8.1.0)
 
   Exposed `qualityData` accessor.
 
