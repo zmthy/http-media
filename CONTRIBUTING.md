@@ -14,13 +14,11 @@ filed, and provide as much relevant information as possible.
 Pull Requests
 -------------
 
-To submit a contribution to the project, send a [Pull
-Request](https://github.com/zmthy/http-media/pulls).  Submitted code
-should follow the [Snap Framework Haskell Style
-Guide](http://snapframework.com/docs/style-guide), with a full line of
-hyphens before documentation.  All of the tests must pass, and Haddock
-documentation coverage should be at 100%.  Summarise your change under
-the current Develop entry in the `CHANGES.md` log.
+To submit a contribution to the project, send a [Pull Request](https://
+github.com/zmthy/http-media/pulls).  Submitted code should be formatted with
+[ormolu](https://hackage.haskell.org/package/ormolu). All of the tests must
+pass, and Haddock documentation coverage should be at 100%.  Summarise your
+change at the top of the `CHANGES.md` log.
 
 Git commit messages must follow the standard of a one-line summary of at
 most 50 characters (with no final period), and at least one following
