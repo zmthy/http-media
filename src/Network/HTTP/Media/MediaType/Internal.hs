@@ -48,14 +48,17 @@ instance IsString MediaType where
 instance Accept MediaType where
   parseAccept bs = do
     (s, ps) <- uncons (map trimBS (BS.split ';' bs))
-    (mainType, subType) <- breakChar '/' s
+    (mainType, rest) <- breakChar '/' s
+    let (subType, structuredSyntaxSuffix) = case breakChar '+' rest of
+          Nothing -> (rest, Nothing)
+          Just (sub, suf) -> (sub, Just suf)
     guard $ not (BS.null mainType || BS.null subType) && (mainType /= "*" || subType == "*")
     parameters <- foldM insert Map.empty ps
     pure $
       MediaType
         { mainType = CI.mk mainType,
           subType = CI.mk subType,
-          structuredSyntaxSuffix = Nothing,
+          structuredSyntaxSuffix,
           parameters
         }
     where
@@ -64,12 +67,21 @@ instance Accept MediaType where
         fmap (flip (uncurry Map.insert) ps . both CI.mk) . breakChar '='
 
   matches a b
-    | mainType b == "*" = params
-    | subType b == "*" = mainType a == mainType b && params
-    | otherwise = main && sub && params
+    | mainType b == "*" = suffix && params
+    | subType b == "*" = main && suffix && params
+    | otherwise = main && sub && suffix && params
     where
       main = mainType a == mainType b
       sub = subType a == subType b
+      suffix = case (structuredSyntaxSuffix a, structuredSyntaxSuffix b) of
+        (Nothing, Nothing) -> True
+        (Just sa, Just sb) -> sa == sb
+        -- Allow a suffix on the matchee only if our pattern matches any
+        -- subtype. This ensures */* will still match everything.
+        (Just _, Nothing) -> subType b == "*"
+        -- If the pattern specifies a suffix, it must be present on
+        -- the matchee.
+        (Nothing, Just _) -> False
       params = Map.null (parameters b) || parameters a == parameters b
 
   moreSpecificThan a b =
@@ -87,7 +99,7 @@ instance Accept MediaType where
   hasExtensionParameters _ = True
 
 instance RenderHeader MediaType where
-  renderHeader MediaType {mainType, subType, parameters, structuredSuffix} =
+  renderHeader MediaType {mainType, subType, parameters, structuredSyntaxSuffix} =
     Map.foldrWithKey f type_ parameters
     where
       type_ =
@@ -95,7 +107,7 @@ instance RenderHeader MediaType where
           [ original mainType,
             "/",
             original subType,
-            case structuredSuffix of
+            case structuredSyntaxSuffix of
               Nothing -> mempty
               Just s -> "+" <> s
           ]
