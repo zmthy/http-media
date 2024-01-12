@@ -29,6 +29,8 @@ data MediaType = MediaType
     mainType :: CI ByteString,
     -- | The sub type of the MediaType
     subType :: CI ByteString,
+    -- | Structured syntax suffix (e.g., @+json@), see RFC 6839
+    structuredSyntaxSuffix :: Maybe ByteString,
     -- | The parameters of the MediaType
     parameters :: Parameters
   }
@@ -53,6 +55,7 @@ instance Accept MediaType where
       MediaType
         { mainType = CI.mk mainType,
           subType = CI.mk subType,
+          structuredSyntaxSuffix = Nothing,
           parameters
         }
     where
@@ -84,9 +87,18 @@ instance Accept MediaType where
   hasExtensionParameters _ = True
 
 instance RenderHeader MediaType where
-  renderHeader MediaType {mainType, subType, parameters} =
-    Map.foldrWithKey f (original mainType <> "/" <> original subType) parameters
+  renderHeader MediaType {mainType, subType, parameters, structuredSuffix} =
+    Map.foldrWithKey f type_ parameters
     where
+      type_ =
+        mconcat $
+          [ original mainType,
+            "/",
+            original subType,
+            case structuredSuffix of
+              Nothing -> mempty
+              Just s -> "+" <> s
+          ]
       f k v = (<> ";" <> original k <> "=" <> original v)
 
 -- | 'MediaType' parameters.
