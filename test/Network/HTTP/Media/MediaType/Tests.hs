@@ -160,8 +160,10 @@ testParseAccept =
         media <- genMediaType
         let main = mainType media
             sub = subType media
+            suffix = maybe "" ("+" <>) $ structuredSyntaxSuffix media
         params <- renderParameters (parameters media)
-        let parsed = parseAccept $ foldedCase (main <> "/" <> sub) <> params
+        let parsed =
+              parseAccept $ foldedCase (main <> "/" <> sub) <> suffix <> params
         return $ parsed === Just media,
       testProperty "No sub" $ do
         bs <- genByteString

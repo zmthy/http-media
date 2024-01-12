@@ -126,7 +126,7 @@ testMatch name match qToI =
               qToI $
                 map
                   maxQuality
-                  [ MediaType "*" "*" empty,
+                  [ MediaType "*" "*" Nothing empty,
                     media {subType = "*"},
                     media {parameters = empty},
                     media
