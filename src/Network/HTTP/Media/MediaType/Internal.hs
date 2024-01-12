@@ -10,6 +10,7 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as BS
 import Data.CaseInsensitive (CI, original)
 import qualified Data.CaseInsensitive as CI
+import Data.List (uncons)
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe (fromMaybe)
@@ -48,8 +49,6 @@ instance Accept MediaType where
     ps' <- foldM insert Map.empty ps
     return $ MediaType (CI.mk a) (CI.mk b) ps'
     where
-      uncons [] = Nothing
-      uncons (a : b) = Just (a, b)
       both f (a, b) = (f a, f b)
       insert ps =
         fmap (flip (uncurry Map.insert) ps . both CI.mk) . breakChar '='
