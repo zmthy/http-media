@@ -1,3 +1,5 @@
+{-# LANGUAGE NamedFieldPuns #-}
+
 -- | Defined to allow the constructor of 'MediaType' to be exposed to tests.
 module Network.HTTP.Media.MediaType.Internal
   ( MediaType (..),
@@ -44,10 +46,15 @@ instance IsString MediaType where
 instance Accept MediaType where
   parseAccept bs = do
     (s, ps) <- uncons (map trimBS (BS.split ';' bs))
-    (a, b) <- breakChar '/' s
-    guard $ not (BS.null a || BS.null b) && (a /= "*" || b == "*")
-    ps' <- foldM insert Map.empty ps
-    return $ MediaType (CI.mk a) (CI.mk b) ps'
+    (mainType, subType) <- breakChar '/' s
+    guard $ not (BS.null mainType || BS.null subType) && (mainType /= "*" || subType == "*")
+    parameters <- foldM insert Map.empty ps
+    pure $
+      MediaType
+        { mainType = CI.mk mainType,
+          subType = CI.mk subType,
+          parameters
+        }
     where
       both f (a, b) = (f a, f b)
       insert ps =
@@ -77,8 +84,8 @@ instance Accept MediaType where
   hasExtensionParameters _ = True
 
 instance RenderHeader MediaType where
-  renderHeader (MediaType a b p) =
-    Map.foldrWithKey f (original a <> "/" <> original b) p
+  renderHeader MediaType {mainType, subType, parameters} =
+    Map.foldrWithKey f (original mainType <> "/" <> original subType) parameters
     where
       f k v = (<> ";" <> original k <> "=" <> original v)
 
