@@ -1,6 +1,11 @@
 Changelog
 =========
 
+- Unreleased(minor)
+
+  Added support for parsing structured syntax suffixes on media types,
+  as described in [RFC 6839](https://www.rfc-editor.org/rfc/rfc6839).
+
 - [Version 0.8.1.1](https://github.com/zmthy/http-media/releases/tag/v0.8.1.1)
 
   Fixed a bug when mapping againt a client-side content header where a
