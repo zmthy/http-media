@@ -6,10 +6,12 @@ module Network.HTTP.Media.MediaType
     Parameters,
     (//),
     (/:),
+    (/+),
 
     -- * Querying
     mainType,
     subType,
+    structuredSyntaxSuffix,
     parameters,
     (/?),
     (/.),
@@ -35,6 +37,12 @@ mainType = Internal.mainType
 subType :: MediaType -> CI ByteString
 subType = Internal.subType
 
+-- | Retrieves the structured syntax suffix (if any) of a 'MediaType'.
+--
+-- /See:/ [RFC 6839](https://www.rfc-editor.org/rfc/rfc6839)
+structuredSyntaxSuffix :: MediaType -> Maybe ByteString
+structuredSyntaxSuffix = Internal.structuredSyntaxSuffix
+
 -- | Retrieves the parameters of a 'MediaType'.
 parameters :: MediaType -> Parameters
 parameters = Internal.parameters
@@ -43,22 +51,29 @@ parameters = Internal.parameters
 -- either type is invalid.
 (//) :: ByteString -> ByteString -> MediaType
 a // b
-  | a == "*" && b == "*" = MediaType (CI.mk a) (CI.mk b) empty
-  | b == "*" = MediaType (ensureR a) (CI.mk b) empty
-  | otherwise = MediaType (ensureR a) (ensureR b) empty
+  | a == "*" && b == "*" = MediaType (CI.mk a) (CI.mk b) Nothing empty
+  | b == "*" = MediaType (ensureR a) (CI.mk b) Nothing empty
+  | otherwise = MediaType (ensureR a) (ensureR b) Nothing empty
 
 -- | Adds a parameter to a 'MediaType'. Can produce an error if either
 -- string is invalid.
 (/:) :: MediaType -> (ByteString, ByteString) -> MediaType
-(MediaType a b p) /: (k, v) = MediaType a b $ insert (ensureR k) (ensureV v) p
+m@MediaType {Internal.parameters = ps} /: (k, v) =
+  m {Internal.parameters = insert (ensureR k) (ensureV v) ps}
+
+-- | Adds/replaces a structured syntax suffix (like @+json@) on a 'MediaType'.
+--
+-- /See:/ [RFC 6839](https://www.rfc-editor.org/rfc/rfc6839)
+(/+) :: MediaType -> ByteString -> MediaType
+m /+ s = m {Internal.structuredSyntaxSuffix = Just s}
 
 -- | Evaluates if a 'MediaType' has a parameter of the given name.
 (/?) :: MediaType -> ByteString -> Bool
-(MediaType _ _ p) /? k = Map.member (CI.mk k) p
+m /? k = Map.member (CI.mk k) $ parameters m
 
 -- | Retrieves a parameter from a 'MediaType'.
 (/.) :: MediaType -> ByteString -> Maybe (CI ByteString)
-(MediaType _ _ p) /. k = Map.lookup (CI.mk k) p
+m /. k = Map.lookup (CI.mk k) $ parameters m
 
 -- | Ensures that the 'ByteString' matches the ABNF for `reg-name` in RFC
 -- 4288.

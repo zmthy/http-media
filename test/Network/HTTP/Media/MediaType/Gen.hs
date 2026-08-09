@@ -1,3 +1,5 @@
+{-# LANGUAGE NamedFieldPuns #-}
+
 -- | Contains definitions for generating 'MediaType's.
 module Network.HTTP.Media.MediaType.Gen
   ( -- * Generating MediaTypes
@@ -43,7 +45,13 @@ type ParamEntry = (CI ByteString, CI ByteString)
 
 -- | The MediaType that matches anything.
 anything :: MediaType
-anything = MediaType "*" "*" Map.empty
+anything =
+  MediaType
+    { mainType = "*",
+      subType = "*",
+      structuredSyntaxSuffix = Nothing,
+      parameters = Map.empty
+    }
 
 -- | Generates any kind of MediaType.
 genMediaType :: Gen MediaType
@@ -53,7 +61,13 @@ genMediaType = oneof [return anything, genSubStar, genConcreteMediaType]
 genSubStar :: Gen MediaType
 genSubStar = do
   main <- genCIByteString
-  return $ MediaType main "*" Map.empty
+  pure
+    MediaType
+      { mainType = main,
+        subType = "*",
+        structuredSyntaxSuffix = Nothing,
+        parameters = Map.empty
+      }
 
 -- | Generates a MediaType whose sub type might be *.
 genMaybeSubStar :: Gen MediaType
@@ -66,24 +80,28 @@ subStarOf media = media {subType = "*", parameters = Map.empty}
 -- | Generates a concrete MediaType which may have parameters.
 genConcreteMediaType :: Gen MediaType
 genConcreteMediaType = do
-  main <- genCIByteString
-  sub <- genCIByteString
-  params <- oneof [return Map.empty, genParameters]
-  return $ MediaType main sub params
+  mainType <- genCIByteString
+  subType <- genCIByteString
+  structuredSyntaxSuffix <- genStructuredSuffix
+  parameters <- oneof [pure Map.empty, genParameters]
+  pure MediaType {mainType, subType, structuredSyntaxSuffix, parameters}
 
 -- | Generates a concrete MediaType with no parameters.
 genWithoutParams :: Gen MediaType
 genWithoutParams = do
-  main <- genCIByteString
-  sub <- genCIByteString
-  return $ MediaType main sub Map.empty
+  mainType <- genCIByteString
+  subType <- genCIByteString
+  structuredSyntaxSuffix <- genStructuredSuffix
+  pure MediaType {mainType, subType, structuredSyntaxSuffix, parameters = Map.empty}
 
 -- | Generates a MediaType with at least one parameter.
 genWithParams :: Gen MediaType
 genWithParams = do
-  main <- genCIByteString
-  sub <- genCIByteString
-  MediaType main sub <$> genParameters
+  mainType <- genCIByteString
+  subType <- genCIByteString
+  structuredSyntaxSuffix <- genStructuredSuffix
+  parameters <- genParameters
+  pure MediaType {mainType, subType, structuredSyntaxSuffix, parameters}
 
 -- | Strips the parameters from the given MediaType.
 stripParams :: MediaType -> MediaType
@@ -110,6 +128,15 @@ genDiffMediaTypes = genDiffMediaTypesWith genMediaType
 -- | Generates a different MediaType to the given one.
 genDiffMediaType :: MediaType -> Gen MediaType
 genDiffMediaType = genDiffMediaTypes . (: [])
+
+-- | Sometimes generate a structured suffix from the list in RFC 6839,
+-- plus @"xml"@.
+genStructuredSuffix :: Gen (Maybe ByteString)
+genStructuredSuffix =
+  oneof
+    [ pure Nothing,
+      Just <$> elements ["json", "ber", "der", "fastinfoset", "wbxml", "xml", "zip"]
+    ]
 
 -- | Reuse for 'mayParams' and 'someParams'.
 mkGenParams :: (Gen ParamEntry -> Gen [ParamEntry]) -> Gen Parameters
